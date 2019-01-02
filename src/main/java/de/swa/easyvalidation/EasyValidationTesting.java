@@ -103,28 +103,22 @@ public class EasyValidationTesting {
                 )
         );
 
-
-        Reservation reservation1 = new Reservation(101, ReservationStatus.NEW, new Customer("Donald Duck"), 
+        Reservation reservation1 = new Reservation(101, ReservationStatus.NEW, new Customer("Donald Duck"),
                 Arrays.asList(new Article("Endoscope")));
         
-        List<String> err = EasyValidator.validateMandatoryConditions(reservation1, conditions);
-        log.debug("Validation errors: " + err);
-        
-        // Property groups: if validation order is important, use LinkedHashSet ...
-        Set<String> group = new LinkedHashSet<>(Arrays.asList("id", "notexist"));
-        //List<String> err2 = EasyValidator.validateMandatoryConditions(reservation1, group, conditions);
+        List<String> err1 = EasyValidator.validateMandatoryConditions(reservation1, conditions);
+        log.debug("Validation errors: " + err1);
 
-        
-        ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
-        long nanoTime1 = System.nanoTime();
-        String json = mapper.writeValueAsString(conditions);
-        long nanoTime2 = System.nanoTime();
-        log.debug("Jackson: " + json);
-        log.debug("Micros:" + (nanoTime2 - nanoTime1)/1000);
+        Reservation reservation2 = new Reservation(101, ReservationStatus.APPROVED, new Customer("Donald Duck"),
+                Arrays.asList(new Article("Endoscope")));
 
-        long nanoTime3 = System.nanoTime();
-        log.debug("handmade: " + conditions.serializeToJson());
-        log.debug("Micros:" + (nanoTime3 - nanoTime2)/1000);
+        List<String> err2 = EasyValidator.validateImmutableConditions(reservation1, reservation2, conditions);
+        log.debug("Validation errors: " + err2);
+
+
+        long nanoTime = System.nanoTime();
+        log.debug("serializeToJson: " + conditions.serializeToJson());
+        log.debug("Micros:" + (System.nanoTime() - nanoTime)/1000);
     }
     
     public static class Reservation extends ReservationVO implements Identifiable<Integer> {
