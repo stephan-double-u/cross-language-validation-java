@@ -2,5 +2,5 @@
 
 ## TODOs
 - Describe
-- Choose Licence
+- Choose License
 - Improve
