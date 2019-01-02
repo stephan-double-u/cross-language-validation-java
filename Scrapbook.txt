@@ -1,0 +1,72 @@
+
+AND/OR conditions
+- ORed AND groups: a && b || c && d      // equals: (a || c) && (b || c) && (a || d) && (b || d)
+- ANDed OR groups: (e || f) && (g || h)  // equals: e && g || e && h || f && g || f && h
+
+How-to message keys: benötigt für Objekt Validierung
+1. Default-Werte, z.B. "error.property.required", ...
+2. EasyValidator.setDefaultMessageKeyForMandatoryProperties("...")
+3. Bei Definition angeben: conditions.mandatory("foo", "msg.foo.req", Constraint.ref("bar", ...))
+   Nachteil?: 2 String-Argumente: besser Prop.name("foo").msg("msg.foo.req") ? eher nicht ...
+   Eigener Map-Caches für msg keys: "foo" -> "msg.foo.req"
+
+Original DEMO project conditions:
+immutable.put("animalUse", new ValidationCondition("everLeftWarehouse", true), new ValidationCondition("animalUse", true));
+neue Anforderung kann z.Z. nicht umgesetzt werden: OR ValidationCondition.notEqualsNull()
+
+Erweiterungen?:
+RegExp auch auf Number: z.B. "nur ungerade Ziffern" -> any("[13579]+")
+ALLE List/Array Elemente prüfen: conditions.content("articles[*].name", Size.min(3))
+
+See: org.hibernate.validator.internal.engine.ValidatorImpl
+org.hibernate.validator.internal.util.TypeHelper
+org.hibernate.validator.internal.util.ReflectionHelper.boxedType(Class<?>)
+...
+
+Problem mit comparator und Object[] Version: nicht als JSON serialisierbar! ...
+Lösung?: Comparator definiert COMP-ID die nur serialisiert wird. Client muss Logik anhand der COMP-ID implementieren
+-> z.B. AngularEasyValidator muss Funktionen für COMP-IDs 'registrieren' können ...
+
+TODO? Enable some kind of Javascript client constraint setting
+e.g. to allow only longs/BigIntegers that are JS 'SafeInteger' (<= Math.pow(2, 53) - 1)
+
+Collation Support bei String-Vergleich?!
+UNICODE COLLATION ALGORITHM
+"JDK Collator class still does not implement the UCA, but ICU’s does" <- http://stackoverflow.com/questions/5433027/java-unicode-strings-sorting
+-> http://site.icu-project.org/home/why-use-icu4j
+
+TODO validate syntax of indexed properties in EasyValidator.validatePropertyAndCache() and cache index values
+Eigene Constraints für indexed Props. wie EqualsAnyIdx!?
+Mit Erweiterung min()/max()?! Constraint.ref("articleArray[*].status", Equals.anyRef("a[*].s").min(2))) ...
+Besser?: Constraint.ref("articleArray[*].status", Equals.minRef(2, "a[*].s")))
+
+Was bedeutet z.B.
+cond.content("foo[*].name", Equals.anyRef("bar[*].name")
+        Constraint.ref("zoo[*].name", Equals.anyRef("baz[*].name")))?
+
+Constraint.ref("zoo[*].name", Equals.anyRef("baz[*].name")): Jeder zoo.name muss einem baz.name gleichen
+Constraint.ref("zoo[*].name", Equals.minRef(2, "baz[*].name")):
+- Jeder zoo.name muss mind. 2 baz.name gleichen?
+oder
+- Mindestens 2 zoo.name müssen einem baz.name gleichen?
+
+
+---
+
+javax.validation
+
+@Digits(integer=,fraction=)
+- gültige Typen: CharSequence, byte/Byte, short/Short, int/Integer, long/Long, BigInteger, BigDecimal
+- fraction muss zwangsläufig immer 0 sein bei byte/Byte, short/Short, int/Integer, long/Long, BigInteger
+- Lasst sich (besser?) als @Pattern definieren
+- Beispielcode:
+        BigDecimal byteBD = new BigDecimal(Byte.valueOf((byte) 127).toString());//.stripTrailingZeros();
+        System.out.println(byteBD + " " + byteBD.precision() + " " + byteBD.scale());
+        BigDecimal shortBD = new BigDecimal(Short.valueOf((short) 12345).toString());//.stripTrailingZeros();
+        System.out.println(shortBD + " " + shortBD.precision() + " " + shortBD.scale());
+        BigDecimal intBD = new BigDecimal(Integer.valueOf(12345678).toString());//.stripTrailingZeros();
+        System.out.println(intBD + " " + intBD.precision() + " " + intBD.scale());
+        BigDecimal longBD = new BigDecimal(Long.valueOf(123456789012345L).toString());//.stripTrailingZeros();
+        System.out.println(longBD + " " + longBD.precision() + " " + longBD.scale());
+        BigDecimal stringBD = new BigDecimal("0000012345.67");//.stripTrailingZeros();
+        System.out.println(stringBD + " " + stringBD.precision() + " " + stringBD.scale());

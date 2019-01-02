@@ -1,0 +1,71 @@
+package de.swa.easyvalidation.constraints;
+
+import java.util.Arrays;
+
+import de.swa.easyvalidation.EasyValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class EqualsAnyRef extends Equals {
+
+    private static Logger log = LoggerFactory.getLogger(EqualsAnyRef.class);
+
+    EqualsAnyRef(String... properties) {
+        setStringValues(Arrays.asList(properties));
+    }
+
+    @Override
+    String getType() {
+        return "EQUALS_ANY_REF";
+    }
+
+    @Override
+    public boolean validateArgumentsOrFail(Class<?> typeClass) {
+        getValues().forEach(refPropertyName -> EasyValidator.validateProperty((String) refPropertyName, typeClass));
+        return true;
+    }
+    
+    @Override
+    public boolean validate(Object valueToValidate, Object contraintObject) {
+        for (Object property : getValues()) {
+            //TODO allow only non-indexed properties resp. 'single index'!?
+            Object referencedValue = EasyValidator.getPropertyResultObject((String) property, contraintObject);
+            if (valueToValidate.equals(referencedValue)) {
+                log.debug("" + valueToValidate + " does equals referenced property " + property);
+                return true;
+            }
+        }
+        log.debug("" + valueToValidate + " does NOT equals any referenced property of " + getValues());
+        return false;
+    }
+
+    public static void main(String[] args) {
+        EqualsAnyRef constraint = Equals.anyRef("bar.zoo");
+        log.debug(constraint.serializeToJson());
+        Foo foo = new Foo(new Bar("baz"));
+        // Validating caches the getZoo() method!
+        EasyValidator.validateProperty("bar.zoo", Foo.class);
+        log.debug("" + constraint.validate("baz", foo));
+    }
+
+    public static class Foo {
+        private Bar bar;
+        public Foo(Bar bar) {
+            super();
+            this.bar = bar;
+        }
+        public Bar getBar() {
+            return bar;
+        }
+    }
+    public static class Bar {
+        private String zoo;
+        public Bar(String zoo) {
+            this.zoo = zoo;
+        }
+        public String getZoo() {
+            return zoo;
+        }
+    }
+    
+}
