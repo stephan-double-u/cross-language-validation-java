@@ -110,13 +110,13 @@ public class EasyValidator {
 
     
     public static List<String> validateMandatoryConditions(Object object,
-            ValidationConditions<?> validationConditions) {
+                ValidationConditions<?> validationConditions) {
         log.debug("Checking mandatory conditions for " + validationConditions.getTypeClass().getName());
         // Implementation note: keySet has same order as the LinkedHashMap!
         return validateMandatoryConditions(object, validationConditions.getMandatory().keySet(), validationConditions);
     }
 
-    public static List<String> validateMandatoryConditions(Object object, Set<String> properties,
+    private static List<String> validateMandatoryConditions(Object object, Set<String> properties,
             ValidationConditions<?> validationConditions) {
 
         Map<String, ConstraintRefGroups> mandatoryConditions = validationConditions.getMandatory();
@@ -131,9 +131,9 @@ public class EasyValidator {
             log.debug(">>> Checking mandatory conditions for property '" + property + "'");
             if (groupsConditionsAreMet(groups, object)) {
                 Object value = getPropertyResultObject(property, object);
-                log.debug("Property '" + property + "' IS mandatory because all conditions are met.");
+                log.debug("Property '" + property + "' IS mandatory");
                 if (value == null) {
-                    errors.add(property + " - " + defaultMandatoryMessage);
+                    errors.add(defaultMandatoryMessage + "." + property);
                 }
             } else {
                 log.debug("Property '" + property + "' is NOT mandatory because some conditions are not met");
@@ -143,8 +143,10 @@ public class EasyValidator {
     }
 
     public static List<String> validateImmutableConditions(Object originalObject, Object modifiedObject,
-            ValidationConditions<?> validationConditions) {
-        return validateImmutableConditions(originalObject, modifiedObject, validationConditions);
+                ValidationConditions<?> validationConditions) {
+        log.debug("Checking immutable conditions for " + validationConditions.getTypeClass().getName());
+        return validateImmutableConditions(originalObject, modifiedObject, validationConditions.getImmutable().keySet(),
+                validationConditions);
     }
 
     public static List<String> validateImmutableConditions(Object originalObject, Object modifiedObject,
@@ -163,11 +165,11 @@ public class EasyValidator {
             // Check if all conditions are met. If so, both property values must be equal
             log.debug(">>> Checking immutable conditions for property '" + property + "'");
             if (groupsConditionsAreMet(groups, originalObject)) {
-                log.debug("Property '" + property + "' IS immutable because all conditions are met");
+                log.debug("Property '" + property + "' IS immutable");
                 Object originalValue = getPropertyResultObject(property, originalObject);
                 Object modifiedValue = getPropertyResultObject(property, modifiedObject);
                 if (!Objects.equals(originalValue, modifiedValue)) {
-                    errors.add(property + " - " + defaultImmutableMessage);
+                    errors.add(defaultImmutableMessage + "." + property);
                 }
             } else {
                 log.debug("Property '" + property + "' is NOT immutable because some conditions are not met.");
