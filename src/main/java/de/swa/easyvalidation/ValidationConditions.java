@@ -35,7 +35,7 @@ public class ValidationConditions<T> implements JsonSerializable {
     private String typeJsonKey;
 
     // Linked HashMap to preserve insertion order and thereby define validation order, e.g. to do cheap validations
-    // fist! -> no need for javax.validation.GroupSequence !
+    // first! -> no need for javax.validation.GroupSequence !
     private Map<String, ConstraintRefGroups> mandatory = new LinkedHashMap<>();
     private Map<String, ConstraintRefGroups> immutable = new LinkedHashMap<>();
     private Map<String, ContentGroup> content = new LinkedHashMap<>();
