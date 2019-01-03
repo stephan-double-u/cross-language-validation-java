@@ -1,18 +1,5 @@
 package de.swa.easyvalidation;
 
-import java.math.BigInteger;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import de.swa.easyvalidation.constraints.*;
 import de.swa.easyvalidation.groups.ConstraintRefGroup;
 import de.swa.easyvalidation.groups.ConstraintRefGroups;
@@ -20,11 +7,15 @@ import de.swa.easyvalidation.groups.ContentGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigInteger;
+import java.time.LocalDate;
+import java.util.*;
+
 public class EasyValidationTesting {
 
     private static Logger log = LoggerFactory.getLogger(EasyValidationTesting.class);
 
-    public static void main(String[] args) throws JsonProcessingException {
+    public static void main(String[] args) {
 
         Comparator<String> nameComparator = new Comparator<String>() {
             @Override
