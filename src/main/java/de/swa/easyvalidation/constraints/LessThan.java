@@ -39,7 +39,7 @@ public class LessThan extends Constraint {
     @Override
     public String serializeToJson() {
         // TODO Auto-generated method stub
-        return asObject(asKey("TODO") + quoted("TODO"));
+        return asObject(asKey("type") + quoted(type) + "," + asKey("value") + asArray(getValues()));
     }
 
     public void setComparator(Comparator<String> comparator) {

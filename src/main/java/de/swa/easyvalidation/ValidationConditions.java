@@ -153,7 +153,7 @@ public class ValidationConditions<T> implements JsonSerializable {
     }
     
     /**
-     * If the logical relation between your constraints are really complicated, this method may be your last resort ...
+     * If the logical relation between your constraints are really complicated, this method may be your last resort.
      * <p/>
      * This version defines the property as mandatory if the {@code groups} object evaluates to true.
      * <p/>
@@ -169,7 +169,7 @@ public class ValidationConditions<T> implements JsonSerializable {
     }
     
     /**
-     * If the logical relation between your constraints are really complicated, this method may be your last resort ...
+     * If the logical relation between your constraints are really complicated, this method may be your last resort.
      * <p/>
      * This version defines the property as immutable if the {@code groups} object evaluates to true.
      * <p/>
@@ -212,13 +212,11 @@ public class ValidationConditions<T> implements JsonSerializable {
      * @param constraint
      */
     public void content(String property, Constraint constraint) {
-        putContent(content, property, constraint);
+        putCondition(content, property, constraint);
     }
 
-    private void putContent(Map<String, ContentGroup> content, String property, Constraint constraint) {
-        constraint.validateArgumentsOrFail(typeClass);
-        EasyValidator.validateProperty(property, typeClass);
-        //putAndWarn(conditionMap, property, ConstraintRefGroups.anded());
+    private void putCondition(Map<String, ContentGroup> content, String property, Constraint constraint) {
+        putCondition(content, property, constraint, ConstraintRefGroups.anded());
     }
 
     /**
@@ -230,69 +228,69 @@ public class ValidationConditions<T> implements JsonSerializable {
      * @param constraintRefs
      */
     public void content(String property, Constraint constraint, ConstraintRef... constraintRefs) {
-        //TODO validate contentConstraint
-        EasyValidator.validateProperty(property, typeClass);
-        for (ConstraintRef ref : constraintRefs) {
-            validatePropertyAndValueTypes(ref);
-        }
-        content.put(property,
-                ContentGroup.ored(constraint, ConstraintRefGroups.anded(ConstraintRefGroup.and(constraintRefs))));
+        putCondition(content, property, constraint, ConstraintRefGroups.anded(ConstraintRefGroup.and(constraintRefs)));
     }
-    
+
     /**
-     * TODO
-     * 
+     * Defines the constraint for the property content if at least one of the {@code constraintRefGroups} is true.<p/>
+     * I.e. the AndGroups are ORed where the ConstrainRefs within each AndGroup are ANDed.<p/>
+     * E.g. [Group.and(a, b), Group.and(c, d)] is evaluated as: a && b || c && d
+     *
      * @param property
      * @param constraint
      * @param andGroups
      */
     public void content(String property, Constraint constraint, AndGroup... andGroups) {
-        //TODO validate contentConstraint 
-        EasyValidator.validateProperty(property, typeClass);
-        for (AndGroup andGroup : andGroups) {
-            for (ConstraintRef ref : andGroup.getConstraintRefs()) {
-                validatePropertyAndValueTypes(ref);
-            }
-        }
-        // putAndWarn ...
+        putCondition(content, property, constraint, ConstraintRefGroups.ored(andGroups));
     }
 
     /**
-     * TODO
-     * 
+     * Defines the constraint for the property content if all of the {@code constraintRefGroups} are true.<p/>
+     * I.e. the OrGroups are ANDed where the ConstrainRefs within each OrGroup are ORed.<p/>
+     * E.g. [Group.or(e, f), Group.or(g, h)] is evaluated as: (e || f) && (g || h)
+     *
      * @param property
      * @param constraint
      * @param orGroups
      */
     public void content(String property, Constraint constraint, OrGroup... orGroups) {
-        //TODO validate contentConstraint
+        putCondition(content, property, constraint, ConstraintRefGroups.anded(orGroups));
+    }
+
+    /**
+     * If the logical relation between your constraints are really complicated, this method may be your last resort.
+     * <p/>
+     * This version defines the property as immutable if the {@code groups} object evaluates to true.
+     * <p/>
+     * According to the logical operation the AndGroups and OrGroups are either ANDed or ORed.
+     * <p/>
+     * E.g. Groups.anded(Group.or(a, b), Group.or(c, d), Group.or(e, f)] is evaluated as: ...
+     *
+     * @param property
+     * @param groups
+     */
+    public void content(String property, Constraint constraint, ConstraintRefGroups groups) {
+        putCondition(content, property, constraint, groups);
+    }
+
+    private void putCondition(Map<String, ContentGroup> content, String property, Constraint constraint, ConstraintRefGroups groups) {
         EasyValidator.validateProperty(property, typeClass);
-        for (OrGroup andGroup : orGroups) {
-            for (ConstraintRef ref : andGroup.getConstraintRefs()) {
+        constraint.validateArgumentsOrFail(typeClass);
+        for (ConstraintRefGroup group : groups.getConstraintRefGroups()) {
+            for (ConstraintRef ref : group.getConstraintRefs()) {
                 validatePropertyAndValueTypes(ref);
             }
         }
-        // putAndWarn ...
+        putAndWarn(content, property, constraint, groups);
     }
-    
-    /**
-     * TODO
-     * @param property
-     * @param contentGroups
-     */
-    public void content(String property, ContentGroup... contentGroups) {
-        EasyValidator.validateProperty(property, typeClass);
-        for (ContentGroup contentGroup : contentGroups) {
-            Constraint contentConstraint = contentGroup.getContentConstraint();
-            //TODO validate contentConstraint ! e.g. if it's a EqualsAnyRef !! and because of matching types!
-            // create a temp. a ConstraintRef ?!
-            for (ConstraintRefGroup refGroup : contentGroup.getConstraintRefGroups().getConstraintRefGroups()) {
-                for (ConstraintRef ref : refGroup.getConstraintRefs()) {
-                    validatePropertyAndValueTypes(ref);
-                }
-            }
+
+    private void putAndWarn(Map<String, ContentGroup> content, String property, Constraint constraint,
+                            ConstraintRefGroups constraintRefGroups) {
+        if (content.containsKey(property)) {
+            log.warn("Content validation conditions for property '" + property + "' are already defined and will be overwritten.");
+            content.remove(property); // ensure insertion order is 'overwritten' as well
         }
-        //content.put(property, contentGroups);
+        content.put(property, new ContentGroup(constraint, constraintRefGroups));
     }
 
 
@@ -303,19 +301,18 @@ public class ValidationConditions<T> implements JsonSerializable {
         String propertyName = constraintRef.getProperty();
         Class<?> propertyType = EasyValidator.validateProperty(propertyName, typeClass);
         Constraint constraint = constraintRef.getConstraint();
-        
+
         // Check that constraint supports propertyType
         if (!constraint.isSupportedType(propertyType)) {
             throw new IllegalArgumentException(
                     "Contraint " + constraint.getClass().getSimpleName() + " does not support type of property "
                             + propertyName + " (" + propertyType + ")");
         }
-        
         // Check arguments
         constraint.validateArgumentsOrFail(propertyType);
     }
 
-    
+
     public Map<String, ConstraintRefGroups> getMandatory() {
         return mandatory;
     }
@@ -358,25 +355,35 @@ public class ValidationConditions<T> implements JsonSerializable {
         for (String propertyKey : conditionGroupsMap.keySet()) {
             ConstraintRefGroups groups = conditionGroupsMap.get(propertyKey);
             String logicalOperator = groups.getLogicalOperator().name();
-            json += (!firstProp ? "," : "") + asKey(propertyKey) + "{" + asKey("groupsOperator")
-                    + quoted(logicalOperator) + "," + asKey("groups") + "[";
-            firstProp = false;
-            boolean firstGroup = true;
-            for (ConstraintRefGroup group : groups.getConstraintRefGroups()) {
-                json += (!firstGroup ? "," : "") + group.serializeToJson();
-                firstGroup = false;
-                group.serializeToJson();
-            }
+            json += (firstProp ? "" : ",") + asKey(propertyKey);
             if (groups.getConstraintRefGroups().length == 0) {
                 json += "true";
+            } else {
+                json += "{" + asKey("groupsOperator") + quoted(logicalOperator) + "," + asKey("groups") + "[";
+                boolean firstGroup = true;
+                for (ConstraintRefGroup group : groups.getConstraintRefGroups()) {
+                    json += (firstGroup ? "" : ",") + group.serializeToJson();
+                    firstGroup = false;
+                    group.serializeToJson();
+                }
+                json += "]}";
             }
-            json += "]}";
+            firstProp = false;
         }
         return json;
     }
 
     private String serializeCondition(Map<String, ContentGroup> content) {
-        // TODO Auto-generated method stub
+        String json = "";
+        boolean firstProp = true;
+        for (String propertyKey : content.keySet()) {
+            final ContentGroup contentGroup = content.get(propertyKey);
+            final Constraint contentConstraint = contentGroup.getContentConstraint();
+            ConstraintRefGroups groups = contentGroup.getConstraintRefGroups();
+            String logicalOperator = groups.getLogicalOperator().name();
+            // ...
+
+        }
         return "TODO";
     }
 

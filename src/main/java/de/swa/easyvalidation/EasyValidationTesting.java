@@ -74,7 +74,7 @@ public class EasyValidationTesting {
         conditions.immutable("status");
         
         ConstraintRef a = Constraint.ref("someString", Size.minMax(1, 100));
-        conditions.content("someString", Equals.anyRef("articleList[*].name"));
+        conditions.content("someString", Equals.anyRef("articleList[0].name"));
         conditions.content("id", Equals.any(101, 202, 303),
                 a, a, a, a);
         conditions.content("id", Equals.any(101, 202, 303), 
@@ -85,14 +85,12 @@ public class EasyValidationTesting {
                 ConstraintRefGroup.and(a, a), 
                 ConstraintRefGroup.and(a, a)
                 );
-        conditions.content("id", 
-                ContentGroup.ored(Equals.any(101, 202, 303),
-                        ConstraintRefGroups.anded(
-                                ConstraintRefGroup.and(a, a),
-                                ConstraintRefGroup.or(a, a)
+        conditions.content("id", Equals.any(101, 202, 303),
+                ConstraintRefGroups.ored(
+                        ConstraintRefGroup.and(a, a),
+                        ConstraintRefGroup.or(a, a)
                         )
-                )
-        );
+                );
 
         Reservation reservation1 = new Reservation(101, ReservationStatus.NEW, new Customer("Donald Duck"),
                 Arrays.asList(new Article("Endoscope")));

@@ -72,7 +72,7 @@ public class RegExp extends Constraint {
 
     @Override
     public String serializeToJson() {
-        return asObject(asKey("type") + quoted(type) + "," + asKey("any") + asArray(getValues()));
+        return asObject(asKey("type") + quoted(type) + "," + asKey("values") + asArray(getValues()));
     }
 
 }
