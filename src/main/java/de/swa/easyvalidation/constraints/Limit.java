@@ -78,7 +78,7 @@ public class Limit extends Constraint {
         }
     }
 
-    // not used ...
+    // not used (yet) ...
     private static LongComparator<Long> numberComparator = new LongComparator<>();
     static class LongComparator<T extends Number & Comparable<T>> implements Comparator<T> {
         public int compare(T a, T b) throws ClassCastException {
@@ -93,13 +93,4 @@ public class Limit extends Constraint {
         return asObject(asKey("type") + quoted(type) + "," + asKey("min") + minValue + "," + asKey("max") + maxValue);
     }
 
-    // TODO -> JUnit test
-    public static void main(String[] args) {
-        Limit limit = Limit.minMax(123, 1234567890);
-        log.debug(limit.serializeToJson());
-
-        log.debug("" + limit.validate(12345, null));
-        log.debug("" + limit.validate(0, null));
-        log.debug("" + limit.validate(Long.MAX_VALUE, null));
-    }
 }

@@ -39,33 +39,4 @@ public class EqualsAnyRef extends Equals {
         return false;
     }
 
-    public static void main(String[] args) {
-        EqualsAnyRef constraint = Equals.anyRef("bar.zoo");
-        log.debug(constraint.serializeToJson());
-        Foo foo = new Foo(new Bar("baz"));
-        // Validating caches the getZoo() method!
-        EasyValidator.validateProperty("bar.zoo", Foo.class);
-        log.debug("" + constraint.validate("baz", foo));
-    }
-
-    public static class Foo {
-        private Bar bar;
-        public Foo(Bar bar) {
-            super();
-            this.bar = bar;
-        }
-        public Bar getBar() {
-            return bar;
-        }
-    }
-    public static class Bar {
-        private String zoo;
-        public Bar(String zoo) {
-            this.zoo = zoo;
-        }
-        public String getZoo() {
-            return zoo;
-        }
-    }
-    
 }

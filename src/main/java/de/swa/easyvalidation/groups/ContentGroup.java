@@ -9,7 +9,7 @@ public class ContentGroup implements JsonSerializable {
     private Constraint contentConstraint;
     private ConstraintRefGroups constraintRefGroups;
 
-    private ContentGroup(Constraint contentConstraint, ConstraintRefGroups constraintRefGroups) {
+    public ContentGroup(Constraint contentConstraint, ConstraintRefGroups constraintRefGroups) {
         this.contentConstraint = contentConstraint;
         this.constraintRefGroups = constraintRefGroups;
     }
