@@ -67,8 +67,7 @@ public class ValidationConditions<T> implements JsonSerializable {
     }
     
     private void putCondition(Map<String, ConstraintRefGroups> conditionMap, String property) {
-        EasyValidator.validateProperty(property, typeClass);
-        putAndWarn(conditionMap, property, ConstraintRefGroups.anded());
+        putCondition(conditionMap, property, ConstraintRefGroups.anded());
     }
     
     /**
@@ -94,11 +93,7 @@ public class ValidationConditions<T> implements JsonSerializable {
     }
     
     private void putCondition(Map<String, ConstraintRefGroups> conditionMap, String property, ConstraintRef... constraintRefs) {
-        EasyValidator.validateProperty(property, typeClass);
-        for (ConstraintRef ref : constraintRefs) {
-            validatePropertyAndValueTypes(ref);
-        }
-        putAndWarn(conditionMap, property, ConstraintRefGroups.anded(ConstraintRefGroup.and(constraintRefs)));
+        putCondition(conditionMap, property, ConstraintRefGroups.anded(ConstraintRefGroup.and(constraintRefs)));
     }
     
     /**
@@ -126,13 +121,7 @@ public class ValidationConditions<T> implements JsonSerializable {
     }
     
     private void putCondition(Map<String, ConstraintRefGroups> conditionMap, String property, AndGroup... constraintRefGroups) {
-        EasyValidator.validateProperty(property, typeClass);
-        for (AndGroup andGroup : constraintRefGroups) {
-            for (ConstraintRef ref : andGroup.getConstraintRefs()) {
-                validatePropertyAndValueTypes(ref);
-            }
-        }
-        putAndWarn(conditionMap, property, ConstraintRefGroups.ored(constraintRefGroups));
+        putCondition(conditionMap, property, ConstraintRefGroups.ored(constraintRefGroups));
     }
     
     /**
@@ -160,13 +149,7 @@ public class ValidationConditions<T> implements JsonSerializable {
     }
     
     private void putCondition(Map<String, ConstraintRefGroups> conditionMap, String property, OrGroup... constraintRefGroups) {
-        EasyValidator.validateProperty(property, typeClass);
-        for (OrGroup orGroup : constraintRefGroups) {
-            for (ConstraintRef ref : orGroup.getConstraintRefs()) {
-                validatePropertyAndValueTypes(ref);
-            }
-        }
-        putAndWarn(conditionMap, property, ConstraintRefGroups.anded(constraintRefGroups));
+        putCondition(conditionMap, property, ConstraintRefGroups.anded(constraintRefGroups));
     }
     
     /**
@@ -218,14 +201,10 @@ public class ValidationConditions<T> implements JsonSerializable {
             log.warn("Validation conditions for property '" + property + "' are already defined and will be overwritten.");
             conditionMap.remove(property); // ensure insertion order is 'overwritten' as well
         }
-        put(conditionMap, property, constraintRefGroups);
+        conditionMap.put(property, constraintRefGroups);
     }
 
-    private void put(Map<String, ConstraintRefGroups> conditionMap, String property, ConstraintRefGroups conditionGroups) {
-        conditionMap.put(property, conditionGroups);
-    }
 
-    
     /**
      * Defines the constraint for the property content.
      * 
@@ -233,8 +212,13 @@ public class ValidationConditions<T> implements JsonSerializable {
      * @param constraint
      */
     public void content(String property, Constraint constraint) {
+        putContent(content, property, constraint);
+    }
+
+    private void putContent(Map<String, ContentGroup> content, String property, Constraint constraint) {
+        constraint.validateArgumentsOrFail(typeClass);
         EasyValidator.validateProperty(property, typeClass);
-        content.put(property, (ContentGroup) null);
+        //putAndWarn(conditionMap, property, ConstraintRefGroups.anded());
     }
 
     /**
@@ -310,7 +294,7 @@ public class ValidationConditions<T> implements JsonSerializable {
         }
         //content.put(property, contentGroups);
     }
-    
+
 
     private void validatePropertyAndValueTypes(ConstraintRef constraintRef) {
         if (constraintRef == null) {
