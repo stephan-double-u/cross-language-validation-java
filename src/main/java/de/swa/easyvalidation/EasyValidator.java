@@ -16,11 +16,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import de.swa.easyvalidation.constraints.Constraint;
 import de.swa.easyvalidation.constraints.ConstraintRef;
-import de.swa.easyvalidation.groups.AndGroup;
-import de.swa.easyvalidation.groups.ConstraintRefGroup;
-import de.swa.easyvalidation.groups.ConstraintRefGroups;
-import de.swa.easyvalidation.groups.OrGroup;
+import de.swa.easyvalidation.groups.*;
 import de.swa.easyvalidation.util.IndexedPropertyHelper;
 import de.swa.easyvalidation.util.IndexedPropertyHelper.IndexInfo;
 import de.swa.easyvalidation.groups.ConstraintRefGroups.Logical;
@@ -30,7 +28,7 @@ import org.slf4j.LoggerFactory;
 public class EasyValidator {
 
     private static Logger log = LoggerFactory.getLogger(EasyValidator.class);
-    
+
     private static String defaultMandatoryMessage = "error.validation.property.mandatory";
     private static String defaultImmutableMessage = "error.validation.property.immutable";
     private static String defaultContentMessage = "error.validation.property.content";
@@ -39,7 +37,7 @@ public class EasyValidator {
 
     /**
      * Validates that the property exists for that class.
-     * 
+     *
      * @param property
      * @param clazz
      * @return
@@ -104,24 +102,21 @@ public class EasyValidator {
             propertyToGetterReturnTypeCache.put(new PropertyDescriptor(propertyKey.substring(1), clazz),
                     getterReturnType);
         }
-    
+
         return propertyClass;
     }
 
-    
-    public static List<String> validateMandatoryConditions(Object object,
-                ValidationConditions<?> validationConditions) {
-        log.debug("Checking mandatory conditions for " + validationConditions.getTypeClass().getName());
+
+    public static List<String> validateMandatoryConditions(Object object, ValidationConditions<?> validationConditions) {
+        final Class<?> typeClass = validationConditions.getTypeClass();
+        log.debug("Checking mandatory conditions for " + typeClass.getName());
         // Implementation note: keySet has same order as the LinkedHashMap!
-        return validateMandatoryConditions(object, validationConditions.getMandatory().keySet(), validationConditions);
+        return validateMandatoryConditions(object, validationConditions.getMandatory().keySet(), validationConditions.getMandatory(), typeClass);
     }
 
-    private static List<String> validateMandatoryConditions(Object object, Set<String> properties,
-            ValidationConditions<?> validationConditions) {
-
-        Map<String, ConstraintRefGroups> mandatoryConditions = validationConditions.getMandatory();
-
-        validateArgumentsOrFail(object, properties, mandatoryConditions, validationConditions.getTypeClass());
+    private static List<String> validateMandatoryConditions(Object object, Set<String> properties, Map<String, ConstraintRefGroups> mandatoryConditions,
+                                                            Class<?> typeClass) {
+        validateArgumentsOrFail(object, properties, mandatoryConditions, typeClass);
 
         // TODO better returnType ...
         List<String> errors = new ArrayList<>();
@@ -142,21 +137,17 @@ public class EasyValidator {
         return errors;
     }
 
-    public static List<String> validateImmutableConditions(Object originalObject, Object modifiedObject,
-                ValidationConditions<?> validationConditions) {
-        log.debug("Checking immutable conditions for " + validationConditions.getTypeClass().getName());
-        return validateImmutableConditions(originalObject, modifiedObject, validationConditions.getImmutable().keySet(),
-                validationConditions);
+    public static List<String> validateImmutableConditions(Object originalObject, Object modifiedObject, ValidationConditions<?> validationConditions) {
+        final Class<?> typeClass = validationConditions.getTypeClass();
+        log.debug("Checking immutable conditions for " + typeClass.getName());
+        return validateImmutableConditions(originalObject, modifiedObject, validationConditions.getImmutable().keySet(), validationConditions.getImmutable(),
+                typeClass);
     }
 
-    public static List<String> validateImmutableConditions(Object originalObject, Object modifiedObject,
-            Set<String> properties, ValidationConditions<?> validationConditions) {
-
-        Map<String, ConstraintRefGroups> immutableConditions = validationConditions.getImmutable();
-        Class<?> validationTypeClass = validationConditions.getTypeClass();
-
-        validateArgumentsOrFail(originalObject, properties, immutableConditions, validationTypeClass);
-        validateArgumentsOrFail(modifiedObject, properties, immutableConditions, validationTypeClass);
+    private static List<String> validateImmutableConditions(Object originalObject, Object modifiedObject, Set<String> properties,
+                                                            Map<String, ConstraintRefGroups> immutableConditions, Class<?> typeClass) {
+        validateArgumentsOrFail(originalObject, properties, immutableConditions, typeClass);
+        validateArgumentsOrFail(modifiedObject, properties, immutableConditions, typeClass);
 
         // TODO better returnType ...
         List<String> errors = new ArrayList<>();
@@ -178,10 +169,44 @@ public class EasyValidator {
         return errors;
     }
 
+    public static List<String> validateContentConditions(Object object, ValidationConditions<?> validationConditions) {
+        final Class<?> typeClass = validationConditions.getTypeClass();
+        log.debug("Checking content conditions for " + typeClass.getName());
+        // Implementation note: keySet has same order as the LinkedHashMap!
+        return validateContentConditions(object, validationConditions.getContent().keySet(), validationConditions.getContent(), typeClass);
+    }
+
+    private static List<String> validateContentConditions(Object object, Set<String> properties, Map<String, ContentGroup> contentConditions,
+                                                          Class<?> typeClass) {
+        validateArgumentsOrFail(object, properties, contentConditions, typeClass);
+
+        // TODO better returnType ...
+        List<String> errors = new ArrayList<>();
+
+        for (String property : properties) {
+            ContentGroup contentGroup = contentConditions.get(property);
+            final Constraint contentConstraint = contentGroup.getContentConstraint();
+            ConstraintRefGroups groups = contentGroup.getConstraintRefGroups();
+            // Check if all conditions are met. If so, the property value must match contentConstraint.
+            log.debug(">>> Checking content conditions for property '" + property + "'");
+            if (groupsConditionsAreMet(groups, object)) {
+                if (!contraintIsMet(Constraint.ref(property, contentConstraint), object)) {
+                    log.debug("Content constraint for property '" + property + "' is NOT fulfilled");
+                    errors.add(defaultContentMessage + "." + property);
+                } else {
+                    log.debug("Content constraint for property '" + property + "' is fulfilled");
+                }
+            } else {
+                log.debug("Content constraint for Property '" + property + "' is NOT validated because some conditions are not met");
+            }
+        }
+        return errors;
+    }
+
     // Does some error checking
     private static void validateArgumentsOrFail(Object object, Set<String> properties,
-            Map<String, ConstraintRefGroups> mandatoryConditions, Class<?> typeClass) {
-        if (object == null || mandatoryConditions == null || mandatoryConditions.isEmpty()) {
+                                                Map<String, ?> conditions, Class<?> typeClass) {
+        if (object == null || properties == null || conditions == null || conditions.isEmpty()) {
             throw new IllegalArgumentException("Arguments must not be null resp. empty");
         }
         if (!object.getClass().equals(typeClass)) {
@@ -189,12 +214,12 @@ public class EasyValidator {
                     + " does not equal the type of the ValidationConditionsMap (" + typeClass + ")");
         }
         for (String property : properties) {
-            ConstraintRefGroups groups = mandatoryConditions.get(property);
-            if (groups == null) {
-                throw new IllegalArgumentException("No condition exist for property " + property);
+            if (conditions.get(property) == null) {
+                throw new IllegalArgumentException("No conditions exist for property " + property);
             }
         }
     }
+
 
     public static Object getPropertyResultObject(String property, Object object) {
         String[] propertyParts = property.split("\\.");
@@ -261,7 +286,7 @@ public class EasyValidator {
     // If groups are ANDed each group must be met, if they are ORed only one must be met.
     private static boolean groupsConditionsAreMet(ConstraintRefGroups groups, Object object) {
         if (groups.getConstraintRefGroups().length == 0) {
-            log.debug("Property is mandatory/immutable (no constraints)");
+            log.debug("No constraints defined -> true");
             return true;
         }
         Logical groupsOperator = groups.getLogicalOperator();
@@ -309,7 +334,7 @@ public class EasyValidator {
         }
         return contraintRef.getConstraint().validate(value, object);
     }
-    
+
     private static Method getGetterMethodOrFail(String propertyName, Class<?> clazz) {
         Map<String, Method> noArgGetters = getNoArgGetterMethodMap(clazz);
         Method getterMethod = noArgGetters.get(buildGetterName(propertyName));
@@ -350,31 +375,29 @@ public class EasyValidator {
         return "get" + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
     }
 
-    
-    public static void setDefaultMandatoryMessage(String message) {
-        defaultMandatoryMessage = message;
-    }
-
     public static String getDefaultMandatoryMessage() {
         return defaultMandatoryMessage;
     }
 
-    public static void setDefaultImmutableMessage(String message) {
-        defaultImmutableMessage = message;
+    public static void setDefaultMandatoryMessage(String message) {
+        defaultMandatoryMessage = message;
     }
 
     public static String getDefaultImmutableMessage() {
         return defaultImmutableMessage;
     }
 
-    public static void setDefaultContentMessage(String message) {
-        defaultContentMessage = message;
+    public static void setDefaultImmutableMessage(String message) {
+        defaultImmutableMessage = message;
     }
 
     public static String getDefaultContentMessage() {
         return defaultContentMessage;
     }
 
+    public static void setDefaultContentMessage(String message) {
+        defaultContentMessage = message;
+    }
 
     private static class PropertyDescriptor {
         private String propertyName;
@@ -424,7 +447,7 @@ public class EasyValidator {
         }
     }
 
-    
+
     static class GetterInfo {
         private Method method;
         private Class<?> returnType;

@@ -27,7 +27,7 @@ public class EasyValidationTesting {
         ValidationConditions<Reservation> conditions = new ValidationConditions<>(Reservation.class);
         conditions.mandatory("id");
         conditions.mandatory("someInt",
-                Constraint.ref("someString", RegExp.any("nomatch", "[a-zA-Z]+ing")),
+                Constraint.ref("someString", RegExp.any("nomatch", "[a-zA-Z]+cope")),
                 Constraint.ref("status", RegExp.any(".*E.*")),
                 Constraint.ref("startDate", Dates.past()),
                 Constraint.ref("startLocalDate", Dates.past(2)),
@@ -74,6 +74,7 @@ public class EasyValidationTesting {
         conditions.immutable("status");
         
         ConstraintRef a = Constraint.ref("someString", Size.minMax(1, 100));
+        conditions.content("stringList[0]", Equals.any("one", "two"));
         conditions.content("someString", Equals.anyRef("articleList[0].name"));
         conditions.content("id", Equals.any(101, 202, 303),
                 a, a, a, a);
@@ -94,7 +95,8 @@ public class EasyValidationTesting {
 
         Reservation reservation1 = new Reservation(101, ReservationStatus.NEW, new Customer("Donald Duck"),
                 Arrays.asList(new Article("Endoscope")));
-        
+
+
         List<String> err1 = EasyValidator.validateMandatoryConditions(reservation1, conditions);
         log.debug("Validation errors: " + err1);
 
@@ -105,6 +107,10 @@ public class EasyValidationTesting {
         log.debug("Validation errors: " + err2);
 
 
+        List<String> err3 = EasyValidator.validateContentConditions(reservation1, conditions);
+        log.debug("Validation errors: " + err3);
+
+
         long nanoTime = System.nanoTime();
         log.debug("serializeToJson: " + conditions.serializeToJson());
         log.debug("Micros:" + (System.nanoTime() - nanoTime)/1000);
@@ -113,9 +119,10 @@ public class EasyValidationTesting {
     public static class Reservation extends ReservationVO implements Identifiable<Integer> {
         private ReservationStatus status;
         private Customer customer;
+        private List<String> stringList;
         private List<Article> articleList;
         private Article[] articleArray;
-        private String someString = "someString";
+        private String someString = "Endoscope";
         private int someInt = 123;
         private BigInteger someBigInteger = new BigInteger("12345678901234567890123456789012345678901234567890");
         private Boolean someBoolean = true; //TODO supporting isSomeBoolean() getter ?!
@@ -126,6 +133,7 @@ public class EasyValidationTesting {
             super(id);
             this.status = status;
             this.customer = customer;
+            this.stringList = Arrays.asList("one", "two");
             this.articleList = articles;
             this.articleArray = articles.toArray(new Article[0]);
             this.startCalDate = Calendar.getInstance();
@@ -168,7 +176,10 @@ public class EasyValidationTesting {
         public Calendar getStartCalDate() {
             return startCalDate;
         }
-        
+
+        public List<String> getStringList() {
+            return stringList;
+        }
     }
     public static class ReservationVO {
         private Integer id;

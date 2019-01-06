@@ -287,7 +287,7 @@ public class ValidationConditions<T> implements JsonSerializable {
     private void putAndWarn(Map<String, ContentGroup> content, String property, Constraint constraint,
                             ConstraintRefGroups constraintRefGroups) {
         if (content.containsKey(property)) {
-            log.warn("Content validation conditions for property '" + property + "' are already defined and will be overwritten.");
+            log.warn("Validation conditions for property '" + property + "' are already defined and will be overwritten.");
             content.remove(property); // ensure insertion order is 'overwritten' as well
         }
         content.put(property, new ContentGroup(constraint, constraintRefGroups));
