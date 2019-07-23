@@ -22,15 +22,15 @@ public abstract class Equals extends Constraint {
      * Methods that create EqualsAny constraints
      */
     
-    public static EqualsAny any(String... values) {
+    public static EqualsAny any(final String... values) {
         return new EqualsAny(values);
     }
     
-    public static EqualsAny any(Enum<?>... values) {
+    public static EqualsAny any(final Enum<?>... values) {
         return new EqualsAny(values);
     }
     
-    public static EqualsAny any(Number... values) {
+    public static EqualsAny any(final Number... values) {
         return new EqualsAny(values);
     }
     
@@ -51,15 +51,15 @@ public abstract class Equals extends Constraint {
      * Methods that create EqualsNone constraints
      */
     
-    public static EqualsNone none(String... values) {
+    public static EqualsNone none(final String... values) {
         return new EqualsNone(values);
     }
     
-    public static EqualsNone none(Enum<?>... values) {
+    public static EqualsNone none(final Enum<?>... values) {
         return new EqualsNone(values);
     }
     
-    public static EqualsNone none(Number... values) {
+    public static EqualsNone none(final Number... values) {
         return new EqualsNone(values);
     }
     
@@ -71,11 +71,11 @@ public abstract class Equals extends Constraint {
      * Methods that create Equals*Ref constraints
      */
     
-    public static EqualsAnyRef anyRef(String... propertyNames) {
+    public static EqualsAnyRef anyRef(final String... propertyNames) {
         return new EqualsAnyRef(propertyNames);
     }
     
-    public static EqualsNoneRef noneRef(String... propertyNames) {
+    public static EqualsNoneRef noneRef(final String... propertyNames) {
         return new EqualsNoneRef(propertyNames);
     }
     

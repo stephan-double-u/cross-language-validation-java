@@ -15,10 +15,10 @@ import java.util.List;
  * Constraint to express expectations for dates.<br/>
  * In addition to {@link javax.validation.constraints.Future} and {@link javax.validation.constraints.Past} it is
  * possible to define how many days the date should be in the future resp. past.<br/>
- * And {@link java.time.LocalDate} is supported! (TBD)<br/>
+ * And {@link LocalDate} is supported! (TBD)<br/>
  * Implementation note: The class is named {@code Dates} (with {@code s}) to avoid name clash with
- * {@linkplain java.util.Date}.
- * 
+ * {@linkplain Date}.
+ *
  * @author stwa1de
  *
  */
@@ -28,12 +28,12 @@ public class Dates extends Constraint {
 
     private static final String type = "DATE";
 
-    private String messageDefault = "{validation.constraints.dates}";
+    private String messageDefault = "{validation.constraint.dates}";
 
     public static final String FUTURE_DATE_TOKEN = "FUTURE";
     public static final String PAST_DATE_TOKEN = "PAST";
 
-    private Dates (List<Object> values) {
+    private Dates (final List<Object> values) {
         setObjectValues(values);
     }
 
@@ -71,26 +71,26 @@ public class Dates extends Constraint {
     }
 
     @Override
-    public boolean isSupportedType(Class<?> clazz) {
-        return Date.class.isAssignableFrom(clazz) 
+    public boolean isSupportedType(final Class<?> clazz) {
+        return Date.class.isAssignableFrom(clazz)
                 || Calendar.class.isAssignableFrom(clazz)
                 || LocalDate.class.isAssignableFrom(clazz);
     }
 
     @Override
-    public boolean validate(Object object, Object contraintObject) {
+    public boolean validate(final Object object, final Object contraintObject) {
         if (object == null) {
             return true;
         }
-        String token = (String) getValues().get(0);
-        int daysOffset = (int) getValues().get(1);
-        long millisDaysOffset = daysOffset * 24 * 60 * 60 * 1000;
-        boolean match;
+        final String token = (String) getValues().get(0);
+        final int daysOffset = (int) getValues().get(1);
+        final long millisDaysOffset = daysOffset * 24 * 60 * 60 * 1000;
+        final boolean match;
         if (object instanceof Date) {
             match = validate((Date) object, token, millisDaysOffset);
         } else if (object instanceof Calendar) {
             match = validate((Calendar) object, token, millisDaysOffset);
-        } else if (object instanceof java.time.LocalDate) {
+        } else if (object instanceof LocalDate) {
             match = validate((LocalDate) object, token, daysOffset);
         } else {
             throw new IllegalArgumentException("Unsupported type: " + object.getClass());
@@ -99,10 +99,10 @@ public class Dates extends Constraint {
         return match;
     }
 
-    private boolean validate(Date date, String token, long millisDaysOffset) {
-        boolean match;
-        Date now = new Date();
-        long millisDiff = now.getTime() - date.getTime();
+    private boolean validate(final Date date, final String token, final long millisDaysOffset) {
+        final boolean match;
+        final Date now = new Date();
+        final long millisDiff = now.getTime() - date.getTime();
         if (FUTURE_DATE_TOKEN.equals(token)) {
             match = millisDiff + millisDaysOffset < 0;
         } else {
@@ -111,10 +111,10 @@ public class Dates extends Constraint {
         return match;
     }
 
-    private boolean validate(Calendar calendar, String token, long millisDaysOffset) {
-        boolean match;
-        Calendar calDate = calendar;
-        long millisDiff = Calendar.getInstance().getTime().getTime() - calDate.getTime().getTime();
+    private boolean validate(final Calendar calendar, final String token, final long millisDaysOffset) {
+        final boolean match;
+        final Calendar calDate = calendar;
+        final long millisDiff = Calendar.getInstance().getTime().getTime() - calDate.getTime().getTime();
         if (FUTURE_DATE_TOKEN.equals(token)) {
             match = millisDiff + millisDaysOffset < 0;
         } else {
@@ -123,9 +123,9 @@ public class Dates extends Constraint {
         return match;
     }
 
-    private boolean validate(LocalDate object, String token, int daysOffset) {
-        boolean match;
-        LocalDate localDate = object;
+    private boolean validate(final LocalDate object, final String token, final int daysOffset) {
+        final boolean match;
+        final LocalDate localDate = object;
         if (FUTURE_DATE_TOKEN.equals(token)) {
             match = LocalDate.now().plusDays(daysOffset).compareTo(localDate) < 0;
         } else {

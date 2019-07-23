@@ -11,23 +11,23 @@ public class EqualsAny extends Equals {
     private static Logger log = LoggerFactory.getLogger(EqualsAny.class);
 
     //TODO support CharSequence instead?
-    EqualsAny(String... values) {
+    EqualsAny(final String... values) {
         setStringValues(Arrays.asList(values));
     }
 
-    EqualsAny(Enum<?>... values) {
+    EqualsAny(final Enum<?>... values) {
         setEnumValues(Arrays.asList(values));
     }
 
-    EqualsAny(Number... values) {
+    EqualsAny(final Number... values) {
         setNumberValues(Arrays.asList(values));
     }
 
-    EqualsAny(Boolean value) {
+    EqualsAny(final Boolean value) {
         setObjectValues(Arrays.asList(value));
     }
 
-    EqualsAny(Object... values) {
+    EqualsAny(final Object... values) {
         setObjectValues(Arrays.asList(values));
     }
 
@@ -37,9 +37,9 @@ public class EqualsAny extends Equals {
     }
 
     @Override
-    public boolean validate(Object object, Object contraintObjectIgnored) {
+    public boolean validate(final Object object, final Object contraintObjectIgnored) {
         final boolean match = getValues().stream().anyMatch(value -> Objects.equals(value, object));
-        log.debug("'" + object + "' does" + (match ? "" : " NOT") + " equals any of " + getValues());
+        log.debug("'" + object + "' does" + (match ? "" : " NOT") + " equals one of " + getValues());
         return match;
     }
 }

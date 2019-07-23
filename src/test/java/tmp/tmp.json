@@ -1,0 +1,313 @@
+{
+  "reservation": {
+    "mandatory": {
+      "someInt": {
+        "groupsOperator": "AND",
+        "groups": [
+          {
+            "groupOperator": "AND",
+            "constraintRefs": [
+              {
+                "property": "someString",
+                "constraint": {
+                  "type": "REGEXP",
+                  "values": [
+                    "nomatch",
+                    "[a-zA-Z]+ing"
+                  ]
+                }
+              },
+              {
+                "property": "status",
+                "constraint": {
+                  "type": "REGEXP",
+                  "values": [
+                    ".*E.*"
+                  ]
+                }
+              },
+              {
+                "property": "startDate",
+                "constraint": {
+                  "type": "DATE",
+                  "subType": "PAST",
+                  "days": 0
+                }
+              },
+              {
+                "property": "startLocalDate",
+                "constraint": {
+                  "type": "DATE",
+                  "subType": "PAST",
+                  "days": 2
+                }
+              },
+              {
+                "property": "startCalDate",
+                "constraint": {
+                  "type": "DATE",
+                  "subType": "FUTURE",
+                  "days": 100
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "articleList[0].name": {
+        "groupsOperator": "AND",
+        "groups": [
+          {
+            "groupOperator": "AND",
+            "constraintRefs": [
+              {
+                "property": "articleArray[0].name",
+                "constraint": {
+                  "type": "EQUALS_ANY",
+                  "values": [
+                    "Endoscope"
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "status": {
+        "groupsOperator": "OR",
+        "groups": [
+          {
+            "groupOperator": "AND",
+            "constraintRefs": [
+              {
+                "property": "someInt",
+                "constraint": {
+                  "type": "LIMIT",
+                  "min": null,
+                  "max": 1234567890123456789
+                }
+              },
+              {
+                "property": "someBoolean",
+                "constraint": {
+                  "type": "EQUALS_ANY",
+                  "values": [
+                    true
+                  ]
+                }
+              },
+              {
+                "property": "someInt",
+                "constraint": {
+                  "type": "EQUALS_NONE",
+                  "values": [
+                    null
+                  ]
+                }
+              },
+              {
+                "property": "id",
+                "constraint": {
+                  "type": "EQUALS_NONE",
+                  "values": [
+                    -1,
+                    123456789,
+                    null
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "groupOperator": "AND",
+            "constraintRefs": [
+              {
+                "property": "id",
+                "constraint": {
+                  "type": "EQUALS_NONE",
+                  "values": [
+                    666,
+                    999
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "someBoolean": {
+        "groupsOperator": "AND",
+        "groups": [
+          {
+            "groupOperator": "OR",
+            "constraintRefs": [
+              {
+                "property": "someString",
+                "constraint": {
+                  "type": "SIZE",
+                  "min": 1,
+                  "max": 100
+                }
+              },
+              {
+                "property": "articleList",
+                "constraint": {
+                  "type": "SIZE",
+                  "min": 1,
+                  "max": null
+                }
+              },
+              {
+                "property": "articleArray",
+                "constraint": {
+                  "type": "SIZE",
+                  "min": null,
+                  "max": 100
+                }
+              }
+            ]
+          },
+          {
+            "groupOperator": "OR",
+            "constraintRefs": [
+              {
+                "property": "id",
+                "constraint": {
+                  "type": "EQUALS_NONE",
+                  "values": [
+                    404
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "customer.name": {
+        "groupsOperator": "AND",
+        "groups": [
+          {
+            "groupOperator": "AND",
+            "constraintRefs": [
+              {
+                "property": "customer.name",
+                "constraint": {
+                  "type": "LESS_THAN",
+                  "value": [
+                    "GreatestStringEver"
+                  ]
+                }
+              },
+              {
+                "property": "status",
+                "constraint": {
+                  "type": "EQUALS_ANY",
+                  "values": [
+                    "NEW",
+                    null
+                  ]
+                }
+              },
+              {
+                "property": "status",
+                "constraint": {
+                  "type": "EQUALS_NONE",
+                  "values": [
+                    null
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "id": {
+        "groupsOperator": "AND",
+        "groups": [
+          {
+            "groupOperator": "OR",
+            "constraintRefs": [
+              {
+                "property": "id",
+                "constraint": {
+                  "type": "EQUALS_NONE",
+                  "values": [
+                    1,
+                    2
+                  ]
+                }
+              },
+              {
+                "property": "id",
+                "constraint": {
+                  "type": "EQUALS_NONE",
+                  "values": [
+                    3,
+                    4
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "groupOperator": "AND",
+            "constraintRefs": [
+              {
+                "property": "id",
+                "constraint": {
+                  "type": "EQUALS_ANY",
+                  "values": [
+                    5,
+                    6
+                  ]
+                }
+              },
+              {
+                "property": "id",
+                "constraint": {
+                  "type": "EQUALS_ANY",
+                  "values": [
+                    7,
+                    8
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "immutable": {
+      "id": true,
+      "status": true
+    },
+    "content": {
+      "id": {
+        "constraint": {
+          "type": "EQUALS_ANY",
+          "values": [
+             7,
+             8
+          ]
+        },
+        "groupsOperator": "AND",
+        "groups": [
+          {
+            "groupOperator": "AND",
+            "constraintRefs": [
+              {
+                "property": "articleArray[0].name",
+                "constraint": {
+                  "type": "EQUALS_ANY",
+                  "values": [
+                    "Endoscope"
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

@@ -19,9 +19,9 @@ public class IndexedPropertyHelper {
     private static final String IDX_REG_EXP = "^\\*$|^\\d+\\/\\d$|^\\d+(-\\d+)?(,\\d+(-\\d+)?)*$";
     private static final Pattern PATTERN = Pattern.compile(IDX_REG_EXP);
 
-    private static Map<String, IndexInfo> propertyToIndexInfoCache = new HashMap<>();
+    private static final Map<String, IndexInfo> propertyToIndexInfoCache = new HashMap<>();
 
-    public static boolean isIndexedProperty(String property) {
+    public static boolean isIndexedProperty(final String property) {
         return property.contains("[");
     }
 
@@ -42,8 +42,8 @@ public class IndexedPropertyHelper {
      * {@code IndexType} is {@code INCREMENT}, list contains the start index and the increment.</li>
      * <li>[*] : convenience format for [0/1]
      * </ul>
-     * Range and list definitions can be combined in arbitrary sequence, e.g. [0,7-9,2,3,1-10].<br/>
-     * To sum it up: the content between the brackets must match: "^\*$|^\d+\/\d$|^\d+(-\d+)?(,\d+(-\d+)?)*$"<br/>
+     * Range and list definitions can be combined in arbitrary sequence, e.g. [0,7-9,1,2,3-6].<br/>
+     * To sum it up: the content_ between the brackets must match: "^\*$|^\d+\/\d$|^\d+(-\d+)?(,\d+(-\d+)?)*$"<br/>
      * You are right, spaces are not allowed.<br/>
      * Values are NOT sorted and duplicate values are NOT overwritten, i.e. [1-4,2] would result in this list of values:
      * [1,2,3,4,2].<br/>
@@ -51,7 +51,7 @@ public class IndexedPropertyHelper {
      * @param indexedProperty
      * @return
      */
-    public static IndexInfo getIndexInfo(String indexedProperty) {
+    public static IndexInfo getIndexInfo(final String indexedProperty) {
         if (!isIndexedProperty(indexedProperty)) {
             return null;
         }
@@ -61,16 +61,16 @@ public class IndexedPropertyHelper {
         return propertyToIndexInfoCache.get(indexedProperty);
     }
 
-    private static IndexInfo createIndexInfo(String indexedProperty) {
+    private static IndexInfo createIndexInfo(final String indexedProperty) {
         // Check for valid bracket positions
-        int startPos = indexedProperty.lastIndexOf('[');
-        int endPos = indexedProperty.indexOf(']');
+        final int startPos = indexedProperty.lastIndexOf('[');
+        final int endPos = indexedProperty.indexOf(']');
         if (endPos - startPos < 2) {
             throw new IllegalArgumentException("Not a valid indexed property: " + indexedProperty);
         }
-        // Check for valid content within brackets
-        String indexStr = indexedProperty.substring(startPos + 1, endPos);
-        Matcher matcher = PATTERN.matcher(indexStr);
+        // Check for valid content_ within brackets
+        final String indexStr = indexedProperty.substring(startPos + 1, endPos);
+        final Matcher matcher = PATTERN.matcher(indexStr);
         if (!matcher.matches()) {
             throw new IllegalArgumentException("Not a valid indexed property: " + indexedProperty);
         }
@@ -80,22 +80,22 @@ public class IndexedPropertyHelper {
         }
         // Handle 'increment' definition
         if (indexStr.contains("/")) {
-            String[] startIncr = indexStr.split("/");
-            int startIndex = Integer.valueOf(startIncr[0]);
-            int increment = Integer.valueOf(startIncr[1]);
+            final String[] startIncr = indexStr.split("/");
+            final int startIndex = Integer.valueOf(startIncr[0]);
+            final int increment = Integer.valueOf(startIncr[1]);
             if (startIndex < 0 || increment < 1) {
                 throw new IllegalArgumentException("Not a valid indexed property: " + indexedProperty);
             }
             return new IndexInfo(IndexType.INCREMENT, Arrays.asList(startIndex, increment));
         }
         // Handle 'enumeration' and 'interval' definitions
-        List<Integer> values = new ArrayList<>();
-        String[] indexParts = indexStr.split(",");
-        for (String indexPart : indexParts) {
+        final List<Integer> values = new ArrayList<>();
+        final String[] indexParts = indexStr.split(",");
+        for (final String indexPart : indexParts) {
             if (indexPart.contains("-")) {
-                String[] rangePart = indexPart.split("-");
-                int from = Integer.valueOf(rangePart[0]);
-                int to = Integer.valueOf(rangePart[1]);
+                final String[] rangePart = indexPart.split("-");
+                final int from = Integer.valueOf(rangePart[0]);
+                final int to = Integer.valueOf(rangePart[1]);
                 if (from < 0 || to < from) {
                     throw new IllegalArgumentException("Not a valid indexed property: " + indexedProperty);
                 }
@@ -103,7 +103,7 @@ public class IndexedPropertyHelper {
                     values.add(i);
                 }
             } else {
-                Integer index = Integer.valueOf(indexPart);
+                final Integer index = Integer.valueOf(indexPart);
                 if (index < 0) {
                     throw new IllegalArgumentException("Not a valid indexed property: " + indexedProperty);
                 }
@@ -119,10 +119,10 @@ public class IndexedPropertyHelper {
     }
 
     public static class IndexInfo {
-        private IndexType indexType;
-        private List<Integer> values;
+        private final IndexType indexType;
+        private final List<Integer> values;
 
-        public IndexInfo(IndexType indexType, List<Integer> values) {
+        public IndexInfo(final IndexType indexType, final List<Integer> values) {
             this.indexType = indexType;
             this.values = values;
         }
@@ -142,7 +142,7 @@ public class IndexedPropertyHelper {
     }
 
     // TODO -> JUnit test
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         log.debug("" + getIndexInfo("foo[*]"));
         log.debug("" + getIndexInfo("foo[0]"));
         log.debug("" + getIndexInfo("foo[1-1]"));

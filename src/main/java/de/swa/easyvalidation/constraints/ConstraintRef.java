@@ -9,12 +9,10 @@ import org.slf4j.LoggerFactory;
 
 public class ConstraintRef implements JsonSerializable {
 
-    private static Logger log = LoggerFactory.getLogger(ConstraintRef.class);
+    private final String property;
+    private final Constraint constraint;
 
-    private String property;
-    private Constraint constraint;
-
-    protected ConstraintRef(String property, Constraint constraint) {
+    protected ConstraintRef(final String property, final Constraint constraint) {
         this.property = property;
         this.constraint = constraint;
     }

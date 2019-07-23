@@ -1,24 +1,16 @@
 package de.swa.easyvalidation.constraints;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static de.swa.easyvalidation.json.JsonUtil.asKey;
-import static de.swa.easyvalidation.json.JsonUtil.asObject;
-import static de.swa.easyvalidation.json.JsonUtil.quoted;
+import de.swa.easyvalidation.json.JsonUtil;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 public class Size extends Constraint {
 
-    private static Logger log = LoggerFactory.getLogger(Size.class);
-
     private static final String type = "SIZE";
-    private String messageDefault = "{validation.constraints.size}";
+    private final String messageDefault = "{validation.constraint.size}";
 
     /**
      * The size of the element that should be validated against this constraint must be greater than the specified value
@@ -38,8 +30,8 @@ public class Size extends Constraint {
      * 
      * @author Stephan Wack
      */
-    public static Size min(int minSize) {
-        Size constraint = new Size();
+    public static Size min(final int minSize) {
+        final Size constraint = new Size();
         constraint.setNumberValues(Arrays.asList((Number) Integer.valueOf(minSize), null));
         return constraint;
     }
@@ -62,8 +54,8 @@ public class Size extends Constraint {
      * 
      * @author Stephan Wack
      */
-    public static Size max(int maxSize) {
-        Size constraint = new Size();
+    public static Size max(final int maxSize) {
+        final Size constraint = new Size();
         constraint.setNumberValues(Arrays.asList(null, (Number) Integer.valueOf(maxSize)));
         return constraint;
     }
@@ -88,14 +80,14 @@ public class Size extends Constraint {
      * 
      * @author Stephan Wack
      */
-    public static Size minMax(int minSize, int maxSize) {
-        Size constraint = new Size();
+    public static Size minMax(final int minSize, final int maxSize) {
+        final Size constraint = new Size();
         constraint.setNumberValues(Arrays.asList((Number) Integer.valueOf(minSize), (Number) Integer.valueOf(maxSize)));
         return constraint;
     }
 
     @Override
-    public boolean isSupportedType(Class<?> clazz) {
+    public boolean isSupportedType(final Class<?> clazz) {
         return CharSequence.class.isAssignableFrom(clazz) 
                 || Collection.class.isAssignableFrom(clazz)
                 || Map.class.isAssignableFrom(clazz) 
@@ -103,9 +95,9 @@ public class Size extends Constraint {
     }
 
     @Override
-    public boolean validateArgumentsOrFail(Class<?> ignore) {
-        Integer min = (Integer) getValues().get(0);
-        Integer max = (Integer) getValues().get(1);
+    public boolean validateArgumentsOrFail(final Class<?> ignore) {
+        final Integer min = (Integer) getValues().get(0);
+        final Integer max = (Integer) getValues().get(1);
         if (min != null && min < 0 || max != null && max < 0) {
             throw new IllegalArgumentException("Size min/max values must be >= 0");
         }
@@ -113,13 +105,13 @@ public class Size extends Constraint {
     }
     
     @Override
-    public boolean validate(Object object, Object contraintObject) {
+    public boolean validate(final Object object, final Object contraintObject) {
         if (object == null) {
             return true;
         }
-        Integer minValue = (Integer) getValues().get(0);
-        Integer maxValue = (Integer) getValues().get(1);
-        int objectLength;
+        final Integer minValue = (Integer) getValues().get(0);
+        final Integer maxValue = (Integer) getValues().get(1);
+        final int objectLength;
         if (object instanceof CharSequence) {
             objectLength = ((CharSequence) object).length();
         } else if (object instanceof Collection) {
@@ -136,9 +128,9 @@ public class Size extends Constraint {
 
     @Override
     public String serializeToJson() {
-        Integer minValue = (Integer) getValues().get(0);
-        Integer maxValue = (Integer) getValues().get(1);
-        return asObject(asKey("type") + quoted(type) + "," + asKey("min") + minValue + "," + asKey("max") + maxValue);
+        final Integer minValue = (Integer) getValues().get(0);
+        final Integer maxValue = (Integer) getValues().get(1);
+        return JsonUtil.asObject(JsonUtil.asKey("type") + JsonUtil.quoted(type) + "," + JsonUtil.asKey("min") + minValue + "," + JsonUtil.asKey("max") + maxValue);
     }
 
 }

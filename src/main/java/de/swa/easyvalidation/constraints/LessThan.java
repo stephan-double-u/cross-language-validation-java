@@ -15,17 +15,17 @@ public class LessThan extends Constraint {
 
     private Comparator<String> comparator = null;
 
-    public static LessThanString value(String value) {
-        LessThanString constraint = new LessThanString();
+    public static LessThanString value(final String value) {
+        final LessThanString constraint = new LessThanString();
         constraint.setStringValues(Arrays.asList(value));
         return constraint;
     }
 
     @Override
-    public boolean validate(Object object, Object contraintObject) {
-        String stringObject = (String) object;
-        for (Object value : getValues()) {
-            String stringValue = (String) value;
+    public boolean validate(final Object object, final Object contraintObject) {
+        final String stringObject = (String) object;
+        for (final Object value : getValues()) {
+            final String stringValue = (String) value;
             if (comparator == null && stringObject.compareTo(stringValue) < 0
                     || comparator != null && comparator.compare(stringObject, stringValue) < 0) {
                 log.debug("'" + object + "' is < than '" + value + "'");
@@ -42,12 +42,12 @@ public class LessThan extends Constraint {
         return asObject(asKey("type") + quoted(type) + "," + asKey("value") + asArray(getValues()));
     }
 
-    public void setComparator(Comparator<String> comparator) {
+    public void setComparator(final Comparator<String> comparator) {
         this.comparator = comparator;
     }
 
     @Override
-    public boolean isSupportedType(Class<?> clazz) {
+    public boolean isSupportedType(final Class<?> clazz) {
         // TODO Auto-generated method stub
         return String.class == clazz;
     }

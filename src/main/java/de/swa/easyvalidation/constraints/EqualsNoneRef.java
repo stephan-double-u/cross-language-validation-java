@@ -20,16 +20,16 @@ public class EqualsNoneRef extends Equals {
     }
 
     @Override
-    public boolean validateArgumentsOrFail(Class<?> typeClass) {
+    public boolean validateArgumentsOrFail(final Class<?> typeClass) {
         getValues().forEach(refPropertyName -> EasyValidator.validateProperty((String) refPropertyName, typeClass));
         return true;
     }
 
     @Override
-    public boolean validate(Object valueToValidate, Object contraintObject) {
-        for (Object property : getValues()) {
+    public boolean validate(final Object valueToValidate, final Object contraintObject) {
+        for (final Object property : getValues()) {
             //TODO allow only non-indexed properties resp. 'single index'!?
-            Object referencedValue = EasyValidator.getPropertyResultObject((String) property, contraintObject);
+            final Object referencedValue = EasyValidator.getPropertyResultObject((String) property, contraintObject);
             if (valueToValidate.equals(referencedValue)) {
                 log.debug("" + valueToValidate + " does NOT equals none referenced property " + property);
                 return false;

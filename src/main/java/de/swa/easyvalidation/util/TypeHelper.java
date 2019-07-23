@@ -9,7 +9,7 @@ public abstract class TypeHelper {
     public static final Map<Class<?>, Class<?>> PRIMITIVE_TO_WRAPPER_TYPES;
 
     static {
-        Map<Class<?>, Class<?>> tmpMap = new HashMap<>(9);
+        final Map<Class<?>, Class<?>> tmpMap = new HashMap<>(9);
         tmpMap.put( boolean.class, Boolean.class );
         tmpMap.put( char.class, Character.class );
         tmpMap.put( double.class, Double.class );

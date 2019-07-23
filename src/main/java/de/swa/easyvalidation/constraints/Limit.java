@@ -18,7 +18,7 @@ public class Limit extends Constraint {
     private static Logger log = LoggerFactory.getLogger(Limit.class);
 
     private static final String type = "LIMIT";
-    private String messageDefault = "{validation.constraints.limit}";
+    private String messageDefault = "{validation.constraint.limit}";
 
     /**
      * The value of the element that should be validated against this constraint must be not less than the specified
@@ -35,20 +35,20 @@ public class Limit extends Constraint {
      * 
      * @author Stephan Wack
      */
-    public static Limit min(long minValue) {
-        Limit constraint = new Limit();
+    public static Limit min(final long minValue) {
+        final Limit constraint = new Limit();
         constraint.setNumberValues(Arrays.asList((Number) Long.valueOf(minValue), null));
         return constraint;
     }
 
-    public static Limit max(long maxValue) {
-        Limit constraint = new Limit();
+    public static Limit max(final long maxValue) {
+        final Limit constraint = new Limit();
         constraint.setNumberValues(Arrays.asList(null, (Number) Long.valueOf(maxValue)));
         return constraint;
     }
 
-    public static Limit minMax(long minValue, long maxValue) {
-        Limit constraint = new Limit();
+    public static Limit minMax(final long minValue, final long maxValue) {
+        final Limit constraint = new Limit();
         constraint.setNumberValues(Arrays.asList((Number) Long.valueOf(minValue), (Number) Long.valueOf(maxValue)));
         return constraint;
     }
@@ -62,15 +62,15 @@ public class Limit extends Constraint {
     }
 
     @Override
-    public boolean validate(Object object, Object contraintObject) {
+    public boolean validate(final Object object, final Object contraintObject) {
         if (object == null) {
             return true;
         }
-        Long minValue = (Long) getValues().get(0);
-        Long maxValue = (Long) getValues().get(1);
+        final Long minValue = (Long) getValues().get(0);
+        final Long maxValue = (Long) getValues().get(1);
         // TODO Number is not o.k. ...
         if (object instanceof Number) {
-            Long longValue = ((Number) object).longValue();
+            final Long longValue = ((Number) object).longValue();
             return (minValue == null || minValue.compareTo(longValue) <= 0) 
                     && (maxValue == null || maxValue.compareTo(longValue) >= 0);
         } else {
@@ -79,9 +79,10 @@ public class Limit extends Constraint {
     }
 
     // not used (yet) ...
-    private static LongComparator<Long> numberComparator = new LongComparator<>();
+    private static final LongComparator<Long> numberComparator = new LongComparator<>();
     static class LongComparator<T extends Number & Comparable<T>> implements Comparator<T> {
-        public int compare(T a, T b) throws ClassCastException {
+        @Override
+        public int compare(final T a, final T b) throws ClassCastException {
             return a.compareTo(b);
         }
     }    

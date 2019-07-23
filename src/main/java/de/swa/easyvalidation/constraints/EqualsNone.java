@@ -15,19 +15,19 @@ public class EqualsNone extends Equals {
         setStringValues(Arrays.asList(values));
     }
     
-    EqualsNone(Enum<?>... values) {
+    EqualsNone(final Enum<?>... values) {
         setEnumValues(Arrays.asList(values));
     }
     
-    EqualsNone(Number... values) {
+    EqualsNone(final Number... values) {
         setNumberValues(Arrays.asList(values));
     }
 
-    EqualsNone(Boolean value) {
+    EqualsNone(final Boolean value) {
         setObjectValues(Arrays.asList(value));
     }
 
-    EqualsNone(Object... values) {
+    EqualsNone(final Object... values) {
         setObjectValues(Arrays.asList(values));
     }
 
@@ -37,9 +37,9 @@ public class EqualsNone extends Equals {
     }
 
     @Override
-    public boolean validate(Object object, Object contraintObjectIgnored) {
+    public boolean validate(final Object object, final Object contraintObjectIgnored) {
         final boolean match = getValues().stream().anyMatch(value -> Objects.equals(value, object));
-        log.debug("'" + object + "' does" + (match ? " NOT" : "") + " equals none of " + getValues());
+        log.debug("'" + object + "' does" + (match ? "" : " NOT") + " equals one of " + getValues() + " but should not");
         return !match;
     }
 

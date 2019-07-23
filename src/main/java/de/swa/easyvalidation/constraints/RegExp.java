@@ -1,20 +1,19 @@
 package de.swa.easyvalidation.constraints;
 
+import de.swa.easyvalidation.json.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static de.swa.easyvalidation.json.JsonUtil.*;
 
 import java.util.Arrays;
 import java.util.regex.Matcher;
 
 public class RegExp extends Constraint {
 
-    private static Logger log = LoggerFactory.getLogger(RegExp.class);
+    private static Logger log = LoggerFactory.getLogger(Dates.class);
 
     private static final String type = "REGEXP";
     
-    private String messageDefault = "{validation.constraints.regexp}";
+    private final String messageDefault = "{validation.constraint.regexp}";
 
     /**
      * The element that should be validated must match one of the given regular expressions.
@@ -30,20 +29,20 @@ public class RegExp extends Constraint {
      * 
      * @author Stephan Wack
      */
-    public static RegExp any(String... regexp) {
-        RegExp constraint = new RegExp();
+    public static RegExp any(final String... regexp) {
+        final RegExp constraint = new RegExp();
         constraint.setStringValues(Arrays.asList(regexp));
         return constraint;
     }
 
     @Override
-    public boolean isSupportedType(Class<?> clazz) {
+    public boolean isSupportedType(final Class<?> clazz) {
         return CharSequence.class.isAssignableFrom(clazz)
                 || Enum.class.isAssignableFrom(clazz);
     }
 
     @Override
-    public boolean validateArgumentsOrFail(Class<?> ignore) {
+    public boolean validateArgumentsOrFail(final Class<?> ignore) {
         if (getValues().contains(null)) {
             throw new IllegalArgumentException("RegExp regexp must not be null");
         }
@@ -51,17 +50,17 @@ public class RegExp extends Constraint {
     }
     
     @Override
-    public boolean validate(Object object, Object contraintObjectIgnored) {
+    public boolean validate(final Object object, final Object contraintObjectIgnored) {
         if (object == null) {
             return true;
         }
         //TODO use cached matcher ...
         // One regexp must match
-        for (Object value : getValues()) {
-            String regexp = (String) value;
-            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regexp);
-            Matcher matcher = pattern.matcher(object.toString());
-            boolean match = matcher.matches();
+        for (final Object value : getValues()) {
+            final String regexp = (String) value;
+            final java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regexp);
+            final Matcher matcher = pattern.matcher(object.toString());
+            final boolean match = matcher.matches();
             log.debug("'" + object.toString() + (match ? "' does" : "' does NOT") +" match regexp '" + regexp + "'");
             if (match) {
                 return true;
@@ -72,7 +71,7 @@ public class RegExp extends Constraint {
 
     @Override
     public String serializeToJson() {
-        return asObject(asKey("type") + quoted(type) + "," + asKey("values") + asArray(getValues()));
+        return JsonUtil.asObject(JsonUtil.asKey("type") + JsonUtil.quoted(type) + "," + JsonUtil.asKey("values") + JsonUtil.asArray(getValues()));
     }
 
 }
