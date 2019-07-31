@@ -12,7 +12,7 @@ public class EqualsNoneRefTest {
     @Test
     public void validate() {
         EqualsNoneRef constraint = Equals.noneRef("bar.zoo");
-        assertEquals("{\"type\":\"EQUALS_NONE_REF\",\"values\":[\"bar.zoo\"]}", constraint.serializeToJson());
+        assertEquals("\"type\":\"EQUALS_NONE_REF\",\"values\":[\"bar.zoo\"]", constraint.serializeToJson());
 
         Foo foo = new Foo(new Bar("baz"));
         // Validating caches the getZoo() method!

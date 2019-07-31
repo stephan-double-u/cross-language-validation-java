@@ -27,7 +27,7 @@ public class ConstraintRef implements JsonSerializable {
 
     @Override
     public String serializeToJson() {
-        return asObject(asKey("property") + quoted(property) + "," + asKey("constraint") + constraint.serializeToJson());
+        return asObject(asKey("property") + quoted(property) + "," + constraint.serializeToJson());
     }
 
 

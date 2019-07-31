@@ -18,7 +18,7 @@ public class RegExpTest {
 
     @Test
     public void serializeToJson() {
-        assertEquals("{\"type\":\"REGEXP\",\"values\":[\"[a-c]+.\"]}", regExp.serializeToJson());
+        assertEquals("\"type\":\"REGEXP\",\"values\":[\"[a-c]+.\"]", regExp.serializeToJson());
 
     }
 }

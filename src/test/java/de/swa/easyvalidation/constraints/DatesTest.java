@@ -16,7 +16,7 @@ public class DatesTest {
     @Test
     public void tests() {
         Dates future = Dates.future(1);
-        assertEquals("{\"type\":\"DATE\",\"subType\":\"FUTURE\",\"days\":1}", future.serializeToJson());
+        assertEquals("\"type\":\"DATE_FUTURE\",\"days\":1", future.serializeToJson());
 
         assertTrue(future.validate(null, null));
 

@@ -63,6 +63,6 @@ public class SizeTest {
 
     @Test
     public void serializeToJson() {
-        assertEquals("{\"type\":\"SIZE\",\"min\":1,\"max\":3}", size_1_3.serializeToJson());
+        assertEquals("\"type\":\"SIZE\",\"min\":1,\"max\":3", size_1_3.serializeToJson());
     }
 }

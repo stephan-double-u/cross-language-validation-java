@@ -91,7 +91,7 @@ public class Limit extends Constraint {
     public String serializeToJson() {
         Long minValue = (Long) getValues().get(0);
         Long maxValue = (Long) getValues().get(1);
-        return asObject(asKey("type") + quoted(type) + "," + asKey("min") + minValue + "," + asKey("max") + maxValue);
+        return asKey("type") + quoted(type) + "," + asKey("min") + minValue + "," + asKey("max") + maxValue;
     }
 
 }

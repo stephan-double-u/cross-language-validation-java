@@ -11,7 +11,7 @@ public class LimitTest {
     @Test
     public void tests() {
         Limit limit = Limit.minMax(123, 1234567890);
-        assertEquals("{\"type\":\"LIMIT\",\"min\":123,\"max\":1234567890}", limit.serializeToJson());
+        assertEquals("\"type\":\"LIMIT\",\"min\":123,\"max\":1234567890", limit.serializeToJson());
 
         assertTrue(limit.validate(12345, null));
         assertFalse(limit.validate(0, null));

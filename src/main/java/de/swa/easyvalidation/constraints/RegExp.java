@@ -71,7 +71,7 @@ public class RegExp extends Constraint {
 
     @Override
     public String serializeToJson() {
-        return JsonUtil.asObject(JsonUtil.asKey("type") + JsonUtil.quoted(type) + "," + JsonUtil.asKey("values") + JsonUtil.asArray(getValues()));
+        return JsonUtil.asKey("type") + JsonUtil.quoted(type) + "," + JsonUtil.asKey("values") + JsonUtil.asArray(getValues());
     }
 
 }

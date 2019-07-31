@@ -94,7 +94,7 @@ public abstract class Equals extends Constraint {
     @Override
     public String serializeToJson() {
         String type = getType();
-        return asObject(asKey("type") + quoted(type) + "," + asKey("values") + asArray(getValues()));
+        return asKey("type") + quoted(type) + "," + asKey("values") + asArray(getValues());
     }
 
 }

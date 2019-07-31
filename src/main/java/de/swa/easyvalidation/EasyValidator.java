@@ -7,6 +7,7 @@ import de.swa.easyvalidation.groups.AndGroup;
 import de.swa.easyvalidation.groups.ConstraintRefGroup;
 import de.swa.easyvalidation.groups.ConstraintRefTopGroup;
 import de.swa.easyvalidation.groups.ContentContraintGroup;
+import de.swa.easyvalidation.groups.LogicalOperator;
 import de.swa.easyvalidation.groups.OrGroup;
 import de.swa.easyvalidation.util.IndexedPropertyHelper;
 import de.swa.easyvalidation.util.IndexedPropertyHelper.IndexInfo;
@@ -451,19 +452,19 @@ public class EasyValidator {
             log.debug("No constraints defined -> groupsConditionsAreMet = true");
             return true;
         }
-        final ConstraintRefTopGroup.Logical groupsOperator = groups.getLogicalOperator();
+        final LogicalOperator groupsOperator = groups.getLogicalOperator();
         for (final ConstraintRefGroup group : groups.getConstraintRefGroups()) {
             if (groupIsMet(group, object)) {
-                if (groupsOperator == ConstraintRefTopGroup.Logical.OR) {
+                if (groupsOperator == LogicalOperator.OR) {
                     return true;
                 }
             } else {
-                if (groupsOperator == ConstraintRefTopGroup.Logical.AND) {
+                if (groupsOperator == LogicalOperator.AND) {
                     return false;
                 }
             }
         }
-        return (groupsOperator == ConstraintRefTopGroup.Logical.AND) ? true : false;
+        return (groupsOperator == LogicalOperator.AND) ? true : false;
     }
 
     // All conditions of an AndGroup must be true, but only one of an OrGroup!

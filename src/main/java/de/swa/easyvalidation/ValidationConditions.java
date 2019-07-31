@@ -2,7 +2,6 @@ package de.swa.easyvalidation;
 
 import de.swa.easyvalidation.constraints.Constraint;
 import de.swa.easyvalidation.constraints.ConstraintRef;
-import de.swa.easyvalidation.constraints.Dates;
 import de.swa.easyvalidation.constraints.Permissions;
 import de.swa.easyvalidation.groups.AndGroup;
 import de.swa.easyvalidation.groups.ConstraintRefGroup;
@@ -10,7 +9,6 @@ import de.swa.easyvalidation.groups.ConstraintRefTopGroup;
 import de.swa.easyvalidation.groups.ContentContraintGroup;
 import de.swa.easyvalidation.groups.OrGroup;
 import de.swa.easyvalidation.json.JsonSerializable;
-import de.swa.easyvalidation.json.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +19,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static javax.swing.plaf.basic.BasicHTML.propertyKey;
+import static de.swa.easyvalidation.json.JsonUtil.asKey;
+import static de.swa.easyvalidation.json.JsonUtil.asObject;
+import static de.swa.easyvalidation.json.JsonUtil.quoted;
 
 /**
  * A class to combine property validation conditions for (possibly nested) properties of type {@code T},
@@ -33,6 +33,7 @@ import static javax.swing.plaf.basic.BasicHTML.propertyKey;
 public class ValidationConditions<T> implements JsonSerializable {
 
     public static final Permissions NO_PERMISSIONS_NULL_KEY = Permissions.any(new String[]{});
+    public static final ConstraintRefTopGroup NO_CONSTRAINT_REF_TOP_GROUP_VALUE = ConstraintRefTopGroup.anded();
 
     private static final Logger log = LoggerFactory.getLogger(ValidationConditions.class);
     private final Class<T> typeClass;
@@ -54,7 +55,7 @@ public class ValidationConditions<T> implements JsonSerializable {
     }
 
     public Map<Permissions, ConstraintRefTopGroup> getMandatoryPermissionsMap(final String property) {
-        return mandatoryPropertyMap.getOrInitPermissionsMap(property);
+        return mandatoryPropertyMap.getPermissionsMap(property);
     }
 
     public Set<String> getImmutablePropertyKeys() {
@@ -62,7 +63,7 @@ public class ValidationConditions<T> implements JsonSerializable {
     }
 
     public Map<Permissions, ConstraintRefTopGroup> getImmutablePermissionsMap(final String property) {
-        return immutablePropertyMap.getOrInitPermissionsMap(property);
+        return immutablePropertyMap.getPermissionsMap(property);
     }
 
     public Set<String> getContentPropertyKeys() {
@@ -94,7 +95,7 @@ public class ValidationConditions<T> implements JsonSerializable {
      * @param permissions the permissions
      */
     public void mandatory(final String property, final Permissions permissions) {
-        mandatory(property, permissions, ConstraintRefTopGroup.anded());
+        mandatory(property, permissions, NO_CONSTRAINT_REF_TOP_GROUP_VALUE);
     }
 
     /**
@@ -209,7 +210,7 @@ public class ValidationConditions<T> implements JsonSerializable {
     }
 
     public void immutable(final String property, final Permissions permissions) {
-        immutable(property, permissions, ConstraintRefTopGroup.anded());
+        immutable(property, permissions, NO_CONSTRAINT_REF_TOP_GROUP_VALUE);
     }
 
     public void immutable(final String property, final ConstraintRef... constraintRefs) {
@@ -253,7 +254,7 @@ public class ValidationConditions<T> implements JsonSerializable {
         validatePermissionsOrFail(permissionsMap.keySet(), permissionsNonNull, property);
         validatePropertyAndContraints(property, topGroup);
 
-        permissionsMap.put(permissions, topGroup);
+        permissionsMap.put(permissionsNonNull, topGroup);
     }
 
     private void validatePermissionsOrFail(Set<Permissions> permissionsMap, Permissions permissions, String property) {
@@ -488,11 +489,11 @@ public class ValidationConditions<T> implements JsonSerializable {
 
     @Override
     public String serializeToJson() {
-        String json = "{" + JsonUtil.asKey(typeJsonKey) + "{";
-        json += JsonUtil.asKey("mandatory") + JsonUtil.asObject(serializeConditions(mandatoryPropertyMap)) + ",";
-        json += JsonUtil.asKey("immutable") + JsonUtil.asObject(serializeConditions(immutablePropertyMap)) + ",";
-        //json += JsonUtil.asKey("content") + JsonUtil.asObject(serializeCondition(content));
-        json += "}}";
+        String json = asKey(typeJsonKey) + "{";
+        json += asKey("mandatoryConditions") + asObject(mandatoryPropertyMap.serializeToJson()) + ",";
+        json += asKey("immutableConditions") + asObject(immutablePropertyMap.serializeToJson()) + ",";
+        json += asKey("contentConditions") + asObject(serializeCondition(contentPropertyMap));
+        json += "}";
         return json;
     }
 
@@ -500,41 +501,42 @@ public class ValidationConditions<T> implements JsonSerializable {
         String json = "";
         boolean firstProp = true;
         for (final String propertyKey : propertyMap.getKeys()) {
-            final Map<Permissions, ConstraintRefTopGroup> permissionsMap = propertyMap.getOrInitPermissionsMap(propertyKey);
+            json += (firstProp ? "" : ",") + asKey(propertyKey);
+            json += "[";
             // TODO permissions ...
+            boolean firstPerm = true;
+            final Map<Permissions, ConstraintRefTopGroup> permissionsMap = propertyMap.getOrInitPermissionsMap(propertyKey);
             for (final Permissions permissions : permissionsMap.keySet()) {
-                final ConstraintRefTopGroup constraintRefTopGroup = permissionsMap.get(permissions);
-                final String logicalOperator = constraintRefTopGroup.getLogicalOperator().name();
-                json += (firstProp ? "" : ",") + JsonUtil.asKey(propertyKey);
-                if (constraintRefTopGroup.getConstraintRefGroups().length == 0) {
-                    json += "true";
-                } else {
-                    json += "{" + JsonUtil.asKey("groupsOperator") + JsonUtil.quoted(logicalOperator) + "," + JsonUtil.asKey("permissionsMap") + "[";
-                    boolean firstGroup = true;
-                    for (final ConstraintRefGroup group : constraintRefTopGroup.getConstraintRefGroups()) {
-                        json += (firstGroup ? "" : ",") + group.serializeToJson();
-                        firstGroup = false;
-                        group.serializeToJson();
-                    }
-                    json += "]}";
+                json += (firstPerm ? "{" : ",{") + asKey("permissions") + permissions.serializeToJson();
+                final ConstraintRefTopGroup topGroup = permissionsMap.get(permissions);
+                final String logicalOperator = topGroup.getLogicalOperator().name();
+                json += "{" + asKey("operator") + quoted(logicalOperator) + "," + asKey("groups") + "[";
+                boolean firstGroup = true;
+                for (final ConstraintRefGroup group : topGroup.getConstraintRefGroups()) {
+                    json += (firstGroup ? "" : ",") + group.serializeToJson();
+                    firstGroup = false;
+                    group.serializeToJson();
                 }
-                firstProp = false;
+                json += "]}}";
+                firstPerm = false;
             }
+            json += "]";
+            firstProp = false;
         }
         return json;
     }
 
-    private String serializeConditions(final Map<String, ConstraintRefTopGroup> conditionGroupsMap) {
+    private String serializeConditions_(final Map<String, ConstraintRefTopGroup> conditionGroupsMap) {
         String json = "";
         boolean firstProp = true;
         for (final String propertyKey : conditionGroupsMap.keySet()) {
             final ConstraintRefTopGroup topGroup = conditionGroupsMap.get(propertyKey);
             final String logicalOperator = topGroup.getLogicalOperator().name();
-            json += (firstProp ? "" : ",") + JsonUtil.asKey(propertyKey);
+            json += (firstProp ? "" : ",") + asKey(propertyKey);
             if (topGroup.getConstraintRefGroups().length == 0) {
                 json += "true";
             } else {
-                json += "{" + JsonUtil.asKey("groupsOperator") + JsonUtil.quoted(logicalOperator) + "," + JsonUtil.asKey("topGroup") + "[";
+                json += "{" + asKey("groupsOperator") + quoted(logicalOperator) + "," + asKey("topgroup") + "[";
                 boolean firstGroup = true;
                 for (final ConstraintRefGroup group : topGroup.getConstraintRefGroups()) {
                     json += (firstGroup ? "" : ",") + group.serializeToJson();
@@ -548,57 +550,18 @@ public class ValidationConditions<T> implements JsonSerializable {
         return json;
     }
 
-    private String serializeCondition(final Map<String, ContentContraintGroup> content) {
+    private String serializeCondition(ContentPropertyMap contentPropertyMap) {
         final String json = "";
         final boolean firstProp = true;
-        for (final String propertyKey : content.keySet()) {
-            final ContentContraintGroup contentContraintGroup = content.get(propertyKey);
-            final Constraint contentConstraint = contentContraintGroup.getContentConstraint();
-            final ConstraintRefTopGroup groups = contentContraintGroup.getConstraintRefTopGroup();
-            final String logicalOperator = groups.getLogicalOperator().name();
+        for (final String propertyKey : contentPropertyMap.getKeys()) {
+//            final ContentContraintGroup contentContraintGroup = contentPropertyMap.getPermissionsMap(propertyKey);
+//            final Constraint contentConstraint = contentContraintGroup.getContentConstraint();
+//            final ConstraintRefTopGroup groups = contentContraintGroup.getConstraintRefTopGroup();
+//            final String logicalOperator = groups.getLogicalOperator().name();
             // ...
 
         }
-        return "TODO";
-    }
-}
-
-class PropertyMap {
-    // <property> -> {<permissions> -> ConstraintRefTopGroup}
-    // Linked HashMap to preserve insertion order and thereby define validation order, e.g. to do cheap validations first!
-    // -> no need for javax.validation.GroupSequence!
-    private final Map<String, Map<Permissions, ConstraintRefTopGroup>> map = new LinkedHashMap<>();
-
-    public Set<String> getKeys() {
-        return map.keySet();
-    }
-
-    public Map<Permissions, ConstraintRefTopGroup> getOrInitPermissionsMap(final String property) {
-        if (map.get(property) == null) {
-            map.put(property, new LinkedHashMap<>());
-        }
-        return map.get(property);
-    }
-}
-
-class ContentPropertyMap {
-    // <property> -> {<permissions> -> ContentContraintGroup}
-    private final Map<String, Map<Permissions, ContentContraintGroup>> map = new LinkedHashMap<>();
-
-    public Set<String> getKeys() {
-        return map.keySet();
-    }
-
-    public Collection<Map<Permissions, ContentContraintGroup>> getValues() {
-        return map.values();
-    }
-
-    public Map<Permissions, ContentContraintGroup> getPermissionsMap(final Object property) {
-        return map.get(property);
-    }
-
-    public Map<Permissions, ContentContraintGroup> putPermissionsMap(final String property, final Map<Permissions, ContentContraintGroup> permissionsMap) {
-        return map.put(property, permissionsMap);
+        return "";
     }
 }
 

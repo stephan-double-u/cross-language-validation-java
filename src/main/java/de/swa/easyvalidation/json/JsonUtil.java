@@ -1,6 +1,10 @@
 package de.swa.easyvalidation.json;
 
+import de.swa.easyvalidation.ValidationConditions;
+
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class JsonUtil {
 
@@ -43,4 +47,7 @@ public abstract class JsonUtil {
         return asArray(json);
     }
 
+    public static String toJson(final ValidationConditions<?> ... conditions) {
+        return JsonUtil.asArray(Arrays.asList(conditions).stream().map(c -> c.serializeToJson()).collect(Collectors.joining(",")));
+    }
 }

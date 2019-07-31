@@ -12,7 +12,7 @@ public class EqualsAnyRefTest {
     @Test
     public void tests() {
         EqualsAnyRef constraint = Equals.anyRef("bar.zoo");
-        assertEquals("{\"type\":\"EQUALS_ANY_REF\",\"values\":[\"bar.zoo\"]}", constraint.serializeToJson());
+        assertEquals("\"type\":\"EQUALS_ANY_REF\",\"values\":[\"bar.zoo\"]", constraint.serializeToJson());
 
         Foo foo = new Foo(new Bar("baz"));
         // Validating caches the getZoo() method!

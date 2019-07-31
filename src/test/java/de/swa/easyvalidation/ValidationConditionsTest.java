@@ -12,18 +12,24 @@ import org.junit.rules.ExpectedException;
 import static org.junit.Assert.*;
 
 public class ValidationConditionsTest {
+    final static ValidationConditions<ObjectUnderTest> conditions = new ValidationConditions<>(ObjectUnderTest.class);
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
     @Test
     public void mandatoryPropertyNotUnique() {
-        final ValidationConditions<ObjectUnderTest> conditions = new ValidationConditions<>(ObjectUnderTest.class);
         conditions.mandatory("prop1");
 
         expectedEx.expect(IllegalArgumentException.class);
         expectedEx.expectMessage(StringContains.containsString("Validation conditions for property 'prop1'"));
 
         conditions.mandatory("prop1", Constraint.ref("prop1", Size.minMax(1, 100)));
+    }
+
+    @Test
+    public void serializeToJson() {
+        assertEquals("'objectundertest':{'mandatoryConditions':{},'immutableConditions':{},'contentConditions':{}}",
+                conditions.serializeToJson().replace("\"", "'"));
     }
 
     @Test

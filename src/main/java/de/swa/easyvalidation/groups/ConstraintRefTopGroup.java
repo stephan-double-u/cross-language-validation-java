@@ -1,28 +1,33 @@
 package de.swa.easyvalidation.groups;
 
-public class ConstraintRefTopGroup {
+import de.swa.easyvalidation.json.JsonSerializable;
+import de.swa.easyvalidation.json.JsonUtil;
 
-    public static enum Logical {
-        AND, OR
-    };
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
-    private final Logical logicalOperator;
+import static de.swa.easyvalidation.json.JsonUtil.*;
+
+public class ConstraintRefTopGroup implements JsonSerializable {
+
+    private final LogicalOperator logicalOperator;
+
     private final ConstraintRefGroup[] constraintRefGroups;
 
-    private ConstraintRefTopGroup(final Logical logicalOperator, final ConstraintRefGroup... constraintRefGroups) {
+    private ConstraintRefTopGroup(final LogicalOperator logicalOperator, final ConstraintRefGroup... constraintRefGroups) {
         this.logicalOperator = logicalOperator;
         this.constraintRefGroups = constraintRefGroups;
     }
 
     public static ConstraintRefTopGroup anded(final ConstraintRefGroup... constraintRefGroups) {
-        return new ConstraintRefTopGroup(Logical.AND, constraintRefGroups);
+        return new ConstraintRefTopGroup(LogicalOperator.AND, constraintRefGroups);
     }
 
     public static ConstraintRefTopGroup ored(final ConstraintRefGroup... constraintRefGroups) {
-        return new ConstraintRefTopGroup(Logical.OR, constraintRefGroups);
+        return new ConstraintRefTopGroup(LogicalOperator.OR, constraintRefGroups);
     }
 
-    public Logical getLogicalOperator() {
+    public LogicalOperator getLogicalOperator() {
         return logicalOperator;
     }
 
@@ -30,4 +35,14 @@ public class ConstraintRefTopGroup {
         return constraintRefGroups;
     }
 
+    @Override
+    public String serializeToJson() {
+        if (constraintRefGroups.length == 0) {
+            return "";
+        }
+        final String groupsAsJson = Arrays.stream(constraintRefGroups).map(g -> g.serializeToJson()).collect(Collectors.joining(","));
+        return asKey("contraintsTopGroup") + asObject(logicalOperator.serializeToJson() + "," + asKey("constraintsSubGroups") + asArray(groupsAsJson));
+    }
+
 }
+

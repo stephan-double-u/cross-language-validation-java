@@ -138,7 +138,7 @@ public class Dates extends Constraint {
     public String serializeToJson() {
         String token = (String) getValues().get(0);
         int daysOffset = (int) getValues().get(1);
-        return asObject(asKey("type") + quoted(type) + "," + asKey("subType") + quoted(token) + "," + asKey("days") + daysOffset);
+        return asKey("type") + quoted(type + "_" + token) + "," + asKey("days") + daysOffset;
     }
 
 }

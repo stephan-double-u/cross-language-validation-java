@@ -130,7 +130,7 @@ public class Size extends Constraint {
     public String serializeToJson() {
         final Integer minValue = (Integer) getValues().get(0);
         final Integer maxValue = (Integer) getValues().get(1);
-        return JsonUtil.asObject(JsonUtil.asKey("type") + JsonUtil.quoted(type) + "," + JsonUtil.asKey("min") + minValue + "," + JsonUtil.asKey("max") + maxValue);
+        return JsonUtil.asKey("type") + JsonUtil.quoted(type) + "," + JsonUtil.asKey("min") + minValue + "," + JsonUtil.asKey("max") + maxValue;
     }
 
 }
