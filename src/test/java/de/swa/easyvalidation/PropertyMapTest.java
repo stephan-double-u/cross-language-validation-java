@@ -13,8 +13,8 @@ public class PropertyMapTest {
     @Test
     public void serializeToJson2() {
         PropertyMap pm = new PropertyMap();
-        pm.getValueOrInit("foo");
-        pm.getValueOrInit("bar");
+        pm.getOrInit("foo");
+        pm.getOrInit("bar");
         System.out.println(pm.serializeToJson());
     }
 }

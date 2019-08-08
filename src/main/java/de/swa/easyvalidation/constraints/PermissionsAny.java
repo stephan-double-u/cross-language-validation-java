@@ -20,7 +20,7 @@ public class PermissionsAny extends Permissions {
 
     @Override
     String getType() {
-        return "PERMISSIONS_ANY";
+        return "ANY";
     }
 
     @Override

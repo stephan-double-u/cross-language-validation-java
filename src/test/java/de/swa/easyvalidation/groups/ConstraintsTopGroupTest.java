@@ -1,21 +1,18 @@
 package de.swa.easyvalidation.groups;
 
 import de.swa.easyvalidation.constraints.Constraint;
-import de.swa.easyvalidation.constraints.ConstraintRef;
 import de.swa.easyvalidation.constraints.Equals;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
-public class ConstraintRefTopGroupTest {
+public class ConstraintsTopGroupTest {
 
     @Test
     public void serializeToJson() {
-        ConstraintRefTopGroup topGroup = ConstraintRefTopGroup.anded(
-                ConstraintRefGroup.or(
+        ConstraintsTopGroup topGroup = ConstraintsTopGroup.anded(
+                ConstraintsSubGroup.or(
                         Constraint.ref("prop1", Equals.any("FOO")),
                         Constraint.ref("prop2", Equals.any("BAR"))),
-                ConstraintRefGroup.and(
+                ConstraintsSubGroup.and(
                         Constraint.ref("prop3", Equals.any("ZOO")))
         );
         System.out.println(topGroup.serializeToJson());
@@ -23,7 +20,7 @@ public class ConstraintRefTopGroupTest {
 
     @Test
     public void serializeToJson2() {
-        ConstraintRefTopGroup topGroup = ConstraintRefTopGroup.anded();
+        ConstraintsTopGroup topGroup = ConstraintsTopGroup.anded();
         System.out.println(topGroup.serializeToJson());
     }
 }

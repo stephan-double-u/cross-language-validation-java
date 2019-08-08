@@ -2,7 +2,6 @@ package de.swa.easyvalidation.constraints;
 
 import static de.swa.easyvalidation.json.JsonUtil.*;
 
-import de.swa.easyvalidation.EasyValidationTesting;
 import de.swa.easyvalidation.json.JsonSerializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

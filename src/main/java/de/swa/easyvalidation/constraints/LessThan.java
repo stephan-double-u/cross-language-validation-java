@@ -38,7 +38,6 @@ public class LessThan extends Constraint {
 
     @Override
     public String serializeToJson() {
-        // TODO Auto-generated method stub
         return asKey("type") + quoted(type) + "," + asKey("value") + asArray(getValues());
     }
 
@@ -48,7 +47,6 @@ public class LessThan extends Constraint {
 
     @Override
     public boolean isSupportedType(final Class<?> clazz) {
-        // TODO Auto-generated method stub
         return String.class == clazz;
     }
 

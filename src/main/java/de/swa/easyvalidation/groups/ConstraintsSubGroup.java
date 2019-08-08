@@ -15,12 +15,14 @@ import static de.swa.easyvalidation.json.JsonUtil.asKey;
 import static de.swa.easyvalidation.json.JsonUtil.asObject;
 import static de.swa.easyvalidation.json.JsonUtil.quoted;
 
-public abstract class ConstraintRefGroup implements JsonSerializable {
+public abstract class ConstraintsSubGroup implements JsonSerializable {
+
+    private static Logger log = LoggerFactory.getLogger(ConstraintsSubGroup.class);
+
+    protected ConstraintRef[] constraintRefs;
 
     public static final String ANDED_GROUP_JSON_VALUE = "AND";
     public static final String ORED_GROUP_JSON_VALUE = "OR";
-    private static Logger log = LoggerFactory.getLogger(ConstraintRefGroup.class);
-    protected ConstraintRef[] constraintRefs;
 
     public static AndGroup and(final ConstraintRef... constraintRefs) {
         return new AndGroup(constraintRefs);

@@ -1,6 +1,6 @@
 package de.swa.easyvalidation;
 
-import de.swa.easyvalidation.constraints.Permissions;
+import de.swa.easyvalidation.constraints.*;
 
 import java.util.List;
 

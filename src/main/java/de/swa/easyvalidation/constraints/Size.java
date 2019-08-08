@@ -7,6 +7,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
+import static de.swa.easyvalidation.json.JsonUtil.asKey;
+import static de.swa.easyvalidation.json.JsonUtil.quoted;
+
 public class Size extends Constraint {
 
     private static final String type = "SIZE";
@@ -95,17 +98,18 @@ public class Size extends Constraint {
     }
 
     @Override
-    public boolean validateArgumentsOrFail(final Class<?> ignore) {
+    public boolean validateValuesOrFail(final Class<?> ignore) {
         final Integer min = (Integer) getValues().get(0);
         final Integer max = (Integer) getValues().get(1);
-        if (min != null && min < 0 || max != null && max < 0) {
-            throw new IllegalArgumentException("Size min/max values must be >= 0");
+        if (min != null && min < 0 || max != null && max < 0 || min != null && max != null && min >= max) {
+            throw new IllegalArgumentException("Size min/max values must be >= 0 and min < max");
         }
         return true;
     }
     
     @Override
-    public boolean validate(final Object object, final Object contraintObject) {
+    public boolean
+    validate(final Object object, final Object contraintObject) {
         if (object == null) {
             return true;
         }
@@ -130,7 +134,10 @@ public class Size extends Constraint {
     public String serializeToJson() {
         final Integer minValue = (Integer) getValues().get(0);
         final Integer maxValue = (Integer) getValues().get(1);
-        return JsonUtil.asKey("type") + JsonUtil.quoted(type) + "," + JsonUtil.asKey("min") + minValue + "," + JsonUtil.asKey("max") + maxValue;
+        final String minJson = minValue != null ? asKey("min") + minValue : "";
+        final String maxJson = maxValue != null ? asKey("max") + maxValue : "";
+        final String delimiter = (minJson == "" || maxJson =="") ? "" : ",";
+        return asKey("type") + quoted(type) + "," + minJson + delimiter + maxJson;
     }
 
 }

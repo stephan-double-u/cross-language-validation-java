@@ -4,24 +4,23 @@ import de.swa.easyvalidation.constraints.Constraint;
 import de.swa.easyvalidation.constraints.ConstraintRef;
 import de.swa.easyvalidation.constraints.Permissions;
 import de.swa.easyvalidation.groups.AndGroup;
-import de.swa.easyvalidation.groups.ConstraintRefGroup;
-import de.swa.easyvalidation.groups.ConstraintRefTopGroup;
-import de.swa.easyvalidation.groups.ContentContraintGroup;
+import de.swa.easyvalidation.groups.ConstraintsSubGroup;
+import de.swa.easyvalidation.groups.ConstraintsTopGroup;
+import de.swa.easyvalidation.groups.ContentContraints;
 import de.swa.easyvalidation.groups.OrGroup;
 import de.swa.easyvalidation.json.JsonSerializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static de.swa.easyvalidation.json.JsonUtil.asKey;
 import static de.swa.easyvalidation.json.JsonUtil.asObject;
-import static de.swa.easyvalidation.json.JsonUtil.quoted;
 
 /**
  * A class to combine property validation conditions for (possibly nested) properties of type {@code T},
@@ -32,10 +31,11 @@ import static de.swa.easyvalidation.json.JsonUtil.quoted;
  */
 public class ValidationConditions<T> implements JsonSerializable {
 
-    public static final Permissions NO_PERMISSIONS_NULL_KEY = Permissions.any(new String[]{});
-    public static final ConstraintRefTopGroup NO_CONSTRAINT_REF_TOP_GROUP_VALUE = ConstraintRefTopGroup.anded();
+    public static final Permissions NO_PERMISSIONS_KEY = Permissions.any(new String[]{});
+    public static final ConstraintsTopGroup NO_CONSTRAINT_REF_TOP_GROUP_VALUE = ConstraintsTopGroup.anded();
 
     private static final Logger log = LoggerFactory.getLogger(ValidationConditions.class);
+
     private final Class<T> typeClass;
 
     private final PropertyMap mandatoryPropertyMap = new PropertyMap();
@@ -50,32 +50,44 @@ public class ValidationConditions<T> implements JsonSerializable {
         typeJsonKey = typeClass.getSimpleName().toLowerCase();
     }
 
-    public Set<String> getMandatoryPropertyKeys() {
-        return mandatoryPropertyMap.getKeys();
+    public static String serializeToJson(final ValidationConditions<?> ... conditions) {
+        return asObject(Arrays.asList(conditions).stream().map(c -> c.serializeToJson()).collect(Collectors.joining(",")));
     }
 
-    public Map<Permissions, ConstraintRefTopGroup> getMandatoryPermissionsMap(final String property) {
-        return mandatoryPropertyMap.getPermissionsMap(property);
+    public Set<String> getMandatoryPropertyKeys() {
+        return mandatoryPropertyMap.keySet();
+    }
+
+    public PermissionsMap getMandatoryPermissionsMap(final String property) {
+        return mandatoryPropertyMap.get(property);
     }
 
     public Set<String> getImmutablePropertyKeys() {
-        return immutablePropertyMap.getKeys();
+        return immutablePropertyMap.keySet();
     }
 
-    public Map<Permissions, ConstraintRefTopGroup> getImmutablePermissionsMap(final String property) {
-        return immutablePropertyMap.getPermissionsMap(property);
+    public PermissionsMap getImmutablePermissionsMap(final String property) {
+        return immutablePropertyMap.get(property);
     }
 
     public Set<String> getContentPropertyKeys() {
-        return contentPropertyMap.getKeys();
+        return contentPropertyMap.keySet();
     }
 
-    public Map<Permissions, ContentContraintGroup> getContentPermissionsMap(final Object property) {
-        return contentPropertyMap.getPermissionsMap(property);
+    public ContentPermissionsMap getContentPermissionsMap(final String property) {
+        return contentPropertyMap.get(property);
     }
 
-    public Collection<Map<Permissions, ContentContraintGroup>> getContentPermissionMaps() {
-        return contentPropertyMap.getValues();
+//    public Collection<ContentPermissionsMap> getContentPermissionMaps() {
+//        return contentPropertyMap.getValues();
+//    }
+
+    public Class<T> getTypeClass() {
+        return typeClass;
+    }
+
+    public String getSimpleTypeName() {
+        return typeClass.getSimpleName();
     }
 
 
@@ -85,7 +97,7 @@ public class ValidationConditions<T> implements JsonSerializable {
      * @param property the property name
      */
     public void mandatory(final String property) {
-        mandatory(property, NO_PERMISSIONS_NULL_KEY);
+        mandatory(property, NO_PERMISSIONS_KEY);
     }
 
     /**
@@ -106,7 +118,7 @@ public class ValidationConditions<T> implements JsonSerializable {
      * @param constraintRefs
      */
     public void mandatory(final String property, final ConstraintRef... constraintRefs) {
-        mandatory(property, null, constraintRefs);
+        mandatory(property, NO_PERMISSIONS_KEY, constraintRefs);
     }
 
     /**
@@ -118,7 +130,7 @@ public class ValidationConditions<T> implements JsonSerializable {
      * @param constraintRefs
      */
     public void mandatory(final String property, final Permissions permissions, final ConstraintRef... constraintRefs) {
-        mandatory(property, permissions, ConstraintRefTopGroup.anded(ConstraintRefGroup.and(constraintRefs)));
+        mandatory(property, permissions, ConstraintsTopGroup.anded(ConstraintsSubGroup.and(constraintRefs)));
     }
 
     /**
@@ -130,7 +142,7 @@ public class ValidationConditions<T> implements JsonSerializable {
      * @param andGroups
      */
     public void mandatory(final String property, final AndGroup... andGroups) {
-        mandatory(property, null, andGroups);
+        mandatory(property, NO_PERMISSIONS_KEY, andGroups);
     }
 
     /**
@@ -143,7 +155,7 @@ public class ValidationConditions<T> implements JsonSerializable {
      * @param andGroups
      */
     public void mandatory(final String property, final Permissions permissions, final AndGroup... andGroups) {
-        mandatory(property, permissions, ConstraintRefTopGroup.ored(andGroups));
+        mandatory(property, permissions, ConstraintsTopGroup.ored(andGroups));
     }
 
     /**
@@ -155,7 +167,7 @@ public class ValidationConditions<T> implements JsonSerializable {
      * @param orGroups
      */
     public void mandatory(final String property, final OrGroup... orGroups) {
-        mandatory(property, null, orGroups);
+        mandatory(property, NO_PERMISSIONS_KEY, orGroups);
     }
 
     /**
@@ -168,29 +180,29 @@ public class ValidationConditions<T> implements JsonSerializable {
      * @param orGroups
      */
     public void mandatory(final String property, final Permissions permissions, final OrGroup... orGroups) {
-        mandatory(property, permissions, ConstraintRefTopGroup.anded(orGroups));
+        mandatory(property, permissions, ConstraintsTopGroup.anded(orGroups));
     }
 
     /**
      * If the logical relation between the constraints are really complicated, this method may be your last resort.
      * <p/>
-     * This version defines the property as mandatory if the {@code ConstraintRefTopGroup} object evaluates to true.
+     * This version defines the property as mandatory if the {@code ConstraintsTopGroup} object evaluates to true.
      * <p/>
      * According to the logical operation the AndGroups and OrGroups are either ANDed or ORed.
      * <p/>
      * E.g. Groups.anded(Group.or(a, b), Group.or(c, d), Group.or(e, f)] is evaluated as: ...
      *
      * @param property
-     * @param groups
+     * @param topGroup
      */
-    public void mandatory(final String property, final ConstraintRefTopGroup groups) {
-        mandatory(property, null, groups);
+    public void mandatory(final String property, final ConstraintsTopGroup topGroup) {
+        mandatory(property, NO_PERMISSIONS_KEY, topGroup);
     }
 
     /**
      * If the logical relation between the constraints are really complicated, this method may be your last resort.
      * <p/>
-     * This version defines the property as mandatory if permissions are met and the {@code ConstraintRefTopGroup} object evaluates to true.
+     * This version defines the property as mandatory if permissions are met and the {@code ConstraintsTopGroup} object evaluates to true.
      * <p/>
      * According to the logical operation the AndGroups and OrGroups are either ANDed or ORed.
      * <p/>
@@ -198,15 +210,15 @@ public class ValidationConditions<T> implements JsonSerializable {
      *
      * @param property
      * @param permissions
-     * @param groups
+     * @param topGroup
      */
-    public void mandatory(final String property, final Permissions permissions, final ConstraintRefTopGroup groups) {
-        putConditions(mandatoryPropertyMap, property, permissions, groups);
+    public void mandatory(final String property, final Permissions permissions, final ConstraintsTopGroup topGroup) {
+        putConditionsToPropertyMap(mandatoryPropertyMap, property, permissions, topGroup);
     }
 
 
     public void immutable(final String property) {
-        immutable(property, NO_PERMISSIONS_NULL_KEY);
+        immutable(property, NO_PERMISSIONS_KEY);
     }
 
     public void immutable(final String property, final Permissions permissions) {
@@ -214,105 +226,71 @@ public class ValidationConditions<T> implements JsonSerializable {
     }
 
     public void immutable(final String property, final ConstraintRef... constraintRefs) {
-        immutable(property, null, constraintRefs);
+        immutable(property, NO_PERMISSIONS_KEY, constraintRefs);
     }
 
     public void immutable(final String property, final Permissions permissions, final ConstraintRef... constraintRefs) {
-        immutable(property, permissions, ConstraintRefTopGroup.anded(ConstraintRefGroup.and(constraintRefs)));
+        immutable(property, permissions, ConstraintsTopGroup.anded(ConstraintsSubGroup.and(constraintRefs)));
     }
 
     public void immutable(final String property, final AndGroup... andGroups) {
-        immutable(property, null, andGroups);
+        immutable(property, NO_PERMISSIONS_KEY, andGroups);
     }
 
     public void immutable(final String property, final Permissions permissions, final AndGroup... andGroups) {
-        immutable(property, permissions, ConstraintRefTopGroup.ored(andGroups));
+        immutable(property, permissions, ConstraintsTopGroup.ored(andGroups));
     }
 
     public void immutable(final String property, final OrGroup... orGroups) {
-        immutable(property, null, orGroups);
+        immutable(property, NO_PERMISSIONS_KEY, orGroups);
     }
 
     public void immutable(final String property, final Permissions permissions, final OrGroup... orGroups) {
-        immutable(property, permissions, ConstraintRefTopGroup.anded(orGroups));
+        immutable(property, permissions, ConstraintsTopGroup.anded(orGroups));
     }
 
-    public void immutable(final String property, final ConstraintRefTopGroup groups) {
-        putConditions(immutablePropertyMap, property, null, groups);
+    public void immutable(final String property, final ConstraintsTopGroup topGroup) {
+        immutable(property, NO_PERMISSIONS_KEY, topGroup);
     }
 
-    public void immutable(final String property, final Permissions permissions, final ConstraintRefTopGroup groups) {
-        putConditions(immutablePropertyMap, property, permissions, groups);
+    public void immutable(final String property, final Permissions permissions, final ConstraintsTopGroup topGroup) {
+        putConditionsToPropertyMap(immutablePropertyMap, property, permissions, topGroup);
     }
 
+    private void putConditionsToPropertyMap(final PropertyMap propertyMap, final String property, final Permissions permissions,
+                                            final ConstraintsTopGroup topGroup) {
+        Objects.requireNonNull(propertyMap, "propertyMap must not be null");
+        Objects.requireNonNull(property, "property must not be null");
+        Objects.requireNonNull(permissions, "permissions must not be null");
+        Objects.requireNonNull(topGroup, "topGroup must not be null");
 
-    private void putConditions(final PropertyMap propertyMap, final String property, final Permissions permissions, final ConstraintRefTopGroup topGroup) {
+        final PermissionsMap permissionsMap = propertyMap.getOrInit(property);
 
-        final Permissions permissionsNonNull = (permissions == null) ? NO_PERMISSIONS_NULL_KEY : permissions;
-        final Map<Permissions, ConstraintRefTopGroup> permissionsMap = propertyMap.getOrInitPermissionsMap(property);
+        validatePermissions(permissionsMap.keySet(), permissions, property);
+        validatePropertyAndConstraintRefs(property, topGroup);
 
-        validatePermissionsOrFail(permissionsMap.keySet(), permissionsNonNull, property);
-        validatePropertyAndContraints(property, topGroup);
-
-        permissionsMap.put(permissionsNonNull, topGroup);
+        permissionsMap.put(permissions, topGroup);
     }
 
-    private void validatePermissionsOrFail(Set<Permissions> permissionsMap, Permissions permissions, String property) {
-        // Check if any permissions are 'not unique'; e.g. Perm.any(A,B), followed by Perm.any(C,B) -> constraints for B is not unique
-        if (permissions == NO_PERMISSIONS_NULL_KEY) {
-            if (permissionsMap.contains(permissions)) {
-                throw new IllegalArgumentException(String.format("Validation conditions for property '%s' (w/o permissions) are already defined.", property));
-            }
-        } else {
-            Optional<Object> nonUniquePermission = checkPermissionUniqueness(permissionsMap, permissions);
-            if (nonUniquePermission.isPresent()) {
-                throw new IllegalArgumentException(String.format("Validation conditions for property '%s' and permission '%s' are already defined.",
-                        property, nonUniquePermission.get().toString()));
-            }
-        }
-    }
-
-    private void validatePropertyAndContraints(String property, ConstraintRefTopGroup topGroup) {
-        EasyValidator.validateProperty(property, typeClass);
-        for (final ConstraintRefGroup group : topGroup.getConstraintRefGroups()) {
-            for (final ConstraintRef ref : group.getConstraintRefs()) {
-                validatePropertyAndValueTypes(ref);
-            }
-        }
-    }
-
-    private Optional<Object> checkPermissionUniqueness(Set<Permissions> permissionsSet, Permissions permissions) {
-        // Flatten all permission values
-        final Set<Object> existingPerms = permissionsSet.stream().map(p -> p.getValues()).flatMap(Collection::stream).collect(Collectors.toSet());
-
-        final Set<Object> newPermissions = permissions.getValues().stream().collect(Collectors.toSet());
-        existingPerms.retainAll(newPermissions);
-        return existingPerms.stream().findFirst();
-    }
-
-    /*
-     * Content related methods
-     */
 
     /**
-     * Defines the constant constraint for this property.
+     * Defines the constant contentConstraint for this property.
      *
      * @param property
-     * @param constraint
+     * @param contentConstraint
      */
-    public void content(final String property, final Constraint constraint) {
-        content(property, null, constraint);
+    public void content(final String property, final Constraint contentConstraint) {
+        content(property, contentConstraint, NO_PERMISSIONS_KEY);
     }
 
     /**
-     * Defines the constant constraint for this property and permissions.
-     *
-     * @param property
+     * Defines the constant contentConstraint for this property and permissions.
+     *  @param property
+     * @param contentConstraint
      * @param permissions
-     * @param constraint
      */
-    public void content(final String property, final Permissions permissions, final Constraint constraint) {
-        content(property, permissions, constraint, ConstraintRefTopGroup.anded());
+    public void content(final String property, final Constraint contentConstraint, final Permissions permissions) {
+        content(property, contentConstraint, permissions, ConstraintsTopGroup.anded());
     }
 
     /**
@@ -324,20 +302,19 @@ public class ValidationConditions<T> implements JsonSerializable {
      * @param constraintRefs
      */
     public void content(final String property, final Constraint constraint, final ConstraintRef... constraintRefs) {
-        content(property, null, constraint, constraintRefs);
+        content(property, constraint, NO_PERMISSIONS_KEY, constraintRefs);
     }
 
     /**
      * Defines the content constraint for this property and permissions if all {@code constraintRefs} are true.
      * I.e. the ConstraintRefs are ANDed. Convenience method for content(String, Permissions, Constraint, AndGroup).
-     *
-     * @param property
-     * @param permissions
+     *  @param property
      * @param constraint
+     * @param permissions
      * @param constraintRefs
      */
-    public void content(final String property, final Permissions permissions, final Constraint constraint, final ConstraintRef... constraintRefs) {
-        content(property, permissions, constraint, ConstraintRefTopGroup.anded(ConstraintRefGroup.and(constraintRefs)));
+    public void content(final String property, final Constraint constraint, final Permissions permissions, final ConstraintRef... constraintRefs) {
+        content(property, constraint, permissions, ConstraintsTopGroup.anded(ConstraintsSubGroup.and(constraintRefs)));
     }
 
     /**
@@ -350,7 +327,7 @@ public class ValidationConditions<T> implements JsonSerializable {
      * @param andGroups
      */
     public void content(final String property, final Constraint constraint, final AndGroup... andGroups) {
-        content(property, null, constraint, andGroups);
+        content(property, constraint, NO_PERMISSIONS_KEY, andGroups);
     }
 
     /**
@@ -359,12 +336,12 @@ public class ValidationConditions<T> implements JsonSerializable {
      * E.g. [Group.and(a, b), Group.and(c, d)] is evaluated as: a && b || c && d
      *
      * @param property
-     * @param permissions
      * @param constraint
+     * @param permissions
      * @param andGroups
      */
-    public void content(final String property, final Permissions permissions, final Constraint constraint, final AndGroup... andGroups) {
-        content(property, permissions, constraint, ConstraintRefTopGroup.ored(andGroups));
+    public void content(final String property, final Constraint constraint, final Permissions permissions, final AndGroup... andGroups) {
+        content(property, constraint, permissions, ConstraintsTopGroup.ored(andGroups));
     }
 
     /**
@@ -377,7 +354,7 @@ public class ValidationConditions<T> implements JsonSerializable {
      * @param orGroups
      */
     public void content(final String property, final Constraint constraint, final OrGroup... orGroups) {
-        content(property, null, constraint, orGroups);
+        content(property, constraint, NO_PERMISSIONS_KEY, orGroups);
     }
 
     /**
@@ -386,12 +363,12 @@ public class ValidationConditions<T> implements JsonSerializable {
      * E.g. [Group.or(e, f), Group.or(g, h)] is evaluated as: (e || f) && (g || h)
      *
      * @param property
-     * @param permissions
      * @param constraint
+     * @param permissions
      * @param orGroups
      */
-    public void content(final String property, final Permissions permissions, final Constraint constraint, final OrGroup... orGroups) {
-        content(property, permissions, constraint, ConstraintRefTopGroup.anded(orGroups));
+    public void content(final String property, final Constraint constraint, final Permissions permissions, final OrGroup... orGroups) {
+        content(property, constraint, permissions, ConstraintsTopGroup.anded(orGroups));
     }
 
     /**
@@ -407,78 +384,109 @@ public class ValidationConditions<T> implements JsonSerializable {
      * @param constraint
      * @param groups
      */
-    public void content(final String property, final Constraint constraint, final ConstraintRefTopGroup groups) {
-        content(property, null, constraint, groups);
+    public void content(final String property, final Constraint constraint, final ConstraintsTopGroup groups) {
+        content(property, constraint, NO_PERMISSIONS_KEY, groups);
     }
 
     /**
      * If the logical relation between the constraints are really complicated, this method may be your last resort.
      * <p/>
-     * This version defines the content constraint for this property if the permissions are met and the {@code groups} object evaluates to true.
+     * This version defines the content contentConstraint for this property if the permissions are met and the {@code topGroup} object evaluates to true.
      * <p/>
      * According to the logical operation the AndGroups and OrGroups are either ANDed or ORed.
      * <p/>
      * E.g. Groups.anded(Group.or(a, b), Group.or(c, d), Group.or(e, f)] is evaluated as: ...
      *
      * @param property
+     * @param contentConstraint
      * @param permissions
-     * @param constraint
-     * @param groups
+     * @param topGroup
      */
-    public void content(final String property, final Permissions permissions, final Constraint constraint,
-                        final ConstraintRefTopGroup groups) {
-        //TODO check params ...
-        EasyValidator.validateProperty(property, typeClass);
-        constraint.validateArgumentsOrFail(typeClass);
-        for (final ConstraintRefGroup group : groups.getConstraintRefGroups()) {
-            for (final ConstraintRef ref : group.getConstraintRefs()) {
-                validatePropertyAndValueTypes(ref);
+    public void content(final String property, final Constraint contentConstraint, final Permissions permissions,
+                        final ConstraintsTopGroup topGroup) {
+        putContentConditionsToPropertyMap(property, contentConstraint, permissions, topGroup);
+    }
+
+    private void putContentConditionsToPropertyMap(final String property, final Constraint contentConstraint, final Permissions permissions,
+                                      final ConstraintsTopGroup topGroup) {
+        Objects.requireNonNull(property, "property must not be null");
+        Objects.requireNonNull(contentConstraint, "contentConstraint must not be null");
+        Objects.requireNonNull(permissions, "permissions must not be null");
+        Objects.requireNonNull(topGroup, "topGroup must not be null");
+
+
+        final ContentPermissionsMap permissionsMap = contentPropertyMap.getOrInit(property);
+
+        validatePermissions(permissionsMap.keySet(), permissions, property);
+        validateConstraint(property, contentConstraint);
+        validatePropertyAndConstraintRefs(property, topGroup);
+
+        permissionsMap.put(permissions, new ContentContraints(contentConstraint, topGroup));
+    }
+
+
+    private void validatePermissions(Set<Permissions> permissionsMap, Permissions permissions, String property) {
+        // Check if any permissions are 'not unique'; e.g. Perm.any(A,B), followed by Perm.any(C,B) -> constraints for B is not unique
+        if (permissions == NO_PERMISSIONS_KEY) {
+            if (permissionsMap.contains(permissions)) {
+                throw new IllegalArgumentException(String.format("Validation conditions for property '%s' (w/o permissions) are already defined.", property));
+            }
+        } else {
+            if(permissions.getValues().isEmpty()) {
+                throw new IllegalArgumentException(String.format("Permissions for property '%s' must not be empty.", property));
+            }
+            Optional<Object> nonUniquePermission = checkPermissionUniqueness(permissionsMap, permissions);
+            if (nonUniquePermission.isPresent()) {
+                throw new IllegalArgumentException(String.format("Validation conditions for property '%s' and permission '%s' are already defined.",
+                        property, nonUniquePermission.get().toString()));
             }
         }
-        putContentConditions(property, permissions, constraint, groups);
     }
 
-    private void putContentConditions(final String property, final Permissions permissions, final Constraint constraint, final ConstraintRefTopGroup constraintRefTopGroup) {
-        if (getContentPermissionsMap(property) == null) {
-            contentPropertyMap.putPermissionsMap(property, new LinkedHashMap<>());
+    private Optional<Object> checkPermissionUniqueness(Set<Permissions> existingPermissions, Permissions newPermissions) {
+        // Flatten all permission values
+        final Set<Object> existingPerms = existingPermissions.stream().map(p -> p.getValues()).flatMap(Collection::stream).collect(Collectors.toSet());
+        // Search for permission that is already defined
+        final Set<Object> newPermissionsAsSet = newPermissions.getValues().stream().collect(Collectors.toSet());
+        existingPerms.retainAll(newPermissionsAsSet);
+        return existingPerms.stream().findFirst();
+    }
+
+    private void validatePropertyAndConstraintRefs(String property, ConstraintsTopGroup topGroup) {
+        EasyValidator.validateProperty(property, typeClass);
+        for (final ConstraintsSubGroup group : topGroup.getConstraintsSubGroups()) {
+            for (final ConstraintRef ref : group.getConstraintRefs()) {
+                validateConstraintRef(ref);
+            }
         }
-        final Map<Permissions, ContentContraintGroup> permissionsMap = contentPropertyMap.getPermissionsMap(property);
-        final Permissions permissionsParam = (permissions == null) ? NO_PERMISSIONS_NULL_KEY : permissions;
-
-        putContentConditions(permissionsMap, permissionsParam, constraint, constraintRefTopGroup, property);
     }
 
-    private void putContentConditions(final Map<Permissions, ContentContraintGroup> permissionsMap, final Permissions permissions, final Constraint constraint,
-                                      final ConstraintRefTopGroup constraintRefTopGroup, final String property) {
-        //TODO check if any permissions are 'not unique'; e.g. Perm.any(A,B), followed by Perm.any(C,B) -> constraints for B is not unique
-        final ContentContraintGroup contentContraintGroup = permissionsMap.get(permissions);
-        if (contentContraintGroup != null) {
-            throw new IllegalArgumentException(
-                    String.format("Validation conditions for property '{}' and permissions '{}' are already defined and will be overwritten", property, permissions));
-        }
-        permissionsMap.put(permissions, new ContentContraintGroup(constraint, constraintRefTopGroup));
-    }
-
-    private void validatePropertyAndValueTypes(final ConstraintRef constraintRef) {
+    private void validateConstraintRef(final ConstraintRef constraintRef) {
         if (constraintRef == null) {
             throw new IllegalArgumentException("ConstraintRef null is not allowed");
         }
-        final String propertyName = constraintRef.getProperty();
-        final Class<?> propertyType = EasyValidator.validateProperty(propertyName, typeClass);
-        final Constraint constraint = constraintRef.getConstraint();
+        validateConstraint(constraintRef.getProperty(), constraintRef.getConstraint());
+    }
 
+    private void validateConstraint(final String property, final Constraint constraint) {
+        if (property == null || constraint == null) {
+            throw new IllegalArgumentException("Arguments must not be null");
+        }
+        final Class<?> propertyType = EasyValidator.validateProperty(property, typeClass);
         // Check that constraint supports propertyType
         if (!constraint.isSupportedType(propertyType)) {
             throw new IllegalArgumentException(
                     "Contraint " + constraint.getClass().getSimpleName() + " does not support type of property "
-                            + propertyName + " (" + propertyType + ")");
+                            + property + " (" + propertyType + ")");
         }
-        // Check arguments
-        constraint.validateArgumentsOrFail(propertyType);
+        // Do further contraint specific validations
+        //TODO haben property und refProperty den selben Typ ...
+        constraint.validateValuesOrFail(typeClass);
     }
 
+
     /**
-     * Overwrites the default key that is used as an identifier for the generic type {@code T} when this map is
+     * Overwrites the default key that is used as an identifier for the generic type {@code T} when the validation conditions are
      * serialized to JSON. The default key is the lowercase simple name of the class {@code T}.
      *
      * @param typeJsonKey
@@ -492,76 +500,10 @@ public class ValidationConditions<T> implements JsonSerializable {
         String json = asKey(typeJsonKey) + "{";
         json += asKey("mandatoryConditions") + asObject(mandatoryPropertyMap.serializeToJson()) + ",";
         json += asKey("immutableConditions") + asObject(immutablePropertyMap.serializeToJson()) + ",";
-        json += asKey("contentConditions") + asObject(serializeCondition(contentPropertyMap));
+        json += asKey("contentConditions") + asObject(contentPropertyMap.serializeToJson());
         json += "}";
         return json;
     }
 
-    private String serializeConditions(final PropertyMap propertyMap) {
-        String json = "";
-        boolean firstProp = true;
-        for (final String propertyKey : propertyMap.getKeys()) {
-            json += (firstProp ? "" : ",") + asKey(propertyKey);
-            json += "[";
-            // TODO permissions ...
-            boolean firstPerm = true;
-            final Map<Permissions, ConstraintRefTopGroup> permissionsMap = propertyMap.getOrInitPermissionsMap(propertyKey);
-            for (final Permissions permissions : permissionsMap.keySet()) {
-                json += (firstPerm ? "{" : ",{") + asKey("permissions") + permissions.serializeToJson();
-                final ConstraintRefTopGroup topGroup = permissionsMap.get(permissions);
-                final String logicalOperator = topGroup.getLogicalOperator().name();
-                json += "{" + asKey("operator") + quoted(logicalOperator) + "," + asKey("groups") + "[";
-                boolean firstGroup = true;
-                for (final ConstraintRefGroup group : topGroup.getConstraintRefGroups()) {
-                    json += (firstGroup ? "" : ",") + group.serializeToJson();
-                    firstGroup = false;
-                    group.serializeToJson();
-                }
-                json += "]}}";
-                firstPerm = false;
-            }
-            json += "]";
-            firstProp = false;
-        }
-        return json;
-    }
-
-    private String serializeConditions_(final Map<String, ConstraintRefTopGroup> conditionGroupsMap) {
-        String json = "";
-        boolean firstProp = true;
-        for (final String propertyKey : conditionGroupsMap.keySet()) {
-            final ConstraintRefTopGroup topGroup = conditionGroupsMap.get(propertyKey);
-            final String logicalOperator = topGroup.getLogicalOperator().name();
-            json += (firstProp ? "" : ",") + asKey(propertyKey);
-            if (topGroup.getConstraintRefGroups().length == 0) {
-                json += "true";
-            } else {
-                json += "{" + asKey("groupsOperator") + quoted(logicalOperator) + "," + asKey("topgroup") + "[";
-                boolean firstGroup = true;
-                for (final ConstraintRefGroup group : topGroup.getConstraintRefGroups()) {
-                    json += (firstGroup ? "" : ",") + group.serializeToJson();
-                    firstGroup = false;
-                    group.serializeToJson();
-                }
-                json += "]}";
-            }
-            firstProp = false;
-        }
-        return json;
-    }
-
-    private String serializeCondition(ContentPropertyMap contentPropertyMap) {
-        final String json = "";
-        final boolean firstProp = true;
-        for (final String propertyKey : contentPropertyMap.getKeys()) {
-//            final ContentContraintGroup contentContraintGroup = contentPropertyMap.getPermissionsMap(propertyKey);
-//            final Constraint contentConstraint = contentContraintGroup.getContentConstraint();
-//            final ConstraintRefTopGroup groups = contentContraintGroup.getConstraintRefTopGroup();
-//            final String logicalOperator = groups.getLogicalOperator().name();
-            // ...
-
-        }
-        return "";
-    }
 }
 

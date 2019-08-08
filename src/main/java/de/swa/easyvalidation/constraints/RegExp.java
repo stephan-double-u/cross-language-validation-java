@@ -7,6 +7,10 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.regex.Matcher;
 
+import static de.swa.easyvalidation.json.JsonUtil.asArray;
+import static de.swa.easyvalidation.json.JsonUtil.asKey;
+import static de.swa.easyvalidation.json.JsonUtil.quoted;
+
 public class RegExp extends Constraint {
 
     private static Logger log = LoggerFactory.getLogger(Dates.class);
@@ -42,9 +46,9 @@ public class RegExp extends Constraint {
     }
 
     @Override
-    public boolean validateArgumentsOrFail(final Class<?> ignore) {
+    public boolean validateValuesOrFail(final Class<?> ignore) {
         if (getValues().contains(null)) {
-            throw new IllegalArgumentException("RegExp regexp must not be null");
+            throw new IllegalArgumentException("RegExp values must not be null");
         }
         return true;
     }
@@ -71,7 +75,7 @@ public class RegExp extends Constraint {
 
     @Override
     public String serializeToJson() {
-        return JsonUtil.asKey("type") + JsonUtil.quoted(type) + "," + JsonUtil.asKey("values") + JsonUtil.asArray(getValues());
+        return asKey("type") + quoted(type) + "," + asKey("values") + asArray(getValues());
     }
 
 }

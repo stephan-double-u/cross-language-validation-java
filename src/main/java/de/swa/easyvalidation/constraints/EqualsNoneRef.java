@@ -20,7 +20,7 @@ public class EqualsNoneRef extends Equals {
     }
 
     @Override
-    public boolean validateArgumentsOrFail(final Class<?> typeClass) {
+    public boolean validateValuesOrFail(final Class<?> typeClass) {
         getValues().forEach(refPropertyName -> EasyValidator.validateProperty((String) refPropertyName, typeClass));
         return true;
     }

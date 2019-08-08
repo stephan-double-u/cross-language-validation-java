@@ -47,7 +47,4 @@ public abstract class JsonUtil {
         return asArray(json);
     }
 
-    public static String toJson(final ValidationConditions<?> ... conditions) {
-        return JsonUtil.asArray(Arrays.asList(conditions).stream().map(c -> c.serializeToJson()).collect(Collectors.joining(",")));
-    }
 }

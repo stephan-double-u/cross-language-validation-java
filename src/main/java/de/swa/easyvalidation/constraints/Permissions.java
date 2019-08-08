@@ -23,11 +23,21 @@ public abstract class Permissions extends ConstraintRoot {
         return String.class == clazz
                || Enum.class.isAssignableFrom(clazz);
     }
-    
+
+    @Override
+    public boolean validateValuesOrFail(final Class<?> ignore) {
+        if (getValues().contains(null)) {
+            throw new IllegalArgumentException("Permission values must not be null");
+        }
+        return true;
+    }
+
     @Override
     public String serializeToJson() {
-        final String type = getType();
-        return asObject(asKey("type") + quoted(type) + "," + asKey("values") + asArray(getValues()));
+        if (getValues().isEmpty()) {
+            return "";
+        }
+        return asKey("permissions") + asObject(asKey("type") + quoted(getType()) + "," + asKey("values") + asArray(getValues()));
     }
 
 }

@@ -3,7 +3,7 @@ package de.swa.easyvalidation.json;
 import de.swa.easyvalidation.ValidationConditions;
 import org.junit.Test;
 
-import static de.swa.easyvalidation.json.JsonUtil.toJson;
+import static de.swa.easyvalidation.ValidationConditions.serializeToJson;
 import static org.junit.Assert.*;
 
 public class JsonUtilTest {
@@ -13,14 +13,14 @@ public class JsonUtilTest {
 
     @Test
     public void toJson_ShouldCreateOneElementArray() {
-        final String expected = "[" + fooValidationConditions.serializeToJson() + "]";
-        assertEquals(expected, toJson(fooValidationConditions));
+        final String expected = "{" + fooValidationConditions.serializeToJson() + "}";
+        assertEquals(expected, serializeToJson(fooValidationConditions));
 
     }
     @Test
     public void toJson_ShouldCreateCommaSeparatedArray() {
-        final String expected = "[" + fooValidationConditions.serializeToJson() + "," + barValidationConditions.serializeToJson() + "]";
-        assertEquals(expected, toJson(fooValidationConditions, barValidationConditions));
+        final String expected = "{" + fooValidationConditions.serializeToJson() + "," + barValidationConditions.serializeToJson() + "}";
+        assertEquals(expected, serializeToJson(fooValidationConditions, barValidationConditions));
     }
 
     class Foo {}

@@ -41,10 +41,11 @@ public abstract class ConstraintRoot implements JsonSerializable {
      * 
      * @return
      */
-    public boolean validateArgumentsOrFail(final Class<?> propertyType) {
+    //TODO should be abstract?
+    public boolean validateValuesOrFail(final Class<?> propertyType) throws IllegalArgumentException {
         return true;
     }
-    
+
     public List<Object> getValues() {
         return values;
     }
