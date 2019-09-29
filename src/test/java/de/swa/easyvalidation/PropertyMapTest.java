@@ -1,20 +1,24 @@
 package de.swa.easyvalidation;
 
+import de.swa.easyvalidation.test.Util;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class PropertyMapTest {
 
     @Test
-    public void serializeToJson() {
+    public void serializeEmptyMap() {
         PropertyMap pm = new PropertyMap();
-        System.out.println(pm.serializeToJson());
+        assertEquals("", pm.serializeToJson());
     }
 
     @Test
-    public void serializeToJson2() {
+    public void serializeNonEmptyMap() {
         PropertyMap pm = new PropertyMap();
         pm.getOrInit("foo");
         pm.getOrInit("bar");
-        System.out.println(pm.serializeToJson());
+        assertEquals(Util.doubleQuote("'foo':[],'bar':[]"), pm.serializeToJson());
     }
 }

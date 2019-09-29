@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,23 +24,23 @@ public class IndexedPropertyHelper {
     private static final Map<String, IndexInfo> propertyToIndexInfoCache = new HashMap<>();
 
     public static boolean isIndexedProperty(final String property) {
-        return property.contains("[");
+        return property.endsWith("]");
     }
 
     /**
      * Returns a {@code IndexInfo} that contains the {@code IndexType} of the <i>index definition</i> and a list of
-     * values for the <b>last</b> index definition of the property.<br/>
-     * E.g. for the property "foo[*].bar.zoo[0-3].baz" the second index definition "[0-3]" is processed. The meaning of
+     * values for the index definition of the the <b>last</b> property part.<br/>
+     * E.g. for the property "foo[*].bar.zoo[0-3]" the second index definition "[0-3]" is processed. The meaning of
      * the values is determined by the {@code IndexType}.<br/>
      * Possible formats and meanings:
      * <ul>
-     * <li>[0] : One single index position (value &gt;= 0). {@code IndexType} is {@code LIST}, list contains the index
-     * value.</li>
-     * <li>[1-5] : range of index positions (1<sup>st</sup> value &gt;= 0 and 2<sup>nd</sup> value &gt;= 1st value).
+     * <li>[0] : One single index position (lessThan &gt;= 0). {@code IndexType} is {@code LIST}, list contains the index
+     * lessThan.</li>
+     * <li>[1-5] : range of index positions (1<sup>st</sup> lessThan &gt;= 0 and 2<sup>nd</sup> lessThan &gt;= 1st lessThan).
      * {@code IndexType} is {@code LIST}, list contains the range values.</li>
      * <li>[2,4,8] : list of index positions (values &gt;= 0 in arbitrary sequence). {@code IndexType} is
      * {@code LIST}, list contains the listed values.</li>
-     * <li>[0/2] : increment specified index positions (1<sup>st</sup> value &gt;= 0 and 2<sup>nd</sup> value &gt;= 1).
+     * <li>[0/2] : increment specified index positions (1<sup>st</sup> lessThan &gt;= 0 and 2<sup>nd</sup> lessThan &gt;= 1).
      * {@code IndexType} is {@code INCREMENT}, list contains the start index and the increment.</li>
      * <li>[*] : convenience format for [0/1]
      * </ul>
@@ -51,14 +53,14 @@ public class IndexedPropertyHelper {
      * @param indexedProperty
      * @return
      */
-    public static IndexInfo getIndexInfo(final String indexedProperty) {
+    public static Optional<IndexInfo> getIndexInfo(final String indexedProperty) {
         if (!isIndexedProperty(indexedProperty)) {
-            return null;
+            return Optional.ofNullable(null);
         }
         if (!propertyToIndexInfoCache.containsKey(indexedProperty)) {
             propertyToIndexInfoCache.put(indexedProperty, createIndexInfo(indexedProperty));
         }
-        return propertyToIndexInfoCache.get(indexedProperty);
+        return Optional.of(propertyToIndexInfoCache.get(indexedProperty));
     }
 
     private static IndexInfo createIndexInfo(final String indexedProperty) {
@@ -136,19 +138,23 @@ public class IndexedPropertyHelper {
         }
 
         @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof IndexInfo)) return false;
+            IndexInfo indexInfo = (IndexInfo) o;
+            return indexType == indexInfo.indexType &&
+                    values.equals(indexInfo.values);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(indexType, values);
+        }
+
+        @Override
         public String toString() {
             return "IndexInfo [indexType=" + indexType + ", values=" + values + "]";
         }
     }
 
-    // TODO -> JUnit test
-    public static void main(final String[] args) {
-        log.debug("" + getIndexInfo("foo[*]"));
-        log.debug("" + getIndexInfo("foo[0]"));
-        log.debug("" + getIndexInfo("foo[1-1]"));
-        log.debug("" + getIndexInfo("foo[1-3]"));
-        log.debug("" + getIndexInfo("foo[4,5,6]"));
-        log.debug("" + getIndexInfo("foo[0/2]"));
-        log.debug("" + getIndexInfo("foo[1,3-6,8,7-7]"));
-    }
 }

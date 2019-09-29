@@ -6,7 +6,7 @@ import de.swa.easyvalidation.constraints.Permissions;
 import de.swa.easyvalidation.groups.AndGroup;
 import de.swa.easyvalidation.groups.ConstraintsSubGroup;
 import de.swa.easyvalidation.groups.ConstraintsTopGroup;
-import de.swa.easyvalidation.groups.ContentContraints;
+import de.swa.easyvalidation.groups.ContentConstraints;
 import de.swa.easyvalidation.groups.LogicalOperator;
 import de.swa.easyvalidation.groups.OrGroup;
 import de.swa.easyvalidation.util.IndexedPropertyHelper;
@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 // TODO refactor to 'single instance' ...
 public class EasyValidator {
@@ -43,8 +44,16 @@ public class EasyValidator {
     private static String defaultImmutableMessage = "error.validation.property.immutable";
     private static String defaultContentMessage = "error.validation.property.content";
 
+    private EasyValidator() {
+    }
 
-    public static List<String> validateMandatoryConditions(final Object object, final ValidationConditions<?> conditions) {
+    public static final EasyValidator INSTANCE = new EasyValidator();
+
+    public static EasyValidator instance() {
+        return INSTANCE;
+    };
+
+    public List<String> validateMandatoryConditions(final Object object, final ValidationConditions<?> conditions) {
         return validateMandatoryConditions(object, NO_USER_PERMISSIONS, conditions);
     }
 
@@ -52,7 +61,7 @@ public class EasyValidator {
                                                            final ValidationConditions<?> conditions) {
         Objects.requireNonNull(conditions, "conditions must not be null");
 
-        // TODO better returnType? e.g. ValidationError with key, value?
+        // TODO better returnType? e.g. ValidationError with key, lessThan?
         final List<String> errors = conditions.getMandatoryPropertyKeys().stream()
                 .filter(property -> isPropertyMandatory(property, object, userPermissions, conditions))
                 .filter(property -> getPropertyResultObject(property, object) == null)
@@ -91,7 +100,7 @@ public class EasyValidator {
             throw new IllegalArgumentException("originalObject and modifiedObject must have same type");
         }
 
-        // TODO better returnType? e.g. ValidationError with key, value?
+        // TODO better returnType? e.g. ValidationError with key, lessThan?
         final List<String> errors = conditions.getImmutablePropertyKeys().stream()
                 .filter(property -> isPropertyImmutable(property, originalObject, userPermissions, conditions))
                 .filter(property -> Objects.equals(getPropertyResultObject(property, originalObject), getPropertyResultObject(property, modifiedObject)))
@@ -130,10 +139,13 @@ public class EasyValidator {
     }
 
     private static void validateArguments(final @NotNull String property, final @NotNull Object object, final @NotNull ValidationConditions<?> conditions) {
+        if (property.isEmpty()) {
+            throw new IllegalArgumentException("property must not be empty");
+        }
         final Class<?> typeClass = conditions.getTypeClass();
         if (!object.getClass().equals(typeClass)) {
             throw new IllegalArgumentException("The object type (" + object.getClass()
-                    + " does not equal the type of the ValidationConditions<" + typeClass + ">");
+                    + ") does not equal the type of the " + typeClass);
         }
         EasyValidator.validateProperty(property, typeClass); // TODO? optional here
     }
@@ -143,15 +155,15 @@ public class EasyValidator {
                 .filter(p -> arePermissionsMatching(p.getKey(), userPermissions))
                 .map(p -> p.getValue())
                 .findFirst();
-        return Optional.of(match.orElseGet(() -> permissionMap.get(ValidationConditions.NO_PERMISSIONS_KEY)));
+        return Optional.ofNullable(match.orElseGet(() -> permissionMap.get(ValidationConditions.NO_PERMISSIONS_KEY)));
     }
 
-    private static Optional<ContentContraints> getMatchingContentContraints(ContentPermissionsMap permissionMap, UserPermissions userPermissions) {
-        final Optional<ContentContraints> match = permissionMap.entrySet().stream()
+    private static Optional<ContentConstraints> getMatchingContentConstraints(ContentPermissionsMap permissionMap, UserPermissions userPermissions) {
+        final Optional<ContentConstraints> match = permissionMap.entrySet().stream()
                 .filter(p -> arePermissionsMatching(p.getKey(), userPermissions))
                 .map(p -> p.getValue())
                 .findFirst();
-        return Optional.of(match.orElseGet(() -> permissionMap.get(ValidationConditions.NO_PERMISSIONS_KEY)));
+        return Optional.ofNullable(match.orElseGet(() -> permissionMap.get(ValidationConditions.NO_PERMISSIONS_KEY)));
     }
 
     private static boolean arePermissionsMatching(Permissions constraintPermissions, UserPermissions userPermissions) {
@@ -170,7 +182,7 @@ public class EasyValidator {
     public static List<String> validateContentConditions(Object object, UserPermissions userPermissions, ValidationConditions<?> conditions) {
         Objects.requireNonNull(conditions, "conditions must not be null");
 
-        // TODO better returnType? e.g. ValidationError with key, value?
+        // TODO better returnType? e.g. ValidationError with key, lessThan?
         final List<String> errors = new ArrayList<>();
         for (String property : conditions.getContentPropertyKeys()) {
             final Optional<Constraint> propertyContentConstraint = getPropertyContentConstraint(property, object, userPermissions, conditions);
@@ -192,7 +204,7 @@ public class EasyValidator {
 
         Constraint contentConstraint = null;
         ContentPermissionsMap permissionMap = conditions.getContentPermissionsMap(property);
-        final Optional<ContentContraints> matchingContentConstraints = getMatchingContentContraints(permissionMap, userPermissions);
+        final Optional<ContentConstraints> matchingContentConstraints = getMatchingContentConstraints(permissionMap, userPermissions);
         if (matchingContentConstraints.isPresent()
             && allConditionsAreMet(matchingContentConstraints.get().getConstraintsTopGroup(), object)) {
             contentConstraint = matchingContentConstraints.get().getContentConstraint();
@@ -211,6 +223,11 @@ public class EasyValidator {
      * @return
      */
     public static Class<?> validateProperty(final String property, final Class<?> clazz) {
+        Objects.requireNonNull(property, "property must not be null");
+        Objects.requireNonNull(property, "clazz must not be null");
+        if (property.isEmpty()) {
+            throw new IllegalArgumentException("property must not be empty");
+        }
         final GetterInfo cachedHit = propertyToGetterReturnTypeCache.get(new PropertyDescriptor(property, clazz));
         // log.debug("cachedHit for " + property + " " + cachedHit);
         return cachedHit != null ? cachedHit.getReturnType() : validatePropertyAndCache(property, clazz);
@@ -230,7 +247,7 @@ public class EasyValidator {
         String propertyKey = "";
         GetterInfo getterReturnType = null; // TODO not useful?! Cache Method instead ...
         for (final String propertyPart : propertyParts) {
-            if (IndexedPropertyHelper.getIndexInfo(propertyPart) == null) {
+            if (!IndexedPropertyHelper.getIndexInfo(propertyPart).isPresent()) {
                 // process 'simple' property
                 final Method getterMethod = getGetterMethodOrFail(propertyPart, propertyClass);
                 getterReturnType = getGetterReturnType(getterMethod);
@@ -266,34 +283,13 @@ public class EasyValidator {
                     throw new IllegalArgumentException("Index definitions are only allowed for properties of type List or arrays: " + propertyPart);
                 }
             }
-            propertyKey += "." + propertyPart;
-            propertyToGetterReturnTypeCache.put(new PropertyDescriptor(propertyKey.substring(1), clazz),
+            propertyKey += (propertyKey == "" ? "" : ".") + propertyPart;
+            propertyToGetterReturnTypeCache.put(new PropertyDescriptor(propertyKey, clazz),
                     getterReturnType);
         }
 
         return propertyClass;
     }
-
-
-//    private static List<String> checkConstrains(final Object object, final String property, final ContentContraints contentContraints) {
-//        final List<String> errors = new ArrayList<>();
-//
-//        // Check if all conditions are met. If so, the property value must match the contentConstraint
-//        final ConstraintsTopGroup groups = contentContraints.getConstraintsTopGroup();
-//        if (allConditionsAreMet(groups, object)) {
-//            final Constraint contentConstraint = contentContraints.getContentConstraint();
-//            if (!constraintIsMet(Constraint.ref(property, contentConstraint), object)) {
-//                log.debug("Content constraint for permission on property '{}' is NOT fulfilled", property);
-//                errors.add(defaultContentMessage + "." + property);
-//            } else {
-//                log.debug("Content constraint for permission on property '{}' is fulfilled", property);
-//            }
-//        } else {
-//            log.debug("Content constraint for permission on property '{}' is NOT validated because some conditions are not met", property);
-//        }
-//
-//        return errors;
-//    }
 
 
     public static Object getPropertyResultObject(final String property, final Object object) {
@@ -305,28 +301,31 @@ public class EasyValidator {
         Object propertyObject = object;
         Object returnValue = null;
         for (final String propertyPart : propertyParts) {
-            propertyKey += "." + propertyPart;
-            final PropertyDescriptor cacheKey = new PropertyDescriptor(propertyKey.substring(1), object.getClass());
+            propertyKey += (propertyKey == "" ? "" : ".") + propertyPart;
+            final PropertyDescriptor cacheKey = new PropertyDescriptor(propertyKey, object.getClass());
             final GetterInfo getter = propertyToGetterReturnTypeCache.get(cacheKey);
             try {
                 returnValue = getter.getMethod().invoke(propertyObject);
                 // If e.g. for "foo.bar" getFoo() returns null, we should prevent a NPE
                 // TODO or is it better to throw IllArgEx? Or make this configurable?
+                // null kann ok sein, wenn es ein 'Blatt' ist: z.B. foo.lessThan, foo.array
+                // Fehler wenn foo null ist oder bei foo.array[0], wenn foo.array null ist ...
                 if (returnValue == null) {
                     break;
                 }
-                final IndexInfo indexInfo = IndexedPropertyHelper.getIndexInfo(propertyKey.substring(1));
+                final Optional<IndexInfo> indexInfoOptional = IndexedPropertyHelper.getIndexInfo(propertyKey);
                 // How to handle [*] etc.?
                 /* propertyObject -> List<Object>, bei Simple-Props und Single-Ixd-Props ist size == 1
                  * Sonst loopen. Wenn IndexInfo != LIST or size > 1: propertyObject = new ArrayList<Object>
                  * propertyObject.addAll(returnValues) ...
                  */
-                if (indexInfo != null) {
+                if (indexInfoOptional.isPresent()) {
+                    final IndexInfo indexInfo = indexInfoOptional.get();
                     if (indexInfo.getIndexType() == IndexedPropertyHelper.IndexType.INCREMENT) {
                         throw new IllegalArgumentException("IndexType.INCREMENT is not yet implemented");
                     }
                     if (indexInfo.getValues().size() != 1) {
-                        throw new IllegalArgumentException("IndexType.LIST with more than one value is not yet implemented");
+                        throw new IllegalArgumentException("IndexType.LIST with more than one lessThan is not yet implemented");
                     }
                     final Integer index = indexInfo.getValues().get(0);
                     if (List.class.isAssignableFrom(returnValue.getClass())) {
@@ -335,18 +334,21 @@ public class EasyValidator {
                             returnValue = ((List<?>) returnValue).get(index);
                             log.debug("list.get(" + index + "): " + returnValue);
                         } else {
-                            log.warn("{} does not exist! Returning null. Or better throe an exception? ...", propertyPart);
+                            log.warn("{} does not exist! Returning null. Or better throw an exception? ...", propertyPart);
                             returnValue = null;
                         }
                     } else if (returnValue.getClass().isArray()) {
                         // process array
                         if (Array.getLength(returnValue) > index) {
                             returnValue = Array.get(returnValue, index);
-                            log.debug("array[" + index + "]: " + returnValue);
+                            //log.debug("array[" + index + "]: " + returnValue);
                         } else {
-                            log.warn("{} does not exist! Returning null. Or better throe an exception? ...", propertyPart);
+                            log.warn("{} does not exist! Returning null. Or better throw an exception? ...", propertyPart);
                             returnValue = null;
                         }
+                    } else {
+                        log.error("Should not happen: Indexed property is neiter a List nor an Array");
+                        returnValue = null;
                     }
                 }
             } catch (final IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
@@ -385,15 +387,15 @@ public class EasyValidator {
     // All conditions of an AndGroup must be true, but only one of an OrGroup!
     private static boolean groupConditionsAreMet(final ConstraintsSubGroup group, final Object object) {
         if (group instanceof AndGroup) {
-            for (final ConstraintRef contraint : ((AndGroup) group).getConstraintRefs()) {
-                if (!constraintIsMet(contraint, object)) {
+            for (final ConstraintRef constraint : ((AndGroup) group).getConstraintRefs()) {
+                if (!constraintIsMet(constraint, object)) {
                     return false;
                 }
             }
             return true;
         } else if (group instanceof OrGroup) {
-            for (final ConstraintRef contraint : ((OrGroup) group).getConstraintRefs()) {
-                if (constraintIsMet(contraint, object)) {
+            for (final ConstraintRef constraint : ((OrGroup) group).getConstraintRefs()) {
+                if (constraintIsMet(constraint, object)) {
                     return true;
                 }
             }
@@ -405,20 +407,94 @@ public class EasyValidator {
 
     // TODO? handle array resp. list of values for e.g. articled[*].name ...
     private static boolean constraintIsMet(final ConstraintRef constraintRef, final Object object) {
+        // TODO ...
+        if (IndexedPropertyHelper.isIndexedProperty(constraintRef.getProperty())) {
+            List<String> inflatedProperties = inflateIndexedProperty(constraintRef.getProperty(), object);
+            // foreach:
+            // getPropertyResultObject(inflatedProperty, object);
+            // constraintRef.getConstraint().validate(lessThan, object)
+        }
+
+
         final Object value = getPropertyResultObject(constraintRef.getProperty(), object);
         log.debug("Value of property '" + constraintRef.getProperty() + "' is '" + value + "'");
-//        if (value == null) {
+//        if (lessThan == null) {
 //            return false;
 //        }
         return constraintRef.getConstraint().validate(value, object);
     }
 
+    // Inflate property with multi-index definitions to properties with single-index definitions, e.g.
+    // "foo.bar[0,1].zoo.baz[2-3]" -> ["foo.bar[0].zoo.baz[2]", "foo.bar[0].zoo.baz[3]", "foo.bar[1].zoo.baz[2]", "foo.bar[1].zoo.baz[3]"]
+    private static List<String> inflateIndexedProperty(String property, Object object) {
+        System.out.println("Inflate " + property);
+        final String[] propertyParts = property.split("\\.");
+        List<String> inflatedProperties = new ArrayList<>();
+        inflatedProperties.add("");
+        String delimiter = "";
+        for (final String propertyPart : propertyParts) {
+            if (IndexedPropertyHelper.isIndexedProperty(propertyPart)) {
+                final IndexInfo indexInfo = IndexedPropertyHelper.getIndexInfo(propertyPart).get();
+                String propertyPartName = delimiter + propertyPart.substring(0, propertyPart.indexOf('['));
+                if (indexInfo.getIndexType() == IndexedPropertyHelper.IndexType.LIST) {
+                    inflatedProperties = inflatedProperties.stream()
+                            .map(ip -> ip + propertyPartName)
+                            .flatMap(p -> inflateListProperty(p, indexInfo.getValues()).stream())
+                            .collect(Collectors.toList());
+                } else if (indexInfo.getIndexType() == IndexedPropertyHelper.IndexType.INCREMENT){
+                    inflatedProperties = inflatedProperties.stream()
+                            .map(ip -> ip + propertyPartName)
+                            .flatMap(p -> inflateIncrementProperty(p, object, indexInfo.getValues().get(0), indexInfo.getValues().get(1)).stream())
+                            .collect(Collectors.toList());
+                } else {
+                    throw new IllegalArgumentException("Should never happen! Unknown IndexType: " + indexInfo.getIndexType());
+                }
+            } else {
+                String propertyPartName = delimiter + propertyPart;
+                inflatedProperties = inflatedProperties.stream()
+                        .map(y -> y + propertyPartName)
+                        .collect(Collectors.toList());
+            }
+            delimiter = ".";
+            System.out.println(inflatedProperties);
+        }
+        inflatedProperties.stream().forEach(p -> validateProperty(p, object.getClass()));
+        return inflatedProperties;
+    }
+
+    private static List<String> inflateListProperty(String p, List<Integer> indexes) {
+        //TODO hier indexe checken?
+        return indexes.stream()
+                .map(i -> p + "[" + i + "]").
+                collect(Collectors.toList());
+    }
+
+    private static List<String> inflateIncrementProperty(String property, Object object, Integer startIndex, Integer increment) {
+        validateProperty(property, object.getClass());
+        final Object propertyResultObject = getPropertyResultObject(property, object);
+        int numberOfElements = 0;
+        if (List.class.isAssignableFrom(propertyResultObject.getClass())) {
+            numberOfElements = ((List<?>) propertyResultObject).size();
+        } else if (propertyResultObject.getClass().isArray()) {
+            numberOfElements = Array.getLength(propertyResultObject);
+        } else {
+            throw new IllegalArgumentException("Should not happen! propertyResultObject is neither List nor Array");
+        }
+        return IntStream.rangeClosed(0, numberOfElements).boxed()
+                .map(i -> property + "[" + i + "]")
+                .collect(Collectors.toList());
+    }
+
+    // try isFoo for booleans, then getFoo for all
     private static Method getGetterMethodOrFail(final String propertyName, final Class<?> clazz) {
         final Map<String, Method> noArgGetters = getNoArgGetterMethodMap(clazz);
-        final Method getterMethod = noArgGetters.get(buildGetterName(propertyName));
+        Method getterMethod = noArgGetters.get(buildGetterName("is", propertyName));
         if (getterMethod == null) {
-            throw new IllegalArgumentException(
-                    "No no-arg getter found for property " + propertyName + " in " + clazz.getName());
+            getterMethod = noArgGetters.get(buildGetterName("get", propertyName));
+            if (getterMethod == null) {
+                throw new IllegalArgumentException(
+                        "No no-arg getter found for property " + propertyName + " in " + clazz.getName());
+            }
         }
         return getterMethod;
     }
@@ -441,6 +517,11 @@ public class EasyValidator {
         final Map<String, Method> methodNamesMap = new HashMap<>();
         for (final MethodDescriptor md : beanInfo.getMethodDescriptors()) {
             // log.debug("MethodDescriptor: " + md);
+            if (md.getName().startsWith("is") && md.getMethod().getParameterTypes().length == 0
+                    && (md.getMethod().getReturnType().equals(boolean.class) || md.getMethod().getReturnType().equals(Boolean.class))) {
+                methodNamesMap.put(md.getName(), md.getMethod());
+                // log.debug("No-arg getter found: " + md);
+            }
             if (md.getName().startsWith("get") && md.getMethod().getParameterTypes().length == 0) {
                 methodNamesMap.put(md.getName(), md.getMethod());
                 // log.debug("No-arg getter found: " + md);
@@ -449,8 +530,11 @@ public class EasyValidator {
         return methodNamesMap;
     }
 
-    private static String buildGetterName(final String propertyName) {
-        return "get" + propertyName.substring(0, 1).toUpperCase() + propertyName.substring(1);
+    // 1st char to upper, iff 2nd char is lower!
+    private static String buildGetterName(final String prefix, final String propertyName) {
+        Character firstCharUpperOrLower = (propertyName.length() > 1 && Character.isLowerCase(propertyName.charAt(1)))
+                ? Character.toUpperCase(propertyName.charAt(0)) : propertyName.charAt(0);
+        return prefix + firstCharUpperOrLower + propertyName.substring(1);
     }
 
 

@@ -11,7 +11,7 @@ public class ConstraintRef implements JsonSerializable {
     private final String property;
     private final Constraint constraint;
 
-    protected ConstraintRef(final String property, final Constraint constraint) {
+    ConstraintRef(final String property, final Constraint constraint) {
         this.property = property;
         this.constraint = constraint;
     }

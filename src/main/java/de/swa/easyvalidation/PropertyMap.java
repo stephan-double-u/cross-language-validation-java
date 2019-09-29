@@ -11,7 +11,7 @@ import static de.swa.easyvalidation.json.JsonUtil.asArray;
 import static de.swa.easyvalidation.json.JsonUtil.asKey;
 
 /**
- * Maps property string to {@code PermissionsMap}.
+ * Maps property lessThan to {@code PermissionsMap}.
  */
 public class PropertyMap implements JsonSerializable {
     // Linked HashMap to preserve insertion order and thereby define validation order, e.g. to do cheap validations first!

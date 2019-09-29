@@ -11,7 +11,7 @@ import static de.swa.easyvalidation.json.JsonUtil.asArray;
 import static de.swa.easyvalidation.json.JsonUtil.asKey;
 
 /**
- * Maps property string to {@code ContentPermissionsMap}.
+ * Maps property lessThan to {@code ContentPermissionsMap}.
  */
 public class ContentPropertyMap implements JsonSerializable {
 

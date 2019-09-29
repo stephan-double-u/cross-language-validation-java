@@ -11,7 +11,7 @@ public class EqualsAnyRef extends Equals {
     private static Logger log = LoggerFactory.getLogger(EqualsAnyRef.class);
 
     EqualsAnyRef(String... properties) {
-        setStringValues(Arrays.asList(properties));
+        setObjectValues(Arrays.asList((Object[]) properties));
     }
 
     @Override
@@ -20,23 +20,25 @@ public class EqualsAnyRef extends Equals {
     }
 
     @Override
-    public boolean validateValuesOrFail(final Class<?> typeClass) {
-        getValues().forEach(refPropertyName -> EasyValidator.validateProperty((String) refPropertyName, typeClass));
+    public boolean validateValuesOrFail(final Class<?> propertyType) {
+        getValues().forEach(refPropertyName -> EasyValidator.validateProperty((String) refPropertyName, propertyType));
         return true;
     }
     
     @Override
-    public boolean validate(final Object valueToValidate, final Object contraintObject) {
-        for (final Object property : getValues()) {
-            //TODO allow only non-indexed properties resp. 'single index'!?
-            final Object referencedValue = EasyValidator.getPropertyResultObject((String) property, contraintObject);
-            if (valueToValidate.equals(referencedValue)) {
-                log.debug("" + valueToValidate + " does equals referenced property " + property);
-                return true;
-            }
+    public boolean validate(final Object valueToValidate, final Object constraintObject) {
+        if (valueToValidate == null) {
+            return false;
         }
-        log.debug("" + valueToValidate + " does NOT equals any referenced property of " + getValues());
-        return false;
+
+        final Boolean equals = getValues().stream()
+                .map(property -> EasyValidator.getPropertyResultObject((String) property, constraintObject))
+                .map(referencedValue -> Equals.equals(valueToValidate, referencedValue))
+                .filter(e -> e == true)
+                .findFirst().orElse(false);
+
+        log.debug("" + valueToValidate + (equals ? " " : " NOT ") + "equals a referenced property of " + getValues());
+        return equals;
     }
 
 }

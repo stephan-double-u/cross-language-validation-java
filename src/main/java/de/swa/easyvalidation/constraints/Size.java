@@ -1,7 +1,5 @@
 package de.swa.easyvalidation.constraints;
 
-import de.swa.easyvalidation.json.JsonUtil;
-
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,8 +13,11 @@ public class Size extends Constraint {
     private static final String type = "SIZE";
     private final String messageDefault = "{validation.constraint.size}";
 
+    private Size() {
+    }
+
     /**
-     * The size of the element that should be validated against this constraint must be greater than the specified value
+     * The size of the element that should be validated against this constraint must be greater than the specified lessThan
      * (included).
      * <p/>
      * Supported types are:
@@ -35,12 +36,13 @@ public class Size extends Constraint {
      */
     public static Size min(final int minSize) {
         final Size constraint = new Size();
-        constraint.setNumberValues(Arrays.asList((Number) Integer.valueOf(minSize), null));
+        constraint.setObjectValues(Arrays.asList((Number) Integer.valueOf(minSize), null));
+        constraint.validateValuesOrFail(null);
         return constraint;
     }
 
     /**
-     * The size of the element that should be validated against this constraint must be less than the specified value
+     * The size of the element that should be validated against this constraint must be less than the specified lessThan
      * (included).
      * <p/>
      * Supported types are:
@@ -59,7 +61,8 @@ public class Size extends Constraint {
      */
     public static Size max(final int maxSize) {
         final Size constraint = new Size();
-        constraint.setNumberValues(Arrays.asList(null, (Number) Integer.valueOf(maxSize)));
+        constraint.setObjectValues(Arrays.asList(null, (Number) Integer.valueOf(maxSize)));
+        constraint.validateValuesOrFail(null);
         return constraint;
     }
 
@@ -85,7 +88,8 @@ public class Size extends Constraint {
      */
     public static Size minMax(final int minSize, final int maxSize) {
         final Size constraint = new Size();
-        constraint.setNumberValues(Arrays.asList((Number) Integer.valueOf(minSize), (Number) Integer.valueOf(maxSize)));
+        constraint.setObjectValues(Arrays.asList((Number) Integer.valueOf(minSize), (Number) Integer.valueOf(maxSize)));
+        constraint.validateValuesOrFail(null);
         return constraint;
     }
 
@@ -99,6 +103,9 @@ public class Size extends Constraint {
 
     @Override
     public boolean validateValuesOrFail(final Class<?> ignore) {
+        if (getValues().size() != 2) {
+            throw new IllegalArgumentException("Size has neiter min nor max value");
+        }
         final Integer min = (Integer) getValues().get(0);
         final Integer max = (Integer) getValues().get(1);
         if (min != null && min < 0 || max != null && max < 0 || min != null && max != null && min >= max) {
@@ -109,7 +116,7 @@ public class Size extends Constraint {
     
     @Override
     public boolean
-    validate(final Object object, final Object contraintObject) {
+    validate(final Object object, final Object ignored) {
         if (object == null) {
             return true;
         }

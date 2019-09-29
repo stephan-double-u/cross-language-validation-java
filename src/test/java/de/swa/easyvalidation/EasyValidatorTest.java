@@ -1,5 +1,9 @@
 package de.swa.easyvalidation;
 
+import de.swa.easyvalidation.constraints.Constraint;
+import de.swa.easyvalidation.constraints.ConstraintRef;
+import de.swa.easyvalidation.constraints.Equals;
+import de.swa.easyvalidation.constraints.EqualsAnyRef;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -48,6 +52,57 @@ public class EasyValidatorTest {
     @Test(expected = IllegalArgumentException.class)
     public void validateProperty_notexisting() {
         EasyValidator.validateProperty("notexisting", Reservation.class);
+    }
+
+
+    @Test
+    public void todoTestIndexProps() {
+        ValidationConditions<ClassUnderTest> conditions = new ValidationConditions<>(ClassUnderTest.class);
+        //conditions.content("stringArrayProp[0]", Equals.anyRef("stringArrayProp[0]"), Constraint.ref("stringArrayProp[0]", Equals.anyRef("stringArrayProp[0]")));
+        conditions.content("subClassArrayProp[*].stringArrayProp[0-3]", Equals.any("foo"));
+        final List<String> errors = EasyValidator.validateContentConditions(new ClassUnderTest(), conditions);
+        System.out.println("errors: " + errors);
+    }
+
+
+    class ClassUnderTest {
+        private SubClass subClassProp = new SubClass("a1", new String[] {"b1", "c1"}, Arrays.asList("d1", "e1", "f1"));
+        private SubClass[] subClassArrayProp = {
+                new SubClass("a2", new String[] {"b2", "c2", "d2"}, Arrays.asList("e2", "f2")),
+                new SubClass("a3", new String[] {"b3", "c3"}, Arrays.asList("d3", "e3", "f3"))};
+
+        public SubClass getSubClassProp() {
+            return subClassProp;
+        }
+
+        public SubClass[] getSubClassArrayProp() {
+            return subClassArrayProp;
+        }
+    }
+
+    class SubClass {
+        private String stringProp = "foo";
+
+        public SubClass(String stringProp, String[] stringArrayProp, List<String> stringListProp) {
+            this.stringProp = stringProp;
+            this.stringArrayProp = stringArrayProp;
+            this.stringListProp = stringListProp;
+        }
+
+        private String[] stringArrayProp;
+        private List<String> stringListProp;
+
+        public String getStringProp() {
+            return stringProp;
+        }
+
+        public String[] getStringArrayProp() {
+            return stringArrayProp;
+        }
+
+        public List<String> getStringListProp() {
+            return stringListProp;
+        }
     }
 
 

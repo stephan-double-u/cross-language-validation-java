@@ -1,13 +1,10 @@
 package de.swa.easyvalidation.constraints;
 
 import static de.swa.easyvalidation.json.JsonUtil.asKey;
-import static de.swa.easyvalidation.json.JsonUtil.asObject;
 import static de.swa.easyvalidation.json.JsonUtil.quoted;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
-import java.util.Map;
 
 import de.swa.easyvalidation.util.TypeHelper;
 import org.slf4j.Logger;
@@ -20,36 +17,39 @@ public class Limit extends Constraint {
     private static final String type = "LIMIT";
     private String messageDefault = "{validation.constraint.limit}";
 
+    public static long SAVE_INTEGER_MAX = (1L << 53) -1;
+    public static long SAVE_INTEGER_MIN = -((1L << 53) - 1);
+
     /**
-     * The value of the element that should be validated against this constraint must be not less than the specified
-     * value.
+     * The lessThan of the element that should be validated against this constraint must be not less than the specified
+     * lessThan.
      * <p/>
      * Supported types are:
      * <ul>
-     * <li>{@code Number} that habe a meaningful longValue() ...</li>
+     * <li>{@code Number} that has a meaningful longValue() ...</li>
      * </ul>
      * <p/>
      *
      * @param minValue
-     *            the minimal value of the element
+     *            the minimal lessThan of the element
      * 
      * @author Stephan Wack
      */
     public static Limit min(final long minValue) {
         final Limit constraint = new Limit();
-        constraint.setNumberValues(Arrays.asList((Number) Long.valueOf(minValue), null));
+        constraint.setObjectValues(Arrays.asList((Number) Long.valueOf(minValue), null));
         return constraint;
     }
 
     public static Limit max(final long maxValue) {
         final Limit constraint = new Limit();
-        constraint.setNumberValues(Arrays.asList(null, (Number) Long.valueOf(maxValue)));
+        constraint.setObjectValues(Arrays.asList(null, (Number) Long.valueOf(maxValue)));
         return constraint;
     }
 
     public static Limit minMax(final long minValue, final long maxValue) {
         final Limit constraint = new Limit();
-        constraint.setNumberValues(Arrays.asList((Number) Long.valueOf(minValue), (Number) Long.valueOf(maxValue)));
+        constraint.setObjectValues(Arrays.asList((Number) Long.valueOf(minValue), (Number) Long.valueOf(maxValue)));
         return constraint;
     }
 
@@ -62,7 +62,7 @@ public class Limit extends Constraint {
     }
 
     @Override
-    public boolean validate(final Object object, final Object contraintObject) {
+    public boolean validate(final Object object, final Object constraintObject) {
         if (object == null) {
             return true;
         }
@@ -78,7 +78,7 @@ public class Limit extends Constraint {
         }
     }
 
-    // not used (yet) ...
+    // TODO not used (yet) ...
     private static final LongComparator<Long> numberComparator = new LongComparator<>();
     static class LongComparator<T extends Number & Comparable<T>> implements Comparator<T> {
         @Override

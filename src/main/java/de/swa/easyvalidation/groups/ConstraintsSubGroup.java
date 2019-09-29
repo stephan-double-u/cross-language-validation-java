@@ -43,10 +43,4 @@ public abstract class ConstraintsSubGroup implements JsonSerializable {
         return asObject(asKey("operator") + quoted(operator) + "," + asKey("constraints") + asArray(refsAsJson));
     }
 
-    // TODO -> JUnit test
-    public static void main(final String[] args) {
-        log.debug(new AndGroup(Constraint.ref("someString", Size.minMax(1, 100)), Constraint.ref("articleList", Size.min(5))).serializeToJson());
-        log.debug(new OrGroup(Constraint.ref("someString", Size.minMax(1, 100)), Constraint.ref("articleList", Size.min(5))).serializeToJson());
-    }
-
 }

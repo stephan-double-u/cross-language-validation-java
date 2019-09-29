@@ -1,28 +1,47 @@
 package de.swa.easyvalidation.json;
 
-import de.swa.easyvalidation.ValidationConditions;
 import org.junit.Test;
 
-import static de.swa.easyvalidation.ValidationConditions.serializeToJson;
+import java.sql.JDBCType;
+import java.util.Arrays;
+
 import static org.junit.Assert.*;
 
 public class JsonUtilTest {
 
-    ValidationConditions<Foo> fooValidationConditions = new ValidationConditions<>(Foo.class);
-    ValidationConditions<Bar> barValidationConditions = new ValidationConditions<>(Bar.class);
-
     @Test
-    public void toJson_ShouldCreateOneElementArray() {
-        final String expected = "{" + fooValidationConditions.serializeToJson() + "}";
-        assertEquals(expected, serializeToJson(fooValidationConditions));
-
-    }
-    @Test
-    public void toJson_ShouldCreateCommaSeparatedArray() {
-        final String expected = "{" + fooValidationConditions.serializeToJson() + "," + barValidationConditions.serializeToJson() + "}";
-        assertEquals(expected, serializeToJson(fooValidationConditions, barValidationConditions));
+    public void asObject() {
+        assertEquals("{x}", JsonUtil.asObject("x"));
     }
 
-    class Foo {}
-    class Bar {}
+    @Test
+    public void asKey() {
+        assertEquals("\"x\":", JsonUtil.asKey("x"));
+    }
+
+    @Test
+    public void quoted() {
+        assertEquals("\"x\"", JsonUtil.quoted("x"));
+    }
+
+    @Test
+    public void asArray() {
+        assertEquals("[x]", JsonUtil.asArray("x"));
+    }
+
+    @Test
+    public void asArrayFromStrings() {
+        assertEquals("[\"x\",\"y\"]", JsonUtil.asArray(Arrays.asList("x", "y")));
+    }
+
+    @Test
+    public void asArrayFromEnums() {
+        assertEquals("[\"BLOB\"]", JsonUtil.asArray(Arrays.asList(JDBCType.BLOB)));
+    }
+
+    @Test
+    public void asArrayFromNumbers() {
+        assertEquals("[1,2.0,3]", JsonUtil.asArray(Arrays.asList(1, 2d, 3L)));
+    }
+
 }

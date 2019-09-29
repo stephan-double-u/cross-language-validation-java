@@ -2,20 +2,20 @@ package de.swa.easyvalidation.constraints;
 
 import de.swa.easyvalidation.json.JsonSerializable;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class ConstraintRoot implements JsonSerializable {
 
+    // Holds any constraint related values
     private List<Object> values;
 
-    protected ConstraintRoot() {
-        super();
-        values = new ArrayList<>();
+    ConstraintRoot() {
     }
 
     /**
-     * Checks if the class is supported by the contraint.
+     * Checks if the class is supported by the constraint.
      * 
      * @param clazz
      *            the class to check
@@ -24,24 +24,23 @@ public abstract class ConstraintRoot implements JsonSerializable {
     public abstract boolean isSupportedType(Class<?> clazz);
     
     /**
-     * Validates the given value against this constraint.
+     * Validates the given lessThan against this constraint.
      * 
      * @param value
-     *            the value of to validate
-     * @param contraintObject
+     *            the lessThan to validate
+     * @param constraintObject
      *            the object the constraint is defined on
      * @return {@code true} if the constraint is fulfilled, {@code false} otherwise
      */
-    public abstract boolean validate(Object value, Object contraintObject);
+    public abstract boolean validate(Object value, Object constraintObject);
 
-    
+
     /**
-     * Should be overwritten if a constraint has to do some validations.
-     * @param propertyType 
-     * 
-     * @return
+     * Validates the constraint values and the propertyType.
+     *
+     * @param propertyType
+     * @return {@code true} if the values and propertyType are o.k., {@code false} otherwise
      */
-    //TODO should be abstract?
     public boolean validateValuesOrFail(final Class<?> propertyType) throws IllegalArgumentException {
         return true;
     }
@@ -53,31 +52,9 @@ public abstract class ConstraintRoot implements JsonSerializable {
     /*
      * Setter methods for the different kinds of constraint values.
      */
-    
-    public void setBooleanValue(final boolean value) {
-        values.add(value);
-    }
 
-    public void setStringValues(final List<String> values) {
-        for (final String value : values) {
-            this.values.add(value);
-        }
-    }
-
-    public void setEnumValues(final List<Enum<?>> values) {
-        for (final Enum<?> value : values) {
-            this.values.add(value);
-        }
-    }
-
-    public void setNumberValues(final List<Number> values) {
-        for (final Number value : values) {
-            this.values.add(value);
-        }
-    }
-
-    public void setObjectValues(final List<Object> values) {
-        this.values = values;
+    void setObjectValues(final List<Object> values) {
+        this.values = Collections.unmodifiableList(values);
     }
 
 }

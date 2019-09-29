@@ -1,3 +1,6 @@
+Constraint.ref(erence) -> .rel(ation) : Besser 'Beziehung' als 'Verweis' ...
+Equals.any(TRUE) doch besser Equals.true(); oder beides!? (dito mit FALSE)
+
 
 AND/OR conditions
 - ORed AND groups: a && b || c && d      // equals: (a || c) && (b || c) && (a || d) && (b || d)
@@ -18,6 +21,13 @@ Erweiterungen?:
 RegExp auch auf Number: z.B. "nur ungerade Ziffern" -> any("[13579]+")
 ALLE List/Array Elemente prüfen: conditions.content("articles[*].name", Size.min(3))
 
+Kennzeichnung, ob Contraint nur für Inserts oder Updates gilt?! Z.B.
+- Nur bei Insert: conditions.content("id", Equals.null_())
+- Bei Update/Delete: conditions.content("id", Equals.notNull())
+- Bei Update: conditions.immutable("lastModifiedOn")
+
+Kennzeichnung, ob Contraint serialisiert werden soll oder nicht?
+
 See: org.hibernate.validator.internal.engine.ValidatorImpl
 org.hibernate.validator.internal.util.TypeHelper
 org.hibernate.validator.internal.util.ReflectionHelper.boxedType(Class<?>)
@@ -37,8 +47,7 @@ UNICODE COLLATION ALGORITHM
 
 TODO validate syntax of indexed properties in EasyValidator.validatePropertyAndCache() and cache index values
 Eigene Constraints für indexed Props. wie EqualsAnyIdx!?
-Mit Erweiterung min()/max()?! Constraint.ref("articleArray[*].status", Equals.anyRef("a[*].s").min(2))) ...
-Besser?: Constraint.ref("articleArray[*].status", Equals.minRef(2, "a[*].s")))
+Mit Erweiterung min()/max()?! Constraint.ref("articleArray[*].status", Equals.minRef(2, "a[*].s")))
 
 Was bedeutet z.B.
 cond.content("foo[*].name", Equals.anyRef("bar[*].name")

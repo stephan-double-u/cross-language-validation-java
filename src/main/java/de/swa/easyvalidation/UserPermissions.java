@@ -8,11 +8,11 @@ public class UserPermissions {
 
     private final List<Object> values;
 
-    public UserPermissions(final String... values) {
+    private UserPermissions(final String... values) {
         this.values = Permissions.any(values).getValues();
     }
 
-    public <E extends Enum<?>> UserPermissions(final E... values) {
+    private UserPermissions(final Enum<?>... values) {
         this.values = Permissions.any(values).getValues();
     }
 

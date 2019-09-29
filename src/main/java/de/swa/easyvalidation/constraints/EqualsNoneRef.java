@@ -11,7 +11,7 @@ public class EqualsNoneRef extends Equals {
     private static Logger log = LoggerFactory.getLogger(EqualsNoneRef.class);
 
     EqualsNoneRef(String... properties) {
-        setStringValues(Arrays.asList(properties));
+        setObjectValues(Arrays.asList((Object[]) properties));
     }
 
     @Override
@@ -20,23 +20,25 @@ public class EqualsNoneRef extends Equals {
     }
 
     @Override
-    public boolean validateValuesOrFail(final Class<?> typeClass) {
-        getValues().forEach(refPropertyName -> EasyValidator.validateProperty((String) refPropertyName, typeClass));
+    public boolean validateValuesOrFail(final Class<?> propertyType) {
+        getValues().forEach(refPropertyName -> EasyValidator.validateProperty((String) refPropertyName, propertyType));
         return true;
     }
 
     @Override
-    public boolean validate(final Object valueToValidate, final Object contraintObject) {
-        for (final Object property : getValues()) {
-            //TODO allow only non-indexed properties resp. 'single index'!?
-            final Object referencedValue = EasyValidator.getPropertyResultObject((String) property, contraintObject);
-            if (valueToValidate.equals(referencedValue)) {
-                log.debug("" + valueToValidate + " does NOT equals none referenced property " + property);
-                return false;
-            }
+    public boolean validate(final Object valueToValidate, final Object constraintObject) {
+        if (valueToValidate == null) {
+            return false;
         }
-        log.debug("" + valueToValidate + " does equals none referenced property of " + getValues());
-        return true;
+
+        final Boolean equals = getValues().stream()
+                .map(property -> EasyValidator.getPropertyResultObject((String) property, constraintObject))
+                .map(referencedValue -> Equals.equals(valueToValidate, referencedValue))
+                .filter(e -> e == true)
+                .findFirst().orElse(false);
+
+        log.debug("" + valueToValidate + (equals ? " " : " not ") + "equals a referenced property of " + getValues());
+        return !equals;
     }
 
 }

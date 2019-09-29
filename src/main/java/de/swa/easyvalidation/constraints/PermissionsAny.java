@@ -11,11 +11,11 @@ public class PermissionsAny extends Permissions {
     private static Logger log = LoggerFactory.getLogger(Dates.class);
 
     PermissionsAny(final String... values) {
-        setStringValues(Arrays.asList(values));
+        setObjectValues(Arrays.asList((Object[]) values));
     }
 
     PermissionsAny(final Enum<?>... values) {
-        setEnumValues(Arrays.asList(values));
+        setObjectValues(Arrays.asList((Object[]) values));
     }
 
     @Override
@@ -24,7 +24,7 @@ public class PermissionsAny extends Permissions {
     }
 
     @Override
-    public boolean validate(final Object object, final Object contraintObjectIgnored) {
+    public boolean validate(final Object object, final Object constraintObjectIgnored) {
         final boolean match = getValues().stream().anyMatch(value -> Objects.equals(value, object));
         log.debug("'" + object + "' does" + (match ? "" : " NOT") + " equals any of " + getValues());
         return match;

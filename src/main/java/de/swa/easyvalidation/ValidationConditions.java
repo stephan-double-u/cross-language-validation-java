@@ -6,7 +6,7 @@ import de.swa.easyvalidation.constraints.Permissions;
 import de.swa.easyvalidation.groups.AndGroup;
 import de.swa.easyvalidation.groups.ConstraintsSubGroup;
 import de.swa.easyvalidation.groups.ConstraintsTopGroup;
-import de.swa.easyvalidation.groups.ContentContraints;
+import de.swa.easyvalidation.groups.ContentConstraints;
 import de.swa.easyvalidation.groups.OrGroup;
 import de.swa.easyvalidation.json.JsonSerializable;
 import org.slf4j.Logger;
@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 
 import static de.swa.easyvalidation.json.JsonUtil.asKey;
 import static de.swa.easyvalidation.json.JsonUtil.asObject;
+import static de.swa.easyvalidation.json.JsonUtil.quoted;
 
 /**
  * A class to combine property validation conditions for (possibly nested) properties of type {@code T},
@@ -29,7 +31,7 @@ import static de.swa.easyvalidation.json.JsonUtil.asObject;
  *
  * @param <T> the type for which the conditions are defined
  */
-public class ValidationConditions<T> implements JsonSerializable {
+public class ValidationConditions<T> {
 
     public static final Permissions NO_PERMISSIONS_KEY = Permissions.any(new String[]{});
     public static final ConstraintsTopGroup NO_CONSTRAINT_REF_TOP_GROUP_VALUE = ConstraintsTopGroup.anded();
@@ -48,10 +50,6 @@ public class ValidationConditions<T> implements JsonSerializable {
         super();
         this.typeClass = typeClass;
         typeJsonKey = typeClass.getSimpleName().toLowerCase();
-    }
-
-    public static String serializeToJson(final ValidationConditions<?> ... conditions) {
-        return asObject(Arrays.asList(conditions).stream().map(c -> c.serializeToJson()).collect(Collectors.joining(",")));
     }
 
     public Set<String> getMandatoryPropertyKeys() {
@@ -404,16 +402,13 @@ public class ValidationConditions<T> implements JsonSerializable {
      */
     public void content(final String property, final Constraint contentConstraint, final Permissions permissions,
                         final ConstraintsTopGroup topGroup) {
-        putContentConditionsToPropertyMap(property, contentConstraint, permissions, topGroup);
-    }
-
-    private void putContentConditionsToPropertyMap(final String property, final Constraint contentConstraint, final Permissions permissions,
-                                      final ConstraintsTopGroup topGroup) {
         Objects.requireNonNull(property, "property must not be null");
         Objects.requireNonNull(contentConstraint, "contentConstraint must not be null");
         Objects.requireNonNull(permissions, "permissions must not be null");
         Objects.requireNonNull(topGroup, "topGroup must not be null");
-
+        if (property.isEmpty()) {
+            throw new IllegalArgumentException("property must not be empty");
+        }
 
         final ContentPermissionsMap permissionsMap = contentPropertyMap.getOrInit(property);
 
@@ -421,11 +416,12 @@ public class ValidationConditions<T> implements JsonSerializable {
         validateConstraint(property, contentConstraint);
         validatePropertyAndConstraintRefs(property, topGroup);
 
-        permissionsMap.put(permissions, new ContentContraints(contentConstraint, topGroup));
+        permissionsMap.put(permissions, new ContentConstraints(contentConstraint, topGroup));
     }
 
 
     private void validatePermissions(Set<Permissions> permissionsMap, Permissions permissions, String property) {
+        permissions.validateValuesOrFail(null);
         // Check if any permissions are 'not unique'; e.g. Perm.any(A,B), followed by Perm.any(C,B) -> constraints for B is not unique
         if (permissions == NO_PERMISSIONS_KEY) {
             if (permissionsMap.contains(permissions)) {
@@ -435,7 +431,7 @@ public class ValidationConditions<T> implements JsonSerializable {
             if(permissions.getValues().isEmpty()) {
                 throw new IllegalArgumentException(String.format("Permissions for property '%s' must not be empty.", property));
             }
-            Optional<Object> nonUniquePermission = checkPermissionUniqueness(permissionsMap, permissions);
+            Optional<String> nonUniquePermission = checkPermissionUniqueness(permissionsMap, permissions);
             if (nonUniquePermission.isPresent()) {
                 throw new IllegalArgumentException(String.format("Validation conditions for property '%s' and permission '%s' are already defined.",
                         property, nonUniquePermission.get().toString()));
@@ -443,11 +439,17 @@ public class ValidationConditions<T> implements JsonSerializable {
         }
     }
 
-    private Optional<Object> checkPermissionUniqueness(Set<Permissions> existingPermissions, Permissions newPermissions) {
+    private Optional<String> checkPermissionUniqueness(Set<Permissions> existingPermissions, Permissions newPermissions) {
         // Flatten all permission values
-        final Set<Object> existingPerms = existingPermissions.stream().map(p -> p.getValues()).flatMap(Collection::stream).collect(Collectors.toSet());
+        final Set<String> existingPerms = existingPermissions.stream()
+                .map(p -> p.getValues())
+                .flatMap(Collection::stream)
+                .map(p -> p.toString())
+                .collect(Collectors.toSet());
         // Search for permission that is already defined
-        final Set<Object> newPermissionsAsSet = newPermissions.getValues().stream().collect(Collectors.toSet());
+        final Set<String> newPermissionsAsSet = newPermissions.getValues().stream()
+                .map(p -> p.toString())
+                .collect(Collectors.toSet());
         existingPerms.retainAll(newPermissionsAsSet);
         return existingPerms.stream().findFirst();
     }
@@ -463,7 +465,7 @@ public class ValidationConditions<T> implements JsonSerializable {
 
     private void validateConstraintRef(final ConstraintRef constraintRef) {
         if (constraintRef == null) {
-            throw new IllegalArgumentException("ConstraintRef null is not allowed");
+            throw new IllegalArgumentException("ConstraintRef must not be null");
         }
         validateConstraint(constraintRef.getProperty(), constraintRef.getConstraint());
     }
@@ -476,18 +478,18 @@ public class ValidationConditions<T> implements JsonSerializable {
         // Check that constraint supports propertyType
         if (!constraint.isSupportedType(propertyType)) {
             throw new IllegalArgumentException(
-                    "Contraint " + constraint.getClass().getSimpleName() + " does not support type of property "
+                    "Constraint " + constraint.getClass().getSimpleName() + " does not support type of property "
                             + property + " (" + propertyType + ")");
         }
-        // Do further contraint specific validations
+        // Do further constraint specific validations
         //TODO haben property und refProperty den selben Typ ...
         constraint.validateValuesOrFail(typeClass);
     }
 
 
     /**
-     * Overwrites the default key that is used as an identifier for the generic type {@code T} when the validation conditions are
-     * serialized to JSON. The default key is the lowercase simple name of the class {@code T}.
+     * Overwrites the default key that is used as an identifier for the generic type {@code T} when the validation
+     * conditions are serialized to JSON. The default key is the lowercase simple name of the class {@code T}.
      *
      * @param typeJsonKey
      */
@@ -495,14 +497,37 @@ public class ValidationConditions<T> implements JsonSerializable {
         this.typeJsonKey = typeJsonKey;
     }
 
-    @Override
-    public String serializeToJson() {
-        String json = asKey(typeJsonKey) + "{";
-        json += asKey("mandatoryConditions") + asObject(mandatoryPropertyMap.serializeToJson()) + ",";
-        json += asKey("immutableConditions") + asObject(immutablePropertyMap.serializeToJson()) + ",";
-        json += asKey("contentConditions") + asObject(contentPropertyMap.serializeToJson());
-        json += "}";
-        return json;
+    public static String serializeToJson(final ValidationConditions<?> ... conditions) {
+        final List<ValidationConditions<?>> validationConditionsList = Arrays.asList(conditions);
+        String json = asKey("schema-version") + quoted("0.1") + ",";
+        json += asKey("mandatoryConditions") + asObject(validationConditionsList.stream()
+                .map(c -> c.serializeMandatoryConditions())
+                .filter(j -> !j.isEmpty())
+                .collect(Collectors.joining(","))) + ",";
+        json += asKey("immutableConditions") + asObject(validationConditionsList.stream()
+                .map(c -> c.serializeImmutableConditions())
+                .filter(j -> !j.isEmpty())
+                .collect(Collectors.joining(","))) + ",";
+        json += asKey("contentConditions") + asObject(validationConditionsList.stream()
+                .map(c -> c.serializeContentConditions())
+                .filter(j -> !j.isEmpty())
+                .collect(Collectors.joining(",")));
+        return asObject(json);
+    }
+
+    private String serializeMandatoryConditions() {
+        final String mapJson = mandatoryPropertyMap.serializeToJson();
+        return !mapJson.isEmpty() ? asKey(typeJsonKey) + asObject(mapJson) : "";
+    }
+
+    private String serializeImmutableConditions() {
+        final String mapJson = immutablePropertyMap.serializeToJson();
+        return !mapJson.isEmpty() ? asKey(typeJsonKey) + asObject(mapJson): "";
+    }
+
+    private String serializeContentConditions() {
+        final String mapJson = contentPropertyMap.serializeToJson();
+        return !mapJson.isEmpty() ? asKey(typeJsonKey) + asObject(mapJson): "";
     }
 
 }
