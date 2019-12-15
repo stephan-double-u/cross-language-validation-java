@@ -1,9 +1,12 @@
 package de.swa.easyvalidation.constraints;
 
-public abstract class Constraint extends ConstraintRoot {
+public abstract class Constraint {
 
-    public static ConstraintRef ref(final String propertyName, final Constraint constraint) {
-        return new ConstraintRef(propertyName, constraint);
+    private Constraint() {
+    }
+
+    public static PropConstraint ref(final String propertyName, final ConstraintRoot constraint) {
+        return new PropConstraint(propertyName, constraint);
     }
 
 }

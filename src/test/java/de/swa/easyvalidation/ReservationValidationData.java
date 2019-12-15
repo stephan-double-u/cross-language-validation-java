@@ -2,7 +2,7 @@ package de.swa.easyvalidation;
 
 import de.swa.easyvalidation.constraints.Equals;
 
-public class ReservationValidationData extends ValidationConditions<EasyValidationTesting.Reservation> {
+public class ReservationValidationData extends ValidationRules<EasyValidationTesting.Reservation> {
 
         private ReservationValidationData(Class<EasyValidationTesting.Reservation> typeClass) {
             super(typeClass);

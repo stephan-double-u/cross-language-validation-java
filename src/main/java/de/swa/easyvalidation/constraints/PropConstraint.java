@@ -6,12 +6,12 @@ import de.swa.easyvalidation.json.JsonSerializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConstraintRef implements JsonSerializable {
+public class PropConstraint implements JsonSerializable {
 
     private final String property;
-    private final Constraint constraint;
+    private final ConstraintRoot constraint;
 
-    ConstraintRef(final String property, final Constraint constraint) {
+    PropConstraint(final String property, final ConstraintRoot constraint) {
         this.property = property;
         this.constraint = constraint;
     }
@@ -20,7 +20,7 @@ public class ConstraintRef implements JsonSerializable {
         return property;
     }
 
-    public Constraint getConstraint() {
+    public ConstraintRoot getConstraint() {
         return constraint;
     }
 

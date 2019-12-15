@@ -6,7 +6,7 @@ import de.swa.easyvalidation.EasyValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EqualsAnyRef extends Equals {
+public class EqualsAnyRef extends EqualsRoot {
 
     private static Logger log = LoggerFactory.getLogger(EqualsAnyRef.class);
 
@@ -15,7 +15,7 @@ public class EqualsAnyRef extends Equals {
     }
 
     @Override
-    String getType() {
+    public String getType() {
         return "EQUALS_ANY_REF";
     }
 
@@ -33,7 +33,7 @@ public class EqualsAnyRef extends Equals {
 
         final Boolean equals = getValues().stream()
                 .map(property -> EasyValidator.getPropertyResultObject((String) property, constraintObject))
-                .map(referencedValue -> Equals.equals(valueToValidate, referencedValue))
+                .map(referencedValue -> EqualsRoot.equals(valueToValidate, referencedValue))
                 .filter(e -> e == true)
                 .findFirst().orElse(false);
 

@@ -1,28 +1,23 @@
 package de.swa.easyvalidation.groups;
 
-import de.swa.easyvalidation.constraints.Constraint;
-import de.swa.easyvalidation.json.JsonSerializable;
-import de.swa.easyvalidation.json.JsonUtil;
-
-import static de.swa.easyvalidation.json.JsonUtil.asKey;
-import static de.swa.easyvalidation.json.JsonUtil.asObject;
+import de.swa.easyvalidation.constraints.ConstraintRoot;
 
 public class ContentConstraints {
 
-    private final Constraint contentConstraint;
-    private final ConstraintsTopGroup constraintsTopGroup;
+    private final ConstraintRoot contentConstraint;
+    private final RelationsTopGroup relationsTopGroup;
 
-    public ContentConstraints(final Constraint contentConstraint, final ConstraintsTopGroup constraintsTopGroup) {
+    public ContentConstraints(final ConstraintRoot contentConstraint, final RelationsTopGroup relationsTopGroup) {
         this.contentConstraint = contentConstraint;
-        this.constraintsTopGroup = constraintsTopGroup;
+        this.relationsTopGroup = relationsTopGroup;
     }
 
-    public Constraint getContentConstraint() {
+    public ConstraintRoot getContentConstraint() {
         return contentConstraint;
     }
 
-    public ConstraintsTopGroup getConstraintsTopGroup() {
-        return constraintsTopGroup;
+    public RelationsTopGroup getRelationsTopGroup() {
+        return relationsTopGroup;
     }
 
 }

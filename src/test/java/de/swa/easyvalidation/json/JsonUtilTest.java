@@ -3,6 +3,8 @@ package de.swa.easyvalidation.json;
 import org.junit.Test;
 
 import java.sql.JDBCType;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 
 import static org.junit.Assert.*;
@@ -42,6 +44,11 @@ public class JsonUtilTest {
     @Test
     public void asArrayFromNumbers() {
         assertEquals("[1,2.0,3]", JsonUtil.asArray(Arrays.asList(1, 2d, 3L)));
+    }
+
+    @Test
+    public void asArrayFromDates() {
+        assertEquals("[\"2019-12-31\"]", JsonUtil.asArray(Arrays.asList(LocalDate.of(2019, 12, 31))));
     }
 
 }

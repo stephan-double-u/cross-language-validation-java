@@ -12,8 +12,6 @@ public abstract class Permissions extends ConstraintRoot {
     Permissions() {
     }
 
-    abstract String getType();
-
     /**
      * The related condition is validated only if at least one permission applies.
      *
@@ -21,7 +19,7 @@ public abstract class Permissions extends ConstraintRoot {
      * @return a {@code PermissionsAny} object that holds the permissions
      */
     public static PermissionsAny any(final String... values) {
-        if (Arrays.asList(values).contains(null)){
+        if (Arrays.asList(values).contains(null)) {
             throw new IllegalArgumentException("Null values are not allowed");
         }
         return new PermissionsAny(values);
@@ -35,7 +33,7 @@ public abstract class Permissions extends ConstraintRoot {
      * @return a {@code PermissionsAny} object that holds the permissions
      */
     public static PermissionsAny any(final Enum<?>... values) {
-        if (Arrays.asList(values).contains(null)){
+        if (Arrays.asList(values).contains(null)) {
             throw new IllegalArgumentException("Null values are not allowed");
         }
         return new PermissionsAny(values);

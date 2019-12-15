@@ -34,13 +34,13 @@ public class IndexedPropertyHelper {
      * the values is determined by the {@code IndexType}.<br/>
      * Possible formats and meanings:
      * <ul>
-     * <li>[0] : One single index position (lessThan &gt;= 0). {@code IndexType} is {@code LIST}, list contains the index
-     * lessThan.</li>
-     * <li>[1-5] : range of index positions (1<sup>st</sup> lessThan &gt;= 0 and 2<sup>nd</sup> lessThan &gt;= 1st lessThan).
+     * <li>[0] : One single index position (value &gt;= 0). {@code IndexType} is {@code LIST}, list contains the index
+     * value.</li>
+     * <li>[1-5] : range of index positions (1<sup>st</sup> value &gt;= 0 and 2<sup>nd</sup> value &gt;= 1st value).
      * {@code IndexType} is {@code LIST}, list contains the range values.</li>
      * <li>[2,4,8] : list of index positions (values &gt;= 0 in arbitrary sequence). {@code IndexType} is
      * {@code LIST}, list contains the listed values.</li>
-     * <li>[0/2] : increment specified index positions (1<sup>st</sup> lessThan &gt;= 0 and 2<sup>nd</sup> lessThan &gt;= 1).
+     * <li>[0/2] : increment specified index positions (1<sup>st</sup> value &gt;= 0 and 2<sup>nd</sup> value &gt;= 1).
      * {@code IndexType} is {@code INCREMENT}, list contains the start index and the increment.</li>
      * <li>[*] : convenience format for [0/1]
      * </ul>

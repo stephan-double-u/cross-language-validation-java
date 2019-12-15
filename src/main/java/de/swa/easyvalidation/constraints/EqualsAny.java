@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDate;
 import java.util.Arrays;
 
-public class EqualsAny extends Equals {
+public class EqualsAny extends EqualsRoot {
 
     private static Logger log = LoggerFactory.getLogger(EqualsAny.class);
 
@@ -31,7 +31,7 @@ public class EqualsAny extends Equals {
     }
 
     @Override
-    String getType() {
+    public String getType() {
         return "EQUALS_ANY";
     }
 
@@ -40,7 +40,7 @@ public class EqualsAny extends Equals {
         if (object == null) {
             return false;
         }
-        final boolean match = getValues().stream().anyMatch(value -> Equals.equals(value, object));
+        final boolean match = getValues().stream().anyMatch(value -> EqualsRoot.equals(value, object));
         log.debug("'" + object + "' does" + (match ? "" : " NOT") + " equals one of " + getValues());
         return match;
     }

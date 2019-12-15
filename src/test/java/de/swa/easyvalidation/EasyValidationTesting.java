@@ -1,17 +1,8 @@
 package de.swa.easyvalidation;
 
-import de.swa.easyvalidation.constraints.Constraint;
-import de.swa.easyvalidation.constraints.ConstraintRef;
-import de.swa.easyvalidation.constraints.Dates;
-import de.swa.easyvalidation.constraints.Equals;
-import de.swa.easyvalidation.constraints.LessThan;
-import de.swa.easyvalidation.constraints.LessThanString.ComparisonType;
-import de.swa.easyvalidation.constraints.Limit;
-import de.swa.easyvalidation.constraints.Permissions;
-import de.swa.easyvalidation.constraints.RegEx;
-import de.swa.easyvalidation.constraints.Size;
-import de.swa.easyvalidation.groups.ConstraintsSubGroup;
-import de.swa.easyvalidation.groups.ConstraintsTopGroup;
+import de.swa.easyvalidation.constraints.*;
+import de.swa.easyvalidation.groups.RelationsSubGroup;
+import de.swa.easyvalidation.groups.RelationsTopGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,28 +27,28 @@ public class EasyValidationTesting {
 
     public static void main(String[] args) {
 
-        final ValidationConditions<Reservation> conditions = new ValidationConditions<>(Reservation.class);
-        //conditions.mandatory("customer", Constraint.ref("aBoolean", Equals.any("NEW")));
-        conditions.mandatory("customer", Constraint.ref("aBoolean", Equals.any(TRUE)));
-        conditions.mandatory("customer", Permissions.any("aaa"));
-        conditions.mandatory("id", Permissions.any("aaa"));
-        conditions.mandatory("id", Permissions.any("bbb"),
+        final ValidationRules<Reservation> rules = new ValidationRules<>(Reservation.class);
+        //rules.mandatory("customer", Constraint.ref("aBoolean", Equals.any("NEW")));
+        rules.mandatory("customer", Constraint.ref("aBoolean", Equals.any(TRUE)));
+        rules.mandatory("customer", Permissions.any("aaa"));
+        rules.mandatory("id", Permissions.any("aaa"));
+        rules.mandatory("id", Permissions.any("bbb"),
                 Constraint.ref("someString", Size.minMax(1,3)),
                 Constraint.ref("articleArray", Size.min(2)),
                 Constraint.ref("someMap", Size.max(2)));
-        conditions.mandatory("id",
-                ConstraintsTopGroup.anded(
-                        ConstraintsSubGroup.or(
+        rules.mandatory("id",
+                RelationsTopGroup.AND(
+                        RelationsSubGroup.OR(
                                 Constraint.ref("id", Equals.none(1, 2, 3)),
                                 Constraint.ref("id", Equals.none(4)) ),
-                        ConstraintsSubGroup.and(
+                        RelationsSubGroup.AND(
                                 Constraint.ref("id", Equals.any(1)) )
                 )
         );
 
-        conditions.mandatory("articleList[0].name",
+        rules.mandatory("articleList[0].name",
                 Constraint.ref("articleArray[0].name", Equals.null_()));
-        conditions.mandatory("someInt",
+        rules.mandatory("someInt",
                 Constraint.ref("someString", RegEx.any("nomatch", "N[A-Z]+")),
                 Constraint.ref("status", RegEx.any("E")),
                 Constraint.ref("startDate", Dates.future()),
@@ -65,107 +56,125 @@ public class EasyValidationTesting {
                 Constraint.ref("startCalDate", Dates.future(100))
                 );
 
-        conditions.mandatory("status",
-                ConstraintsSubGroup.and(
-                        Constraint.ref("someInt", Limit.max(Limit.SAVE_INTEGER_MAX)),
+        rules.mandatory("status",
+                RelationsSubGroup.AND(
+                        Constraint.ref("someInt", Range.minMax(1, 999)),
+                        Constraint.ref("someInt", Range.min(1).max(999)),
+                        Constraint.ref("someLong", Range.max(RangeRoot.SAVE_INTEGER_MAX)),
+                        Constraint.ref("someInt", Range.minAny(1, 2).maxAny(8, 999)),
+                        Constraint.ref("someInt", Range.maxAny(999)),
                         Constraint.ref("aBoolean", Equals.any(TRUE)),
                         Constraint.ref("someInt", Equals.notNull()),
                         Constraint.ref("id", Equals.none(-1, 123456789)) ),
-                ConstraintsSubGroup.and(
+                RelationsSubGroup.AND(
                         Constraint.ref("id", Equals.none(666, 999)))
                 );
-        conditions.mandatory("aBoolean",
-                ConstraintsSubGroup.or(
+        rules.mandatory("aBoolean",
+                RelationsSubGroup.OR(
                         Constraint.ref("someString", Size.minMax(1, 100)),
                         Constraint.ref("articleList", Size.min(1)),
                         Constraint.ref("articleArray", Size.max(100)) ),
-                ConstraintsSubGroup.or(
+                RelationsSubGroup.OR(
                         Constraint.ref("id", Equals.none(404)) )
                 );
-        conditions.mandatory("customer.name",
+        rules.mandatory("customer.name",
                 //Constraint.ref("customer", EqualsAny.values(new Customer("aaa"))),
-                Constraint.ref("customer.name", LessThan.lessThan("GreatestStringEver", ComparisonType.LEXICOGRAPHICAL_UNICODE)),
+                Constraint.ref("customer.name", Range.min("GreatestStringEver").maxAny("X", "Y").use(ComparisonType.LEXICOGRAPHICAL_UNICODE)),
                 Constraint.ref("status", Equals.any(ReservationStatus.NEW)),
                 Constraint.ref("status", Equals.notNull())
                 );
 
-        final ConstraintRef a = Constraint.ref("someString", Size.minMax(1, 100));
+        final PropConstraint a = Constraint.ref("someString", Size.minMax(1, 100));
 
-        conditions.immutable("id");
-        conditions.immutable("status", a);
-        conditions.immutable("status", Permissions.any(Perms.aaa), a);
+        rules.immutable("id");
+        rules.immutable("status", a);
+        rules.immutable("status", Permissions.any(Perms.aaa), a);
 
-        conditions.content("status", Equals.any("one", "two"), Permissions.any(Perms.aaa));
-        conditions.content("status", Equals.any("NEW", "four"), Permissions.any("baz", "bar"));
-        conditions.content("status", Equals.any("five"));
+        rules.content("status", Equals.any("one", "two"), Permissions.any(Perms.aaa));
+        rules.content("status", Equals.any("NEW", "four"), Permissions.any("baz", "bar"));
+        rules.content("status", Equals.any("five"));
 
-        conditions.content("stringList[0]", Equals.any("one", "two"));
-        conditions.content("someString", Equals.anyRef("articleList[0].name"));
-        conditions.content("id", Equals.any(101, 202, 303),
+        rules.content("stringList[0]", Equals.any("one", "two"));
+        rules.content("someString", Equals.anyRef("articleList[0].name"));
+        rules.content("id", Equals.any(101, 202, 303),
                 a, a, a, a);
 
 /*
-        conditions.content("id", Equals.any(101, 202, 303),
-                ConstraintsSubGroup.or(a, a),
-                ConstraintsSubGroup.or(a, a)
+        rules.content("id", Equals.any(101, 202, 303),
+                RelationsSubGroup.or(a, a),
+                RelationsSubGroup.or(a, a)
                 );
-        conditions.content("id", Equals.any(101, 202, 303),
-                ConstraintsSubGroup.and(a, a),
-                ConstraintsSubGroup.and(a, a)
+        rules.content("id", Equals.any(101, 202, 303),
+                RelationsSubGroup.and(a, a),
+                RelationsSubGroup.and(a, a)
                 );
-        conditions.content("id", Equals.any(101, 202, 303),
-                ConstraintsTopGroup.ored(
-                        ConstraintsSubGroup.and(a, a),
-                        ConstraintsSubGroup.or(a, a)
+        rules.content("id", Equals.any(101, 202, 303),
+                RelationsTopGroup.ored(
+                        RelationsSubGroup.and(a, a),
+                        RelationsSubGroup.or(a, a)
                         )
                 );
 */
 
+        final ValidationRules<Article> articleRules = new ValidationRules<>(Article.class);
+        articleRules.immutable("animalUse",
+                RelationsTopGroup.OR(
+                        RelationsSubGroup.AND(
+                                Constraint.ref("animalUse", Equals.any(TRUE)),
+                                Constraint.ref("usedOnce", Equals.any(TRUE))
+                        ),
+                        RelationsSubGroup.AND(
+                                Constraint.ref("medicalSetId", Equals.notNull())
+                        )
+                )
+        );
+
+
         final List<Perms> ps = new ArrayList<Perms>() {{add(Perms.bar);}};
 
         final Reservation reservation1 = new Reservation(101, ReservationStatus.NEW, new Customer("Donald Duck"),
-                Arrays.asList(new Article("Endoscope")));
+                Arrays.asList(new Article("Endoscope", true, true, null)));
 
-        final List<String> err1 = EasyValidator.instance().validateMandatoryConditions(reservation1, conditions);
+        final List<String> err1 = EasyValidator.instance().validateMandatoryRules(reservation1, rules);
         System.out.println("Validation errors: " + err1);
 
-        final List<String> errx = EasyValidator.validateMandatoryConditions(reservation1, UserPermissions.of(Perms.aaa, OtherEnum.dummy), conditions);
+        final List<String> errx = EasyValidator.validateMandatoryRules(reservation1, UserPermissions.of(Perms.aaa, OtherEnum.dummy), rules);
         System.out.println("Validation errors: " + errx);
 
-        final List<String> erry = EasyValidator.validateMandatoryConditions(reservation1, UserPermissions.of(ps.toArray(new Perms[0])), conditions);
+        final List<String> erry = EasyValidator.validateMandatoryRules(reservation1, UserPermissions.of(ps.toArray(new Perms[0])), rules);
         System.out.println("Validation errors: " + erry);
 
-        final List<String> errz = EasyValidator.validateMandatoryConditions(reservation1, UserPermissions.of("joe", "tom"), conditions);
+        final List<String> errz = EasyValidator.validateMandatoryRules(reservation1, UserPermissions.of("joe", "tom"), rules);
         System.out.println("Validation errors: " + errz);
 
         final Reservation reservation2 = new Reservation(101, ReservationStatus.APPROVED, new Customer("Donald Duck"),
-                Arrays.asList(new Article("Endoscope")));
+                Arrays.asList(new Article("Endoscope", true, true, null)));
 
-        final List<String> err2 = EasyValidator.validateImmutableConditions(reservation1, reservation2, conditions);
+        final List<String> err2 = EasyValidator.validateImmutableRules(reservation1, reservation2, rules);
         System.out.println("Validation errors2: " + err2);
 
-        final List<String> err3 = EasyValidator.validateContentConditions(reservation1, conditions);
+        final List<String> err3 = EasyValidator.validateContentRules(reservation1, rules);
         System.out.println("Validation errors: " + err3);
 
-        final List<String> err4 = EasyValidator.validateContentConditions(reservation1, UserPermissions.of(Perms.aaa, OtherEnum.dummy), conditions);
+        final List<String> err4 = EasyValidator.validateContentRules(reservation1, UserPermissions.of(Perms.aaa, OtherEnum.dummy), rules);
         System.out.println("Validation errors: " + err4);
 
-        final List<String> err5 = EasyValidator.validateContentConditions(reservation1, conditions);
+        final List<String> err5 = EasyValidator.validateContentRules(reservation1, rules);
         System.out.println("Validation errors: " + err5);
 
 
         final long nanoTime = System.nanoTime();
-        System.out.println("serializeToJson: " + ValidationConditions.serializeToJson(conditions));
+        System.out.println("serializeToJson: " + ValidationRules.serializeToJson(rules));
         System.out.println("Micros(!):" + (System.nanoTime() - nanoTime)/1000);
 
-        ValidationConditions<URL> cond1 = new ValidationConditions<>(URL.class);
-        ValidationConditions<URI> cond2 = new ValidationConditions<>(URI.class);
-        System.out.println("serializeToJson: " + ValidationConditions.serializeToJson(cond1, cond2));
+        ValidationRules<URL> cond1 = new ValidationRules<>(URL.class);
+        ValidationRules<URI> cond2 = new ValidationRules<>(URI.class);
+        System.out.println("serializeToJson: " + ValidationRules.serializeToJson(cond1, cond2));
         final ReservationValidationData reservationValidationData = ReservationValidationData.instance();
-        System.out.println("serializeToJson: " + ValidationConditions.serializeToJson(reservationValidationData));
+        System.out.println("serializeToJson: " + ValidationRules.serializeToJson(reservationValidationData));
 
 
-        final ValidationConditions<Reservation> condAllInOne = new ValidationConditions<>(Reservation.class);
+        final ValidationRules<Reservation> condAllInOne = new ValidationRules<>(Reservation.class);
         condAllInOne.mandatory("id",
                 Constraint.ref("status", Equals.any(ReservationStatus.NEW)),
                 Constraint.ref("someString", Equals.any("NEW")),
@@ -190,7 +199,7 @@ public class EasyValidationTesting {
                 Constraint.ref("startLocalDate", Dates.past(2)),
                 Constraint.ref("startCalDate", Dates.future(100))
         );
-        System.out.println("serializeToJson: " + ValidationConditions.serializeToJson(condAllInOne));
+        System.out.println("serializeToJson: " + ValidationRules.serializeToJson(condAllInOne));
     }
 
     enum Perms {
@@ -201,7 +210,7 @@ public class EasyValidationTesting {
         dummy
     }
 
-    class ReservationValidationConditions {}
+    class ReservationValidationRules {}
     public static class Reservation extends ReservationVO implements Identifiable<Integer> {
         private final ReservationStatus status;
         private final Customer customer;
@@ -211,6 +220,7 @@ public class EasyValidationTesting {
         private final String someString = "NEW";
         private final String nullString = null;
         private final int someInt = 123;
+        private final long someLong = 123456789L;
         private final BigInteger someBigInteger = new BigInteger("12345678901234567890123456789012345678901234567890");
 
         private final Boolean aBoolean = true; // Supporting isaBoolean() and getaBoolean getter!
@@ -256,6 +266,9 @@ public class EasyValidationTesting {
         }
         public int getSomeInt() {
             return someInt;
+        }
+        public long getSomeLong() {
+            return someLong;
         }
         public BigInteger getSomeBigInteger() {
             return someBigInteger;
@@ -310,11 +323,26 @@ public class EasyValidationTesting {
     }
     public static class Article {
         private final String name;
-        public Article(final String name) {
+        private final boolean animalUse;
+        private final boolean usedOnce;
+        private final Long medicalSetId;
+        public Article(final String name, boolean animalUse, boolean usedOnce, Long medicalSetId) {
             this.name = name;
+            this.animalUse = animalUse;
+            this.usedOnce = usedOnce;
+            this.medicalSetId = medicalSetId;
         }
         public String getName() {
             return name;
+        }
+        public boolean isAnimalUse() {
+            return animalUse;
+        }
+        public boolean isUsedOnce() {
+            return usedOnce;
+        }
+        public Long getMedicalSetId() {
+            return medicalSetId;
         }
     }
     public static enum ReservationStatus {

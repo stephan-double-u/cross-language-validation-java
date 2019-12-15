@@ -12,7 +12,7 @@ import static de.swa.easyvalidation.json.JsonUtil.asArray;
 import static de.swa.easyvalidation.json.JsonUtil.asKey;
 import static de.swa.easyvalidation.json.JsonUtil.quoted;
 
-public class RegEx extends Constraint {
+public class RegEx extends ConstraintRoot {
 
     private static Logger log = LoggerFactory.getLogger(RegEx.class);
 
@@ -44,7 +44,7 @@ public class RegEx extends Constraint {
      * @param regex the regular expressions one of which must match the element
      */
     public static RegEx any(final String... regex) {
-        if (Arrays.asList(regex).contains(null)){
+        if (Arrays.asList(regex).contains(null)) {
             throw new IllegalArgumentException("Null values are not allowed");
         }
         final RegEx constraint = new RegEx(regex);
@@ -74,4 +74,8 @@ public class RegEx extends Constraint {
         return asKey("type") + quoted(type) + "," + asKey("values") + asArray(getValues());
     }
 
+    @Override
+    public String getType() {
+        return type;
+    }
 }

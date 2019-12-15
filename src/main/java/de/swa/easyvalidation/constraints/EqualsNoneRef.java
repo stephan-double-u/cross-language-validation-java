@@ -6,7 +6,7 @@ import de.swa.easyvalidation.EasyValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EqualsNoneRef extends Equals {
+public class EqualsNoneRef extends EqualsRoot {
 
     private static Logger log = LoggerFactory.getLogger(EqualsNoneRef.class);
 
@@ -15,7 +15,7 @@ public class EqualsNoneRef extends Equals {
     }
 
     @Override
-    String getType() {
+    public String getType() {
         return "EQUALS_NONE_REF";
     }
 
@@ -33,7 +33,7 @@ public class EqualsNoneRef extends Equals {
 
         final Boolean equals = getValues().stream()
                 .map(property -> EasyValidator.getPropertyResultObject((String) property, constraintObject))
-                .map(referencedValue -> Equals.equals(valueToValidate, referencedValue))
+                .map(referencedValue -> EqualsRoot.equals(valueToValidate, referencedValue))
                 .filter(e -> e == true)
                 .findFirst().orElse(false);
 

@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 import static de.swa.easyvalidation.json.JsonUtil.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -20,7 +19,7 @@ import java.util.List;
  * Implementation note: The class is named {@code Dates} (with {@code s}) to avoid name clash with
  * {@linkplain Date}.
  */
-public class Dates extends Constraint {
+public class Dates extends ConstraintRoot {
 
     private static Logger log = LoggerFactory.getLogger(Dates.class);
 
@@ -28,8 +27,6 @@ public class Dates extends Constraint {
 
     public static final String FUTURE_DATE_TOKEN = "FUTURE";
     public static final String PAST_DATE_TOKEN = "PAST";
-
-    private String messageDefault = "{validation.constraint.dates}";
 
     private Dates (final List<Object> values) {
         setObjectValues(values);
@@ -135,4 +132,8 @@ public class Dates extends Constraint {
         return asKey("type") + quoted(type + "_" + token) + "," + asKey("days") + daysOffset;
     }
 
+    @Override
+    public String getType() {
+        return type + "_" + getValues().get(0);
+    }
 }

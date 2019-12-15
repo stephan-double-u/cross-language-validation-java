@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDate;
 import java.util.Arrays;
 
-public class EqualsNone extends Equals {
+public class EqualsNone extends EqualsRoot {
 
     private static Logger log = LoggerFactory.getLogger(EqualsNone.class);
 
@@ -31,7 +31,7 @@ public class EqualsNone extends Equals {
     }
 
     @Override
-    String getType() {
+    public String getType() {
         return "EQUALS_NONE";
     }
 
@@ -40,7 +40,7 @@ public class EqualsNone extends Equals {
         if (object == null) {
             return true;
         }
-        final boolean match = getValues().stream().anyMatch(value -> Equals.equals(value, object));
+        final boolean match = getValues().stream().anyMatch(value -> EqualsRoot.equals(value, object));
         log.debug("'" + object + "' does" + (match ? "" : " NOT") + " equals one of " + getValues() + " but should not");
         return !match;
     }

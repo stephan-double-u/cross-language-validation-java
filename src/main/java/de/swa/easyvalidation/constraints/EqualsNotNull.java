@@ -3,7 +3,7 @@ package de.swa.easyvalidation.constraints;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EqualsNotNull extends Equals {
+public class EqualsNotNull extends EqualsRoot {
 
     private static Logger log = LoggerFactory.getLogger(EqualsNotNull.class);
 
@@ -11,7 +11,7 @@ public class EqualsNotNull extends Equals {
     }
 
     @Override
-    String getType() {
+    public String getType() {
         return "EQUALS_NOT_NULL";
     }
 

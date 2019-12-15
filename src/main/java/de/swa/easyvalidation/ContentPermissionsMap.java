@@ -43,13 +43,13 @@ public class ContentPermissionsMap implements JsonSerializable {
         return mapAsJson;
     }
 
-    // Special treatment here: sequence should be <contentConstraint>[,<permsissions>][,<constraintsTopGroup>]
+    // Special treatment here: sequence should be <contentConstraint>[,<permsissions>][,<relationsTopGroup>]
     private String serialize(Map.Entry<Permissions, ContentConstraints> e) {
         final String contentConstraintJson = asKey("contentConstraint") + asObject(e.getValue().getContentConstraint().serializeToJson());
         final String permsissionsJson = e.getKey().serializeToJson();
-        final String constraintsTopGroupJson = e.getValue().getConstraintsTopGroup().serializeToJson();
+        final String relationsTopGroupJson = e.getValue().getRelationsTopGroup().serializeToJson();
         final String sep1 = permsissionsJson == "" ? "" : ",";
-        final String sep2 = constraintsTopGroupJson == "" ? "" : ",";
-        return asObject(contentConstraintJson + sep1 + permsissionsJson + sep2 + constraintsTopGroupJson);
+        final String sep2 = relationsTopGroupJson == "" ? "" : ",";
+        return asObject(contentConstraintJson + sep1 + permsissionsJson + sep2 + relationsTopGroupJson);
     }
 }

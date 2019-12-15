@@ -1,30 +1,33 @@
+==> "Erkenntniss?!": 'Selbstbezug' funzt nur bei immutable? Bei 'content' (z.B: status eq. FOO if status eqAnyOf BAR, ZOO) müsste auf dem Server gegen die 'alte' Version geprüft werden ...
+Lösung?: Originalwert in so einem Fall in einer 'Property-Kopie' merken, z.B. 'origAnimalUse' ...
+
 Constraint.ref(erence) -> .rel(ation) : Besser 'Beziehung' als 'Verweis' ...
 Equals.any(TRUE) doch besser Equals.true(); oder beides!? (dito mit FALSE)
 
 
-AND/OR conditions
+AND/OR rules
 - ORed AND groups: a && b || c && d      // equals: (a || c) && (b || c) && (a || d) && (b || d)
 - ANDed OR groups: (e || f) && (g || h)  // equals: e && g || e && h || f && g || f && h
 
 How-to message keys: benötigt für Objekt Validierung
 1. Default-Werte, z.B. "error.property.required", ...
 2. EasyValidator.setDefaultMessageKeyForMandatoryProperties("...")
-3. Bei Definition angeben: conditions.mandatory("foo", "msg.foo.req", Constraint.ref("bar", ...))
+3. Bei Definition angeben: rules.mandatory("foo", "msg.foo.req", Constraint.ref("bar", ...))
    Nachteil?: 2 String-Argumente: besser Prop.name("foo").msg("msg.foo.req") ? eher nicht ...
    Eigener Map-Caches für msg keys: "foo" -> "msg.foo.req"
 
-Original DEMO project conditions:
+Original DEMO project rules:
 immutable.put("animalUse", new ValidationCondition("everLeftWarehouse", true), new ValidationCondition("animalUse", true));
 neue Anforderung kann z.Z. nicht umgesetzt werden: OR ValidationCondition.notEqualsNull()
 
 Erweiterungen?:
 RegExp auch auf Number: z.B. "nur ungerade Ziffern" -> any("[13579]+")
-ALLE List/Array Elemente prüfen: conditions.content("articles[*].name", Size.min(3))
+ALLE List/Array Elemente prüfen: rules.content("articles[*].name", Size.min(3))
 
 Kennzeichnung, ob Contraint nur für Inserts oder Updates gilt?! Z.B.
-- Nur bei Insert: conditions.content("id", Equals.null_())
-- Bei Update/Delete: conditions.content("id", Equals.notNull())
-- Bei Update: conditions.immutable("lastModifiedOn")
+- Nur bei Insert: rules.content("id", Equals.null_())
+- Bei Update/Delete: rules.content("id", Equals.notNull())
+- Bei Update: rules.immutable("lastModifiedOn")
 
 Kennzeichnung, ob Contraint serialisiert werden soll oder nicht?
 

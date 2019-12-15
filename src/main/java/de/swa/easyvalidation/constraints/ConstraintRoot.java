@@ -14,6 +14,8 @@ public abstract class ConstraintRoot implements JsonSerializable {
     ConstraintRoot() {
     }
 
+    public abstract String getType();
+
     /**
      * Checks if the class is supported by the constraint.
      * 
@@ -24,10 +26,10 @@ public abstract class ConstraintRoot implements JsonSerializable {
     public abstract boolean isSupportedType(Class<?> clazz);
     
     /**
-     * Validates the given lessThan against this constraint.
+     * Validates the given object against this constraint.
      * 
      * @param value
-     *            the lessThan to validate
+     *            the object to validate
      * @param constraintObject
      *            the object the constraint is defined on
      * @return {@code true} if the constraint is fulfilled, {@code false} otherwise
@@ -45,14 +47,20 @@ public abstract class ConstraintRoot implements JsonSerializable {
         return true;
     }
 
+    /**
+     * Gets the constraint related values.
+     *
+     * @return the constraint related values
+     */
     public List<Object> getValues() {
         return values;
     }
 
-    /*
-     * Setter methods for the different kinds of constraint values.
+    /**
+     * Sets the constraint related values.
+     *
+     * @param values the constraint related values
      */
-
     void setObjectValues(final List<Object> values) {
         this.values = Collections.unmodifiableList(values);
     }

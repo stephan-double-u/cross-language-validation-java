@@ -13,7 +13,7 @@ public class Collations {
     public static void main(String[] args) {
         /* Gemeinsamkeiten und Unterschiede zw. java.text.Collator und Javascript String#localeCompare() ?!
          * 
-         * String.compareTo: lexicographically based on the Unicode lessThan
+         * String.compareTo: lexicographically based on the Unicode value
          * String.CASE_INSENSITIVE_ORDER: Comparator w/o locales support ...
          * -> Collator#compare
          */

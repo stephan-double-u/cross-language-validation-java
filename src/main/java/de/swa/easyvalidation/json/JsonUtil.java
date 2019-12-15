@@ -1,9 +1,6 @@
 package de.swa.easyvalidation.json;
 
-import de.swa.easyvalidation.ValidationConditions;
-
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,23 +26,18 @@ public abstract class JsonUtil {
     }
 
     /**
-     * Values of type String and Enum get quoted
+     * Values of type String, Enumand LocalDate get quoted.
+     *
      * @param objects
      * @return
      */
     public static String asArray(final List<Object> objects) {
-        String json = "";
-        boolean first = true;
-        for (final Object value : objects) {
-            json += (!first ? "," : "");
-            if (value != null && value instanceof String || value instanceof Enum<?> || value instanceof LocalDate) {
-                json += quoted(value.toString());
-            } else {
-                json += value;
-            }
-            first = false;
-        }
-        return asArray(json);
+        return asArray(objects.stream().map(o -> quoteIfNeeded(o)).collect(Collectors.joining(",")));
+    }
+
+    private static String quoteIfNeeded(Object o) {
+        return (o != null && (o instanceof String || o instanceof Enum<?> || o instanceof LocalDate))
+                ? quoted(o.toString()) : "" + o;
     }
 
 }

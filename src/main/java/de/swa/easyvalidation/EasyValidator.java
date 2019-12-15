@@ -1,14 +1,11 @@
 package de.swa.easyvalidation;
 
 import de.swa.easyvalidation.constraints.Constraint;
-import de.swa.easyvalidation.constraints.ConstraintRef;
+import de.swa.easyvalidation.constraints.ConstraintRoot;
+import de.swa.easyvalidation.constraints.PropConstraint;
 import de.swa.easyvalidation.constraints.Permissions;
-import de.swa.easyvalidation.groups.AndGroup;
-import de.swa.easyvalidation.groups.ConstraintsSubGroup;
-import de.swa.easyvalidation.groups.ConstraintsTopGroup;
-import de.swa.easyvalidation.groups.ContentConstraints;
-import de.swa.easyvalidation.groups.LogicalOperator;
-import de.swa.easyvalidation.groups.OrGroup;
+import de.swa.easyvalidation.groups.*;
+import de.swa.easyvalidation.groups.RelationsSubGroup;
 import de.swa.easyvalidation.util.IndexedPropertyHelper;
 import de.swa.easyvalidation.util.IndexedPropertyHelper.IndexInfo;
 import org.slf4j.Logger;
@@ -40,9 +37,9 @@ public class EasyValidator {
     private static final UserPermissions NO_USER_PERMISSIONS = UserPermissions.of(new String[0]);
     private static final Map<PropertyDescriptor, GetterInfo> propertyToGetterReturnTypeCache = new HashMap<>();
 
-    private static String defaultMandatoryMessage = "error.validation.property.mandatory";
-    private static String defaultImmutableMessage = "error.validation.property.immutable";
-    private static String defaultContentMessage = "error.validation.property.content";
+    private static String defaultMandatoryMessage = "error.validation.mandatory";
+    private static String defaultImmutableMessage = "error.validation.immutable";
+    private static String defaultContentMessage = "error.validation.content";
 
     private EasyValidator() {
     }
@@ -53,96 +50,96 @@ public class EasyValidator {
         return INSTANCE;
     };
 
-    public List<String> validateMandatoryConditions(final Object object, final ValidationConditions<?> conditions) {
-        return validateMandatoryConditions(object, NO_USER_PERMISSIONS, conditions);
+    public List<String> validateMandatoryRules(final Object object, final ValidationRules<?> rules) {
+        return validateMandatoryRules(object, NO_USER_PERMISSIONS, rules);
     }
 
-    public static List<String> validateMandatoryConditions(final Object object, final UserPermissions userPermissions,
-                                                           final ValidationConditions<?> conditions) {
-        Objects.requireNonNull(conditions, "conditions must not be null");
+    public static List<String> validateMandatoryRules(final Object object, final UserPermissions userPermissions,
+                                                           final ValidationRules<?> rules) {
+        Objects.requireNonNull(rules, "rules must not be null");
 
-        // TODO better returnType? e.g. ValidationError with key, lessThan?
-        final List<String> errors = conditions.getMandatoryPropertyKeys().stream()
-                .filter(property -> isPropertyMandatory(property, object, userPermissions, conditions))
+        // TODO better returnType? e.g. ValidationError with key, value?
+        final List<String> errors = rules.getMandatoryPropertyKeys().stream()
+                .filter(property -> isPropertyMandatory(property, object, userPermissions, rules))
                 .filter(property -> getPropertyResultObject(property, object) == null)
                 .map(property -> defaultMandatoryMessage + "." + property)
                 .collect(Collectors.toList());
         return errors;
     }
 
-    public static boolean isPropertyMandatory(final String property, final Object object, final ValidationConditions<?> conditions) {
-        return isPropertyMandatory(property, object, NO_USER_PERMISSIONS, conditions);
+    public static boolean isPropertyMandatory(final String property, final Object object, final ValidationRules<?> rules) {
+        return isPropertyMandatory(property, object, NO_USER_PERMISSIONS, rules);
     }
 
     public static boolean isPropertyMandatory(final String property, final Object object, final UserPermissions userPermissions,
-                                              final ValidationConditions<?> conditions) {
+                                              final ValidationRules<?> rules) {
         Objects.requireNonNull(property, "property must not be null");
         Objects.requireNonNull(object, "object must not be null");
         Objects.requireNonNull(userPermissions, "userPermissions must not be null");
-        Objects.requireNonNull(conditions, "conditions must not be null");
-        validateArguments(property, object, conditions);
+        Objects.requireNonNull(rules, "rules must not be null");
+        validateArguments(property, object, rules);
 
-        boolean isMandatory = isPropertyMandatoryRespImmutable(conditions.getMandatoryPermissionsMap(property), property, object, userPermissions, conditions);
-        log.debug(conditions.getSimpleTypeName() + "." + property + " IS" + (isMandatory ? "" : "NOT") + " mandatory");
+        boolean isMandatory = isPropertyMandatoryRespImmutable(rules.getMandatoryPermissionsMap(property), property, object, userPermissions, rules);
+        log.debug(rules.getSimpleTypeName() + "." + property + " IS" + (isMandatory ? "" : "NOT") + " mandatory");
 
         return isMandatory;
     }
 
 
-    public static <T> List<String> validateImmutableConditions(final Object originalObject, final Object modifiedObject, final ValidationConditions<T> conditions) {
-        return validateImmutableConditions(originalObject, modifiedObject, NO_USER_PERMISSIONS, conditions);
+    public static <T> List<String> validateImmutableRules(final Object originalObject, final Object modifiedObject, final ValidationRules<T> rules) {
+        return validateImmutableRules(originalObject, modifiedObject, NO_USER_PERMISSIONS, rules);
     }
 
-    public static <T> List<String> validateImmutableConditions(final Object originalObject, final Object modifiedObject, final UserPermissions userPermissions,
-                                                               final ValidationConditions<T> conditions) {
-        Objects.requireNonNull(conditions, "conditions must not be null");
+    public static <T> List<String> validateImmutableRules(final Object originalObject, final Object modifiedObject, final UserPermissions userPermissions,
+                                                               final ValidationRules<T> rules) {
+        Objects.requireNonNull(rules, "rules must not be null");
         if (originalObject.getClass() != modifiedObject.getClass()) {
             throw new IllegalArgumentException("originalObject and modifiedObject must have same type");
         }
 
-        // TODO better returnType? e.g. ValidationError with key, lessThan?
-        final List<String> errors = conditions.getImmutablePropertyKeys().stream()
-                .filter(property -> isPropertyImmutable(property, originalObject, userPermissions, conditions))
+        // TODO better returnType? e.g. ValidationError with key, value?
+        final List<String> errors = rules.getImmutablePropertyKeys().stream()
+                .filter(property -> isPropertyImmutable(property, originalObject, userPermissions, rules))
                 .filter(property -> Objects.equals(getPropertyResultObject(property, originalObject), getPropertyResultObject(property, modifiedObject)))
                 .map(property -> defaultImmutableMessage + "." + property)
                 .collect(Collectors.toList());
         return errors;
     }
 
-    public static boolean isPropertyImmutable(final String property, final Object object, final ValidationConditions<?> conditions) {
-        return isPropertyImmutable(property, object, NO_USER_PERMISSIONS, conditions);
+    public static boolean isPropertyImmutable(final String property, final Object object, final ValidationRules<?> rules) {
+        return isPropertyImmutable(property, object, NO_USER_PERMISSIONS, rules);
     }
 
 
     public static boolean isPropertyImmutable(final String property, final Object object, final UserPermissions userPermissions,
-                                              final ValidationConditions<?> conditions) {
+                                              final ValidationRules<?> rules) {
         Objects.requireNonNull(property, "property must not be null");
         Objects.requireNonNull(object, "object must not be null");
         Objects.requireNonNull(userPermissions, "userPermissions must not be null");
-        Objects.requireNonNull(conditions, "conditions must not be null");
-        validateArguments(property, object, conditions);
+        Objects.requireNonNull(rules, "rules must not be null");
+        validateArguments(property, object, rules);
 
-        boolean isImmutable = isPropertyMandatoryRespImmutable(conditions.getImmutablePermissionsMap(property), property, object, userPermissions, conditions);
-        log.debug(conditions.getSimpleTypeName() + "." + property + " IS" + (isImmutable ? "" : " NOT") + " immutable");
+        boolean isImmutable = isPropertyMandatoryRespImmutable(rules.getImmutablePermissionsMap(property), property, object, userPermissions, rules);
+        log.debug(rules.getSimpleTypeName() + "." + property + " IS" + (isImmutable ? "" : " NOT") + " immutable");
 
         return isImmutable;
     }
 
     private static boolean isPropertyMandatoryRespImmutable(final @NotNull PermissionsMap permissionMap, @NotNull final String property, final @NotNull Object object,
-                                                            final @NotNull UserPermissions userPermissions, final @NotNull ValidationConditions<?> conditions) {
+                                                            final @NotNull UserPermissions userPermissions, final @NotNull ValidationRules<?> rules) {
         boolean isMet = false;
-        final Optional<ConstraintsTopGroup> matchingConstraintTopGroup = getMatchingConstraints(permissionMap, userPermissions);
+        final Optional<RelationsTopGroup> matchingConstraintTopGroup = getMatchingConstraints(permissionMap, userPermissions);
         if (matchingConstraintTopGroup.isPresent()) {
-            isMet = allConditionsAreMet(matchingConstraintTopGroup.get(), object);
+            isMet = allRulesAreMet(matchingConstraintTopGroup.get(), object);
         }
         return isMet;
     }
 
-    private static void validateArguments(final @NotNull String property, final @NotNull Object object, final @NotNull ValidationConditions<?> conditions) {
+    private static void validateArguments(final @NotNull String property, final @NotNull Object object, final @NotNull ValidationRules<?> rules) {
         if (property.isEmpty()) {
             throw new IllegalArgumentException("property must not be empty");
         }
-        final Class<?> typeClass = conditions.getTypeClass();
+        final Class<?> typeClass = rules.getTypeClass();
         if (!object.getClass().equals(typeClass)) {
             throw new IllegalArgumentException("The object type (" + object.getClass()
                     + ") does not equal the type of the " + typeClass);
@@ -150,12 +147,12 @@ public class EasyValidator {
         EasyValidator.validateProperty(property, typeClass); // TODO? optional here
     }
 
-    private static Optional<ConstraintsTopGroup> getMatchingConstraints(PermissionsMap permissionMap, UserPermissions userPermissions) {
-        final Optional<ConstraintsTopGroup> match = permissionMap.entrySet().stream()
+    private static Optional<RelationsTopGroup> getMatchingConstraints(PermissionsMap permissionMap, UserPermissions userPermissions) {
+        final Optional<RelationsTopGroup> match = permissionMap.entrySet().stream()
                 .filter(p -> arePermissionsMatching(p.getKey(), userPermissions))
                 .map(p -> p.getValue())
                 .findFirst();
-        return Optional.ofNullable(match.orElseGet(() -> permissionMap.get(ValidationConditions.NO_PERMISSIONS_KEY)));
+        return Optional.ofNullable(match.orElseGet(() -> permissionMap.get(ValidationRules.NO_PERMISSIONS_KEY)));
     }
 
     private static Optional<ContentConstraints> getMatchingContentConstraints(ContentPermissionsMap permissionMap, UserPermissions userPermissions) {
@@ -163,7 +160,7 @@ public class EasyValidator {
                 .filter(p -> arePermissionsMatching(p.getKey(), userPermissions))
                 .map(p -> p.getValue())
                 .findFirst();
-        return Optional.ofNullable(match.orElseGet(() -> permissionMap.get(ValidationConditions.NO_PERMISSIONS_KEY)));
+        return Optional.ofNullable(match.orElseGet(() -> permissionMap.get(ValidationRules.NO_PERMISSIONS_KEY)));
     }
 
     private static boolean arePermissionsMatching(Permissions constraintPermissions, UserPermissions userPermissions) {
@@ -175,41 +172,42 @@ public class EasyValidator {
     }
 
 
-    public static List<String> validateContentConditions(final Object object, final ValidationConditions<?> conditions) {
-        return validateContentConditions(object, NO_USER_PERMISSIONS, conditions);
+    public static List<String> validateContentRules(final Object object, final ValidationRules<?> rules) {
+        return validateContentRules(object, NO_USER_PERMISSIONS, rules);
     }
 
-    public static List<String> validateContentConditions(Object object, UserPermissions userPermissions, ValidationConditions<?> conditions) {
-        Objects.requireNonNull(conditions, "conditions must not be null");
+    public static List<String> validateContentRules(Object object, UserPermissions userPermissions, ValidationRules<?> rules) {
+        Objects.requireNonNull(rules, "rules must not be null");
 
-        // TODO better returnType? e.g. ValidationError with key, lessThan?
+        // TODO better returnType? e.g. ValidationError with key, value?
         final List<String> errors = new ArrayList<>();
-        for (String property : conditions.getContentPropertyKeys()) {
-            final Optional<Constraint> propertyContentConstraint = getPropertyContentConstraint(property, object, userPermissions, conditions);
+        for (String property : rules.getContentPropertyKeys()) {
+            final Optional<ConstraintRoot> propertyContentConstraint = getPropertyContentConstraint(property, object, userPermissions, rules);
+            ConstraintRoot contentConstraint = propertyContentConstraint.get();
             if (propertyContentConstraint.isPresent()
-            && !constraintIsMet(Constraint.ref(property, propertyContentConstraint.get()), object)) {
-                errors.add(defaultContentMessage + "." + property);
+                    && !constraintIsMet(Constraint.ref(property, contentConstraint), object)) {
+                errors.add(defaultContentMessage + "." + rules.getTypeJsonKey() + "." + property + "." + contentConstraint.getType().toLowerCase());
             }
         }
         return errors;
     }
 
-    public static Optional<Constraint> getPropertyContentConstraint(final String property, final Object object, final UserPermissions userPermissions,
-                                                        final ValidationConditions<?> conditions) {
+    public static Optional<ConstraintRoot> getPropertyContentConstraint(final String property, final Object object, final UserPermissions userPermissions,
+                                                        final ValidationRules<?> rules) {
         Objects.requireNonNull(property, "property must not be null");
         Objects.requireNonNull(object, "object must not be null");
         Objects.requireNonNull(userPermissions, "userPermissions must not be null");
-        Objects.requireNonNull(conditions, "conditions must not be null");
-        validateArguments(property, object, conditions);
+        Objects.requireNonNull(rules, "rules must not be null");
+        validateArguments(property, object, rules);
 
-        Constraint contentConstraint = null;
-        ContentPermissionsMap permissionMap = conditions.getContentPermissionsMap(property);
+        ConstraintRoot contentConstraint = null;
+        ContentPermissionsMap permissionMap = rules.getContentPermissionsMap(property);
         final Optional<ContentConstraints> matchingContentConstraints = getMatchingContentConstraints(permissionMap, userPermissions);
         if (matchingContentConstraints.isPresent()
-            && allConditionsAreMet(matchingContentConstraints.get().getConstraintsTopGroup(), object)) {
+            && allRulesAreMet(matchingContentConstraints.get().getRelationsTopGroup(), object)) {
             contentConstraint = matchingContentConstraints.get().getContentConstraint();
         }
-        log.debug(conditions.getSimpleTypeName() + "." + property + " HAS" + ((contentConstraint != null) ? "" : " NO") + " content conditions");
+        log.debug(rules.getSimpleTypeName() + "." + property + " HAS" + ((contentConstraint != null) ? "" : " NO") + " content rules");
         return Optional.ofNullable(contentConstraint);
     }
 
@@ -308,7 +306,7 @@ public class EasyValidator {
                 returnValue = getter.getMethod().invoke(propertyObject);
                 // If e.g. for "foo.bar" getFoo() returns null, we should prevent a NPE
                 // TODO or is it better to throw IllArgEx? Or make this configurable?
-                // null kann ok sein, wenn es ein 'Blatt' ist: z.B. foo.lessThan, foo.array
+                // null kann ok sein, wenn es ein 'Blatt' ist: z.B. foo.value, foo.array
                 // Fehler wenn foo null ist oder bei foo.array[0], wenn foo.array null ist ...
                 if (returnValue == null) {
                     break;
@@ -325,7 +323,7 @@ public class EasyValidator {
                         throw new IllegalArgumentException("IndexType.INCREMENT is not yet implemented");
                     }
                     if (indexInfo.getValues().size() != 1) {
-                        throw new IllegalArgumentException("IndexType.LIST with more than one lessThan is not yet implemented");
+                        throw new IllegalArgumentException("IndexType.LIST with more than one value is not yet implemented");
                     }
                     final Integer index = indexInfo.getValues().get(0);
                     if (List.class.isAssignableFrom(returnValue.getClass())) {
@@ -364,14 +362,14 @@ public class EasyValidator {
     }
 
     // If groups are ANDed each group must be met, if they are ORed only one must be met.
-    private static boolean allConditionsAreMet(final ConstraintsTopGroup topGroup, final Object object) {
-        if (topGroup.getConstraintsSubGroups().length == 0) {
-            log.debug("No constraints defined -> allConditionsAreMet = true");
+    private static boolean allRulesAreMet(final RelationsTopGroup topGroup, final Object object) {
+        if (topGroup.getRelationsSubGroups().length == 0) {
+            log.debug("No constraints defined -> allRulesAreMet = true");
             return true;
         }
         final LogicalOperator operator = topGroup.getLogicalOperator();
-        for (final ConstraintsSubGroup group : topGroup.getConstraintsSubGroups()) {
-            if (groupConditionsAreMet(group, object)) {
+        for (final RelationsSubGroup group : topGroup.getRelationsSubGroups()) {
+            if (groupRulesAreMet(group, object)) {
                 if (operator == LogicalOperator.OR) {
                     return true;
                 }
@@ -384,17 +382,17 @@ public class EasyValidator {
         return (operator == LogicalOperator.AND) ? true : false;
     }
 
-    // All conditions of an AndGroup must be true, but only one of an OrGroup!
-    private static boolean groupConditionsAreMet(final ConstraintsSubGroup group, final Object object) {
+    // All rules of an AndGroup must be true, but only one of an OrGroup!
+    private static boolean groupRulesAreMet(final RelationsSubGroup group, final Object object) {
         if (group instanceof AndGroup) {
-            for (final ConstraintRef constraint : ((AndGroup) group).getConstraintRefs()) {
+            for (final PropConstraint constraint : ((AndGroup) group).getPropConstraints()) {
                 if (!constraintIsMet(constraint, object)) {
                     return false;
                 }
             }
             return true;
         } else if (group instanceof OrGroup) {
-            for (final ConstraintRef constraint : ((OrGroup) group).getConstraintRefs()) {
+            for (final PropConstraint constraint : ((OrGroup) group).getPropConstraints()) {
                 if (constraintIsMet(constraint, object)) {
                     return true;
                 }
@@ -406,22 +404,22 @@ public class EasyValidator {
     }
 
     // TODO? handle array resp. list of values for e.g. articled[*].name ...
-    private static boolean constraintIsMet(final ConstraintRef constraintRef, final Object object) {
+    private static boolean constraintIsMet(final PropConstraint propConstraint, final Object object) {
         // TODO ...
-        if (IndexedPropertyHelper.isIndexedProperty(constraintRef.getProperty())) {
-            List<String> inflatedProperties = inflateIndexedProperty(constraintRef.getProperty(), object);
+        if (IndexedPropertyHelper.isIndexedProperty(propConstraint.getProperty())) {
+            List<String> inflatedProperties = inflateIndexedProperty(propConstraint.getProperty(), object);
             // foreach:
             // getPropertyResultObject(inflatedProperty, object);
-            // constraintRef.getConstraint().validate(lessThan, object)
+            // constraintRef.getConstraint().validate(value, object)
         }
 
 
-        final Object value = getPropertyResultObject(constraintRef.getProperty(), object);
-        log.debug("Value of property '" + constraintRef.getProperty() + "' is '" + value + "'");
-//        if (lessThan == null) {
+        final Object value = getPropertyResultObject(propConstraint.getProperty(), object);
+        log.debug("Value of property '" + propConstraint.getProperty() + "' is '" + value + "'");
+//        if (value == null) {
 //            return false;
 //        }
-        return constraintRef.getConstraint().validate(value, object);
+        return propConstraint.getConstraint().validate(value, object);
     }
 
     // Inflate property with multi-index definitions to properties with single-index definitions, e.g.
@@ -441,7 +439,7 @@ public class EasyValidator {
                             .map(ip -> ip + propertyPartName)
                             .flatMap(p -> inflateListProperty(p, indexInfo.getValues()).stream())
                             .collect(Collectors.toList());
-                } else if (indexInfo.getIndexType() == IndexedPropertyHelper.IndexType.INCREMENT){
+                } else if (indexInfo.getIndexType() == IndexedPropertyHelper.IndexType.INCREMENT) {
                     inflatedProperties = inflatedProperties.stream()
                             .map(ip -> ip + propertyPartName)
                             .flatMap(p -> inflateIncrementProperty(p, object, indexInfo.getValues().get(0), indexInfo.getValues().get(1)).stream())

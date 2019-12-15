@@ -1,11 +1,11 @@
 package de.swa.easyvalidation.groups;
 
-import de.swa.easyvalidation.constraints.ConstraintRef;
+import de.swa.easyvalidation.constraints.PropConstraint;
 
-public class AndGroup extends ConstraintsSubGroup {
+public class AndGroup extends RelationsSubGroup {
 
-    protected AndGroup(final ConstraintRef... andedConstraintRefs) {
-        constraintRefs = andedConstraintRefs;
+    protected AndGroup(final PropConstraint... andedPropConstraints) {
+        propConstraints = andedPropConstraints;
     }
 
 }

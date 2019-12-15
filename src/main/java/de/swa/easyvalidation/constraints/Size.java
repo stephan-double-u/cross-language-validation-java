@@ -8,7 +8,7 @@ import java.util.Map;
 import static de.swa.easyvalidation.json.JsonUtil.asKey;
 import static de.swa.easyvalidation.json.JsonUtil.quoted;
 
-public class Size extends Constraint {
+public class Size extends ConstraintRoot {
 
     private static final String type = "SIZE";
     private final String messageDefault = "{validation.constraint.size}";
@@ -17,7 +17,7 @@ public class Size extends Constraint {
     }
 
     /**
-     * The size of the element that should be validated against this constraint must be greater than the specified lessThan
+     * The size of the element that should be validated against this constraint must be greater than the specified object
      * (included).
      * <p/>
      * Supported types are:
@@ -42,12 +42,12 @@ public class Size extends Constraint {
     }
 
     /**
-     * The size of the element that should be validated against this constraint must be less than the specified lessThan
+     * The size of the element that should be validated against this constraint must be less than the specified object
      * (included).
      * <p/>
      * Supported types are:
      * <ul>
-     * <li>{@code CharSequence} (length of character sequence is evaluated)</li>
+     * <li>{@code String} (string length is evaluated)</li>
      * <li>{@code Collection} (collection size is evaluated)</li>
      * <li>{@code Map} (map size is evaluated)</li>
      * <li>Array (array length is evaluated)</li>
@@ -95,7 +95,7 @@ public class Size extends Constraint {
 
     @Override
     public boolean isSupportedType(final Class<?> clazz) {
-        return CharSequence.class.isAssignableFrom(clazz) 
+        return String.class == clazz // String is final
                 || Collection.class.isAssignableFrom(clazz)
                 || Map.class.isAssignableFrom(clazz) 
                 || clazz.isArray();
@@ -104,7 +104,7 @@ public class Size extends Constraint {
     @Override
     public boolean validateValuesOrFail(final Class<?> ignore) {
         if (getValues().size() != 2) {
-            throw new IllegalArgumentException("Size has neiter min nor max value");
+            throw new IllegalArgumentException("Size has neither min nor max value");
         }
         final Integer min = (Integer) getValues().get(0);
         final Integer max = (Integer) getValues().get(1);
@@ -147,4 +147,8 @@ public class Size extends Constraint {
         return asKey("type") + quoted(type) + "," + minJson + delimiter + maxJson;
     }
 
+    @Override
+    public String getType() {
+        return type;
+    }
 }

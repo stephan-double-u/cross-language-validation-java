@@ -1,9 +1,6 @@
 package de.swa.easyvalidation;
 
-import de.swa.easyvalidation.constraints.Constraint;
-import de.swa.easyvalidation.constraints.ConstraintRef;
 import de.swa.easyvalidation.constraints.Equals;
-import de.swa.easyvalidation.constraints.EqualsAnyRef;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -57,10 +54,10 @@ public class EasyValidatorTest {
 
     @Test
     public void todoTestIndexProps() {
-        ValidationConditions<ClassUnderTest> conditions = new ValidationConditions<>(ClassUnderTest.class);
-        //conditions.content("stringArrayProp[0]", Equals.anyRef("stringArrayProp[0]"), Constraint.ref("stringArrayProp[0]", Equals.anyRef("stringArrayProp[0]")));
-        conditions.content("subClassArrayProp[*].stringArrayProp[0-3]", Equals.any("foo"));
-        final List<String> errors = EasyValidator.validateContentConditions(new ClassUnderTest(), conditions);
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        //rules.content("stringArrayProp[0]", Equals.anyRef("stringArrayProp[0]"), Constraint.ref("stringArrayProp[0]", Equals.anyRef("stringArrayProp[0]")));
+        rules.content("subClassArrayProp[*].stringArrayProp[0-3]", Equals.any("foo"));
+        final List<String> errors = EasyValidator.validateContentRules(new ClassUnderTest(), rules);
         System.out.println("errors: " + errors);
     }
 
