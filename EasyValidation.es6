@@ -126,7 +126,27 @@ const validationRules =
             }
         },
         "immutableRules": {
-            "reservation": {}
+            "reservation": {
+                "someString": [
+                    {
+                        "relationsTopGroup": {
+                            "operator": "AND",
+                            "relationsSubGroups": [
+                                {
+                                    "operator": "AND",
+                                    "constraints": [
+                                        {
+                                            "property": "someString",
+                                            "type": "EQUALS_NOT_NULL"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+
+                    }
+                ],
+            }
         },
         "contentRules": {
             "reservation": {}
@@ -432,7 +452,9 @@ reservation = {
     "someMap": {"one": 1, "two": 2}
 }
 result = isMandatory("reservation", "id", reservation, ["ccc", "eee"]);
-console.dir(result);
+console.log("Property 'id' is mandatory: ", result);
+result = isImmutable("reservation", "someString", reservation);
+console.log("Property 'someString' is immutable: ", result);
 //result = isImmutable("reservation", "id", reservation, ["ddd", "eee"]);
 //console.dir(result);
 //result = isMandatory("reservation", "customer", reservation);

@@ -14,9 +14,9 @@ import static de.swa.easyvalidation.json.JsonUtil.asKey;
  * Maps property string to {@code PermissionsMap}.
  */
 public class PropertyMap implements JsonSerializable {
-    // Linked HashMap to preserve insertion order and thereby define validation order, e.g. to do cheap validations first!
-    // -> no need for javax.validation.GroupSequence!
 
+    // Linked HashMap to preserve insertion order and thereby define validation order, e.g. to do cheap validations first,
+    // i.e. no need for something like javax.validation.GroupSequence
     private final Map<String, PermissionsMap> map = new LinkedHashMap<>();
 
     public Set<String> keySet() {

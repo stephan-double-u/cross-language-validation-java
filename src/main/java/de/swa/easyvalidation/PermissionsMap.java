@@ -15,7 +15,8 @@ import static de.swa.easyvalidation.json.JsonUtil.asObject;
  * Maps {@code Permissions} to {@code RelationsTopGroup}.
  */
 public class PermissionsMap implements JsonSerializable {
-    // Linked HashMap to preserve insertion order ?!
+
+    // Linked HashMap to preserve insertion order
     private final Map<Permissions, RelationsTopGroup> map = new LinkedHashMap<>();
 
     public Set<Permissions> keySet() {
