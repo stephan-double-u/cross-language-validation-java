@@ -13,7 +13,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class EasyValidatorTest {
+public class ValidatorTest {
 
     final Reservation reservation1 = new Reservation(101, ReservationStatus.NEW, new Customer("Donald Duck"),
             Arrays.asList(new Article("Endoscope")));
@@ -23,7 +23,7 @@ public class EasyValidatorTest {
     @Test
     public void validateProperty_simpleProperty() {
         try {
-            EasyValidator.validateProperty("status", Reservation.class);
+            Validator.validateProperty("status", Reservation.class);
         } catch (IllegalArgumentException e) {
             fail();
         }
@@ -32,7 +32,7 @@ public class EasyValidatorTest {
     @Test
     public void validateProperty_simplePropertyInherited() {
         try {
-            EasyValidator.validateProperty("id", Reservation.class);
+            Validator.validateProperty("id", Reservation.class);
         } catch (IllegalArgumentException e) {
             fail();
         }
@@ -41,7 +41,7 @@ public class EasyValidatorTest {
     @Test
     public void validateProperty_simplePropertyNested() {
         try {
-            EasyValidator.validateProperty("firstArticle.name", Reservation.class);
+            Validator.validateProperty("firstArticle.name", Reservation.class);
         } catch (IllegalArgumentException e) {
             fail();
         }
@@ -49,7 +49,7 @@ public class EasyValidatorTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void validateProperty_notexisting() {
-        EasyValidator.validateProperty("notexisting", Reservation.class);
+        Validator.validateProperty("notexisting", Reservation.class);
     }
 
 
@@ -59,7 +59,7 @@ public class EasyValidatorTest {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         //rules.content("stringArrayProp[0]", Equals.anyRef("stringArrayProp[0]"), Constraint.ref("stringArrayProp[0]", Equals.anyRef("stringArrayProp[0]")));
         rules.content("subClassArrayProp[*].stringArrayProp[0-3]", Equals.any("foo"));
-        final List<String> errors = EasyValidator.validateContentRules(new ClassUnderTest(), rules);
+        final List<String> errors = Validator.validateContentRules(new ClassUnderTest(), rules);
         System.out.println("errors: " + errors);
     }
 

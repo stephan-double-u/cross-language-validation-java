@@ -2,7 +2,7 @@ package de.swa.clv.constraints;
 
 import java.util.Arrays;
 
-import de.swa.clv.EasyValidator;
+import de.swa.clv.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +21,7 @@ public class EqualsNoneRef extends EqualsRoot {
 
     @Override
     public boolean validateValuesOrFail(final Class<?> propertyType) {
-        getValues().forEach(refPropertyName -> EasyValidator.validateProperty((String) refPropertyName, propertyType));
+        getValues().forEach(refPropertyName -> Validator.validateProperty((String) refPropertyName, propertyType));
         return true;
     }
 
@@ -32,7 +32,7 @@ public class EqualsNoneRef extends EqualsRoot {
         }
 
         final Boolean equals = getValues().stream()
-                .map(property -> EasyValidator.getPropertyResultObject((String) property, constraintObject))
+                .map(property -> Validator.getPropertyResultObject((String) property, constraintObject))
                 .map(referencedValue -> EqualsRoot.equals(valueToValidate, referencedValue))
                 .filter(e -> e == true)
                 .findFirst().orElse(false);

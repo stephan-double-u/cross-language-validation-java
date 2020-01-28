@@ -31,8 +31,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 // TODO refactor to 'single instance' ...
-public class EasyValidator {
-    private static final Logger log = LoggerFactory.getLogger(EasyValidator.class);
+public class Validator {
+    private static final Logger log = LoggerFactory.getLogger(Validator.class);
 
     private static final UserPermissions NO_USER_PERMISSIONS = UserPermissions.of(new String[0]);
     private static final Map<PropertyDescriptor, GetterInfo> propertyToGetterReturnTypeCache = new HashMap<>();
@@ -41,12 +41,12 @@ public class EasyValidator {
     private static String defaultImmutableMessage = "error.validation.immutable";
     private static String defaultContentMessage = "error.validation.content";
 
-    private EasyValidator() {
+    private Validator() {
     }
 
-    public static final EasyValidator INSTANCE = new EasyValidator();
+    public static final Validator INSTANCE = new Validator();
 
-    public static EasyValidator instance() {
+    public static Validator instance() {
         return INSTANCE;
     };
 
@@ -144,7 +144,7 @@ public class EasyValidator {
             throw new IllegalArgumentException("The object type (" + object.getClass()
                     + ") does not equal the type of the " + typeClass);
         }
-        EasyValidator.validateProperty(property, typeClass); // TODO? optional here
+        Validator.validateProperty(property, typeClass); // TODO? optional here
     }
 
     private static Optional<RelationsTopGroup> getMatchingConstraints(PermissionsMap permissionMap, UserPermissions userPermissions) {

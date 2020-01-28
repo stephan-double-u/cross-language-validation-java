@@ -1,6 +1,6 @@
 package de.swa.clv.constraints;
 
-import de.swa.clv.EasyValidator;
+import de.swa.clv.Validator;
 import de.swa.clv.test.Util;
 import org.hamcrest.core.StringContains;
 import org.junit.Rule;
@@ -27,7 +27,7 @@ public class EqualsAnyRefTest {
     public void validateString() {
         EqualsAnyRef constraint = Equals.anyRef("bar.stringProp");
         // Validating caches the getStringProp() method!
-        EasyValidator.validateProperty("bar.stringProp", Foo.class);
+        Validator.validateProperty("bar.stringProp", Foo.class);
         assertTrue(constraint.validate("baz", foo));
     }
 
@@ -35,7 +35,7 @@ public class EqualsAnyRefTest {
     public void validateStringVsEnum() {
         EqualsAnyRef constraint = Equals.anyRef("bar.enumProp");
         // Validating caches the getEnumProp() method!
-        EasyValidator.validateProperty("bar.enumProp", Foo.class);
+        Validator.validateProperty("bar.enumProp", Foo.class);
         assertTrue(constraint.validate("ABC", foo));
     }
 
@@ -43,7 +43,7 @@ public class EqualsAnyRefTest {
     public void validateEnumVsEnum() {
         EqualsAnyRef constraint = Equals.anyRef("bar.enumProp");
         // Validating caches the getEnumProp() method!
-        EasyValidator.validateProperty("bar.enumProp", Foo.class);
+        Validator.validateProperty("bar.enumProp", Foo.class);
         assertTrue(constraint.validate(Enum.ABC, foo));
     }
 
@@ -51,7 +51,7 @@ public class EqualsAnyRefTest {
     public void validateNumber() {
         EqualsAnyRef constraint = Equals.anyRef("bar.intProp");
         // Validating caches the getIntProp() method!
-        EasyValidator.validateProperty("bar.intProp", Foo.class);
+        Validator.validateProperty("bar.intProp", Foo.class);
         assertTrue(constraint.validate(1, foo));
     }
 
@@ -59,7 +59,7 @@ public class EqualsAnyRefTest {
     public void validateBoolean() {
         EqualsAnyRef constraint = Equals.anyRef("bar.booleanProp");
         // Validating caches the getStringProp() method!
-        EasyValidator.validateProperty("bar.booleanProp", Foo.class);
+        Validator.validateProperty("bar.booleanProp", Foo.class);
         assertTrue(constraint.validate(true, foo));
     }
 

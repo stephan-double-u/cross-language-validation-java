@@ -21,9 +21,9 @@ import java.util.Map;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 
-public class EasyValidationTesting {
+public class ValidationTesting {
 
-    private static Logger log = LoggerFactory.getLogger(EasyValidationTesting.class);
+    private static Logger log = LoggerFactory.getLogger(ValidationTesting.class);
 
     public static void main(String[] args) {
 
@@ -135,31 +135,31 @@ public class EasyValidationTesting {
         final Reservation reservation1 = new Reservation(101, ReservationStatus.NEW, new Customer("Donald Duck"),
                 Arrays.asList(new Article("Endoscope", true, true, null)));
 
-        final List<String> err1 = EasyValidator.instance().validateMandatoryRules(reservation1, rules);
+        final List<String> err1 = Validator.instance().validateMandatoryRules(reservation1, rules);
         System.out.println("Validation errors: " + err1);
 
-        final List<String> errx = EasyValidator.validateMandatoryRules(reservation1, UserPermissions.of(Perms.aaa, OtherEnum.dummy), rules);
+        final List<String> errx = Validator.validateMandatoryRules(reservation1, UserPermissions.of(Perms.aaa, OtherEnum.dummy), rules);
         System.out.println("Validation errors: " + errx);
 
-        final List<String> erry = EasyValidator.validateMandatoryRules(reservation1, UserPermissions.of(ps.toArray(new Perms[0])), rules);
+        final List<String> erry = Validator.validateMandatoryRules(reservation1, UserPermissions.of(ps.toArray(new Perms[0])), rules);
         System.out.println("Validation errors: " + erry);
 
-        final List<String> errz = EasyValidator.validateMandatoryRules(reservation1, UserPermissions.of("joe", "tom"), rules);
+        final List<String> errz = Validator.validateMandatoryRules(reservation1, UserPermissions.of("joe", "tom"), rules);
         System.out.println("Validation errors: " + errz);
 
         final Reservation reservation2 = new Reservation(101, ReservationStatus.APPROVED, new Customer("Donald Duck"),
                 Arrays.asList(new Article("Endoscope", true, true, null)));
 
-        final List<String> err2 = EasyValidator.validateImmutableRules(reservation1, reservation2, rules);
+        final List<String> err2 = Validator.validateImmutableRules(reservation1, reservation2, rules);
         System.out.println("Validation errors2: " + err2);
 
-        final List<String> err3 = EasyValidator.validateContentRules(reservation1, rules);
+        final List<String> err3 = Validator.validateContentRules(reservation1, rules);
         System.out.println("Validation errors: " + err3);
 
-        final List<String> err4 = EasyValidator.validateContentRules(reservation1, UserPermissions.of(Perms.aaa, OtherEnum.dummy), rules);
+        final List<String> err4 = Validator.validateContentRules(reservation1, UserPermissions.of(Perms.aaa, OtherEnum.dummy), rules);
         System.out.println("Validation errors: " + err4);
 
-        final List<String> err5 = EasyValidator.validateContentRules(reservation1, rules);
+        final List<String> err5 = Validator.validateContentRules(reservation1, rules);
         System.out.println("Validation errors: " + err5);
 
 

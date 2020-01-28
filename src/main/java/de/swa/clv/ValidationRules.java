@@ -451,7 +451,7 @@ public class ValidationRules<T> {
     }
 
     private void validatePropertyAndConstraintRefs(String property, RelationsTopGroup topGroup) {
-        EasyValidator.validateProperty(property, typeClass);
+        Validator.validateProperty(property, typeClass);
         for (final RelationsSubGroup group : topGroup.getRelationsSubGroups()) {
             for (final PropConstraint ref : group.getPropConstraints()) {
                 validateConstraintRef(ref);
@@ -470,7 +470,7 @@ public class ValidationRules<T> {
         if (property == null || constraint == null) {
             throw new IllegalArgumentException("Arguments must not be null");
         }
-        final Class<?> propertyType = EasyValidator.validateProperty(property, typeClass);
+        final Class<?> propertyType = Validator.validateProperty(property, typeClass);
         // Check that constraint supports propertyType
         if (!constraint.isSupportedType(propertyType)) {
             throw new IllegalArgumentException(
