@@ -11,7 +11,6 @@ import de.swa.clv.util.IndexedPropertyHelper.IndexInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.constraints.NotNull;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -100,7 +99,7 @@ public class Validator {
         // TODO better returnType? e.g. ValidationError with key, value?
         final List<String> errors = rules.getImmutablePropertyKeys().stream()
                 .filter(property -> isPropertyImmutable(property, originalObject, userPermissions, rules))
-                .filter(property -> Objects.equals(getPropertyResultObject(property, originalObject), getPropertyResultObject(property, modifiedObject)))
+                .filter(property -> !Objects.equals(getPropertyResultObject(property, originalObject), getPropertyResultObject(property, modifiedObject)))
                 .map(property -> defaultImmutableMessage + "." + property)
                 .collect(Collectors.toList());
         return errors;
@@ -125,8 +124,8 @@ public class Validator {
         return isImmutable;
     }
 
-    private static boolean isPropertyMandatoryRespImmutable(final @NotNull PermissionsMap permissionMap, @NotNull final String property, final @NotNull Object object,
-                                                            final @NotNull UserPermissions userPermissions, final @NotNull ValidationRules<?> rules) {
+    private static boolean isPropertyMandatoryRespImmutable(final PermissionsMap permissionMap, final String property, final Object object,
+                                                            final UserPermissions userPermissions, final ValidationRules<?> rules) {
         boolean isMet = false;
         final Optional<RelationsTopGroup> matchingConstraintTopGroup = getMatchingConstraints(permissionMap, userPermissions);
         if (matchingConstraintTopGroup.isPresent()) {
@@ -135,7 +134,7 @@ public class Validator {
         return isMet;
     }
 
-    private static void validateArguments(final @NotNull String property, final @NotNull Object object, final @NotNull ValidationRules<?> rules) {
+    private static void validateArguments(final String property, final Object object, final ValidationRules<?> rules) {
         if (property.isEmpty()) {
             throw new IllegalArgumentException("property must not be empty");
         }
