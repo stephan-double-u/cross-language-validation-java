@@ -182,10 +182,9 @@ public class Validator {
         final List<String> errors = new ArrayList<>();
         for (String property : rules.getContentPropertyKeys()) {
             final Optional<ConstraintRoot> propertyContentConstraint = getPropertyContentConstraint(property, object, userPermissions, rules);
-            ConstraintRoot contentConstraint = propertyContentConstraint.get();
             if (propertyContentConstraint.isPresent()
-                    && !constraintIsMet(Constraint.ref(property, contentConstraint), object)) {
-                errors.add(defaultContentMessage + "." + rules.getTypeJsonKey() + "." + property + "." + contentConstraint.getType().toLowerCase());
+                    && !constraintIsMet(Constraint.ref(property, propertyContentConstraint.get()), object)) {
+                errors.add(defaultContentMessage + "." + rules.getTypeJsonKey() + "." + property + "." + propertyContentConstraint.get().getType().toLowerCase());
             }
         }
         return errors;
