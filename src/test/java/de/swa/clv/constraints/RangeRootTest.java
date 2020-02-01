@@ -60,7 +60,7 @@ public class RangeRootTest {
 
     @Test
     public void isSupportedType_BigInteger() {
-        RangeRoot range = Range.minAny(BigInteger.ONE, BigInteger.TWO).maxAny(BigInteger.TEN);
+        RangeRoot range = Range.minAny(BigInteger.ONE, BigInteger.ZERO).maxAny(BigInteger.TEN);
 
         assertTrue(range.isSupportedType(BigInteger.class));
     }
