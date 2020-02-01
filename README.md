@@ -1,3 +1,5 @@
+![Java CI](https://github.com/stephan-double-u/cross-language-validation-java/workflows/Java%20CI/badge.svg)
+
 # Cross Language Validation Java 
 
 This library implements the server side part of the [Cross Language Validation Schema](https://github.com/stephan-double-u/cross-language-validation-schema),
