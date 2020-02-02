@@ -24,16 +24,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
     </properties>
-
-    <!-- Definition for uploading artifact to custom repository -->
-    <distributionManagement>
-        <repository>
-            <id>github</id>
-            <name>GitHub OWNER Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/stephan-double-u/cross-language-validation-java</url>
-        </repository>
-    </distributionManagement>
-
+    
     <dependencies>
         <!-- Logback implements SLF4J natively! -->
         <dependency>
