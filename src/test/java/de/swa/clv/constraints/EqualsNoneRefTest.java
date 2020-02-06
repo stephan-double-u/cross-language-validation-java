@@ -27,7 +27,7 @@ public class EqualsNoneRefTest {
     public void validateString() {
         EqualsNoneRef constraint = Equals.noneRef("bar.stringProp");
         // Validating caches the getStringProp() method!
-        Validator.validateProperty("bar.stringProp", Foo.class);
+        Validator.instance().validateProperty("bar.stringProp", Foo.class);
         assertTrue(constraint.validate("invalid", foo));
     }
 
@@ -35,7 +35,7 @@ public class EqualsNoneRefTest {
     public void validateStringVsEnum() {
         EqualsNoneRef constraint = Equals.noneRef("bar.enumProp");
         // Validating caches the getEnumProp() method!
-        Validator.validateProperty("bar.enumProp", Foo.class);
+        Validator.instance().validateProperty("bar.enumProp", Foo.class);
         assertTrue(constraint.validate("INVALID", foo));
     }
 
@@ -43,7 +43,7 @@ public class EqualsNoneRefTest {
     public void validateEnumVsEnum() {
         EqualsNoneRef constraint = Equals.noneRef("bar.enumProp");
         // Validating caches the getEnumProp() method!
-        Validator.validateProperty("bar.enumProp", Foo.class);
+        Validator.instance().validateProperty("bar.enumProp", Foo.class);
         assertTrue(constraint.validate(Enum.INVALID, foo));
     }
 
@@ -51,7 +51,7 @@ public class EqualsNoneRefTest {
     public void validateNumber() {
         EqualsNoneRef constraint = Equals.noneRef("bar.intProp");
         // Validating caches the getIntProp() method!
-        Validator.validateProperty("bar.intProp", EqualsNoneRefTest.Foo.class);
+        Validator.instance().validateProperty("bar.intProp", EqualsNoneRefTest.Foo.class);
         assertTrue(constraint.validate(-999, foo));
     }
 
@@ -59,7 +59,7 @@ public class EqualsNoneRefTest {
     public void validateBoolean() {
         EqualsNoneRef constraint = Equals.noneRef("bar.booleanProp");
         // Validating caches the getStringProp() method!
-        Validator.validateProperty("bar.booleanProp", EqualsNoneRefTest.Foo.class);
+        Validator.instance().validateProperty("bar.booleanProp", EqualsNoneRefTest.Foo.class);
         assertTrue(constraint.validate(false, foo));
     }
 

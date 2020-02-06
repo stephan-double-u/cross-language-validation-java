@@ -26,7 +26,10 @@ public class ValidationTesting {
     private static Logger log = LoggerFactory.getLogger(ValidationTesting.class);
 
     public static void main(String[] args) {
-
+        ValidationTesting validationTesting = new ValidationTesting();
+        validationTesting.test();
+    }
+    public void test() {
         final ValidationRules<Reservation> rules = new ValidationRules<>(Reservation.class);
         //rules.mandatory("customer", Constraint.ref("aBoolean", Equals.any("NEW")));
         rules.mandatory("customer", Constraint.ref("aBoolean", Equals.any(TRUE)));
@@ -99,22 +102,22 @@ public class ValidationTesting {
         rules.content("id", Equals.any(101, 202, 303),
                 a, a, a, a);
 
-/*
-        rules.content("id", Equals.any(101, 202, 303),
-                RelationsSubGroup.or(a, a),
-                RelationsSubGroup.or(a, a)
-                );
-        rules.content("id", Equals.any(101, 202, 303),
-                RelationsSubGroup.and(a, a),
-                RelationsSubGroup.and(a, a)
-                );
-        rules.content("id", Equals.any(101, 202, 303),
-                RelationsTopGroup.ored(
-                        RelationsSubGroup.and(a, a),
-                        RelationsSubGroup.or(a, a)
-                        )
-                );
-*/
+
+//        rules.content("id", Equals.any(101, 202, 303),
+//                RelationsSubGroup.OR(a, a),
+//                RelationsSubGroup.OR(a, a)
+//                );
+//        rules.content("id", Equals.any(101, 202, 303),
+//                RelationsSubGroup.AND(a, a),
+//                RelationsSubGroup.AND(a, a)
+//                );
+//        rules.content("id", Equals.any(101, 202, 303),
+//                RelationsTopGroup.OR(
+//                        RelationsSubGroup.AND(a, a),
+//                        RelationsSubGroup.OR(a, a)
+//                        )
+//                );
+
 
         final ValidationRules<Article> articleRules = new ValidationRules<>(Article.class);
         articleRules.immutable("animalUse",
@@ -138,28 +141,28 @@ public class ValidationTesting {
         final List<String> err1 = Validator.instance().validateMandatoryRules(reservation1, rules);
         System.out.println("Validation errors: " + err1);
 
-        final List<String> errx = Validator.validateMandatoryRules(reservation1, UserPermissions.of(Perms.aaa, OtherEnum.dummy), rules);
+        final List<String> errx = Validator.instance().validateMandatoryRules(reservation1, UserPermissions.of(Perms.aaa, OtherEnum.dummy), rules);
         System.out.println("Validation errors: " + errx);
 
-        final List<String> erry = Validator.validateMandatoryRules(reservation1, UserPermissions.of(ps.toArray(new Perms[0])), rules);
+        final List<String> erry = Validator.instance().validateMandatoryRules(reservation1, UserPermissions.of(ps.toArray(new Perms[0])), rules);
         System.out.println("Validation errors: " + erry);
 
-        final List<String> errz = Validator.validateMandatoryRules(reservation1, UserPermissions.of("joe", "tom"), rules);
+        final List<String> errz = Validator.instance().validateMandatoryRules(reservation1, UserPermissions.of("joe", "tom"), rules);
         System.out.println("Validation errors: " + errz);
 
         final Reservation reservation2 = new Reservation(101, ReservationStatus.APPROVED, new Customer("Donald Duck"),
                 Arrays.asList(new Article("Endoscope", true, true, null)));
 
-        final List<String> err2 = Validator.validateImmutableRules(reservation1, reservation2, rules);
+        final List<String> err2 = Validator.instance().validateImmutableRules(reservation1, reservation2, rules);
         System.out.println("Validation errors2: " + err2);
 
-        final List<String> err3 = Validator.validateContentRules(reservation1, rules);
+        final List<String> err3 = Validator.instance().validateContentRules(reservation1, rules);
         System.out.println("Validation errors: " + err3);
 
-        final List<String> err4 = Validator.validateContentRules(reservation1, UserPermissions.of(Perms.aaa, OtherEnum.dummy), rules);
+        final List<String> err4 = Validator.instance().validateContentRules(reservation1, UserPermissions.of(Perms.aaa, OtherEnum.dummy), rules);
         System.out.println("Validation errors: " + err4);
 
-        final List<String> err5 = Validator.validateContentRules(reservation1, rules);
+        final List<String> err5 = Validator.instance().validateContentRules(reservation1, rules);
         System.out.println("Validation errors: " + err5);
 
 

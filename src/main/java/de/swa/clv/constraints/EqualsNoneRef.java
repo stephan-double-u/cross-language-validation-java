@@ -21,7 +21,7 @@ public class EqualsNoneRef extends EqualsRoot {
 
     @Override
     public boolean validateValuesOrFail(final Class<?> propertyType) {
-        getValues().forEach(refPropertyName -> Validator.validateProperty((String) refPropertyName, propertyType));
+        getValues().forEach(refPropertyName -> Validator.instance().validateProperty((String) refPropertyName, propertyType));
         return true;
     }
 
@@ -32,7 +32,7 @@ public class EqualsNoneRef extends EqualsRoot {
         }
 
         final Boolean equals = getValues().stream()
-                .map(property -> Validator.getPropertyResultObject((String) property, constraintObject))
+                .map(property -> Validator.instance().getPropertyResultObject((String) property, constraintObject))
                 .map(referencedValue -> EqualsRoot.equals(valueToValidate, referencedValue))
                 .filter(e -> e == true)
                 .findFirst().orElse(false);
