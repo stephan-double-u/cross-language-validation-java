@@ -41,7 +41,7 @@ public class EqualsAny extends EqualsRoot {
             return false;
         }
         final boolean match = getValues().stream().anyMatch(value -> EqualsRoot.equals(value, object));
-        log.debug("'" + object + "' does" + (match ? "" : " NOT") + " equals one of " + getValues());
+        log.debug("'{}' does{}" + " equals one of {}", object, match, getValues());
         return match;
     }
 

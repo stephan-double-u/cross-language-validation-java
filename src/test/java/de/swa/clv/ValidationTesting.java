@@ -95,6 +95,7 @@ public class ValidationTesting {
 
         rules.content("status", Equals.any("one", "two"), Permissions.any(Perms.aaa));
         rules.content("status", Equals.any("NEW", "four"), Permissions.any("baz", "bar"));
+        rules.content("status", Equals.any("five"), Permissions.any("baz"), a);
         rules.content("status", Equals.any("five"));
 
         rules.content("stringList[0]", Equals.any("one", "two"));

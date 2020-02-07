@@ -30,6 +30,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Validator {
+
+    public static final String ERR_MSG_RULES_NULL = "rules must not be null";
+    public static final String ERR_MSG_PROPERTY_NULL = "property must not be null";
+    public static final String ERR_MSG_OBJECT_NULL = "object must not be null";
+    public static final String ERR_MSG_USER_PERMISSIONS_NULL = "userPermissions must not be null";
+
     private final Logger log = LoggerFactory.getLogger(Validator.class);
 
     private final UserPermissions NO_USER_PERMISSIONS = UserPermissions.of(new String[0]);
@@ -55,7 +61,7 @@ public class Validator {
 
     public List<String> validateMandatoryRules(final Object object, final UserPermissions userPermissions,
                                                            final ValidationRules<?> rules) {
-        Objects.requireNonNull(rules, "rules must not be null");
+        Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
 
         // TODO better returnType? e.g. ValidationError with key, value?
         final List<String> errors = rules.getMandatoryPropertyKeys().stream()
@@ -72,14 +78,14 @@ public class Validator {
 
     public boolean isPropertyMandatory(final String property, final Object object, final UserPermissions userPermissions,
                                               final ValidationRules<?> rules) {
-        Objects.requireNonNull(property, "property must not be null");
-        Objects.requireNonNull(object, "object must not be null");
-        Objects.requireNonNull(userPermissions, "userPermissions must not be null");
-        Objects.requireNonNull(rules, "rules must not be null");
+        Objects.requireNonNull(property, ERR_MSG_PROPERTY_NULL);
+        Objects.requireNonNull(object, ERR_MSG_OBJECT_NULL);
+        Objects.requireNonNull(userPermissions, ERR_MSG_USER_PERMISSIONS_NULL);
+        Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
         validateArguments(property, object, rules);
 
-        boolean isMandatory = isPropertyMandatoryRespImmutable(rules.getMandatoryPermissionsMap(property), property, object, userPermissions, rules);
-        log.debug(rules.getSimpleTypeName() + "." + property + " IS" + (isMandatory ? "" : "NOT") + " mandatory");
+        boolean isMandatory = isPropertyMandatoryRespImmutable(rules.getMandatoryPermissionsMap(property), object, userPermissions);
+        log.debug("{}.{} IS{} mandatory", rules.getSimpleTypeName(), property, (isMandatory ? "" : "NOT"));
 
         return isMandatory;
     }
@@ -91,7 +97,7 @@ public class Validator {
 
     public <T> List<String> validateImmutableRules(final Object originalObject, final Object modifiedObject, final UserPermissions userPermissions,
                                                                final ValidationRules<T> rules) {
-        Objects.requireNonNull(rules, "rules must not be null");
+        Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
         if (originalObject.getClass() != modifiedObject.getClass()) {
             throw new IllegalArgumentException("originalObject and modifiedObject must have same type");
         }
@@ -112,20 +118,20 @@ public class Validator {
 
     public boolean isPropertyImmutable(final String property, final Object object, final UserPermissions userPermissions,
                                               final ValidationRules<?> rules) {
-        Objects.requireNonNull(property, "property must not be null");
-        Objects.requireNonNull(object, "object must not be null");
-        Objects.requireNonNull(userPermissions, "userPermissions must not be null");
-        Objects.requireNonNull(rules, "rules must not be null");
+        Objects.requireNonNull(property, ERR_MSG_PROPERTY_NULL);
+        Objects.requireNonNull(object, ERR_MSG_OBJECT_NULL);
+        Objects.requireNonNull(userPermissions, ERR_MSG_USER_PERMISSIONS_NULL);
+        Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
         validateArguments(property, object, rules);
 
-        boolean isImmutable = isPropertyMandatoryRespImmutable(rules.getImmutablePermissionsMap(property), property, object, userPermissions, rules);
-        log.debug(rules.getSimpleTypeName() + "." + property + " IS" + (isImmutable ? "" : " NOT") + " immutable");
+        boolean isImmutable = isPropertyMandatoryRespImmutable(rules.getImmutablePermissionsMap(property), object, userPermissions);
+        log.debug("{}.{} IS{} immutable", rules.getSimpleTypeName(), property, (isImmutable ? "" : "NOT"));
 
         return isImmutable;
     }
 
-    private boolean isPropertyMandatoryRespImmutable(final PermissionsMap permissionMap, final String property, final Object object,
-                                                            final UserPermissions userPermissions, final ValidationRules<?> rules) {
+    private boolean isPropertyMandatoryRespImmutable(final PermissionsMap permissionMap, final Object object,
+                                                     final UserPermissions userPermissions) {
         boolean isMet = false;
         final Optional<RelationsTopGroup> matchingConstraintTopGroup = getMatchingConstraints(permissionMap, userPermissions);
         if (matchingConstraintTopGroup.isPresent()) {
@@ -176,7 +182,7 @@ public class Validator {
     }
 
     public List<String> validateContentRules(Object object, UserPermissions userPermissions, ValidationRules<?> rules) {
-        Objects.requireNonNull(rules, "rules must not be null");
+        Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
 
         // TODO better returnType? e.g. ValidationError with key, value?
         final List<String> errors = new ArrayList<>();
@@ -192,10 +198,10 @@ public class Validator {
 
     public Optional<ConstraintRoot> getPropertyContentConstraint(final String property, final Object object, final UserPermissions userPermissions,
                                                         final ValidationRules<?> rules) {
-        Objects.requireNonNull(property, "property must not be null");
-        Objects.requireNonNull(object, "object must not be null");
-        Objects.requireNonNull(userPermissions, "userPermissions must not be null");
-        Objects.requireNonNull(rules, "rules must not be null");
+        Objects.requireNonNull(property, ERR_MSG_PROPERTY_NULL);
+        Objects.requireNonNull(object, ERR_MSG_OBJECT_NULL);
+        Objects.requireNonNull(userPermissions, ERR_MSG_USER_PERMISSIONS_NULL);
+        Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
         validateArguments(property, object, rules);
 
         ConstraintRoot contentConstraint = null;
@@ -205,10 +211,9 @@ public class Validator {
             && allRulesAreMet(matchingContentConstraints.get().getRelationsTopGroup(), object)) {
             contentConstraint = matchingContentConstraints.get().getContentConstraint();
         }
-        log.debug(rules.getSimpleTypeName() + "." + property + " HAS" + ((contentConstraint != null) ? "" : " NO") + " content rules");
+        log.debug("{}.{} HAS {} content rules", rules.getSimpleTypeName(), property, ((contentConstraint != null) ? "" : " NO") );
         return Optional.ofNullable(contentConstraint);
     }
-
 
 
     /**
@@ -219,13 +224,12 @@ public class Validator {
      * @return
      */
     public Class<?> validateProperty(final String property, final Class<?> clazz) {
-        Objects.requireNonNull(property, "property must not be null");
+        Objects.requireNonNull(property, ERR_MSG_PROPERTY_NULL);
         Objects.requireNonNull(property, "clazz must not be null");
         if (property.isEmpty()) {
             throw new IllegalArgumentException("property must not be empty");
         }
         final GetterInfo cachedHit = propertyToGetterReturnTypeCache.get(new PropertyDescriptor(property, clazz));
-        // log.debug("cachedHit for " + property + " " + cachedHit);
         return cachedHit != null ? cachedHit.getReturnType() : validatePropertyAndCache(property, clazz);
     }
 
@@ -278,7 +282,7 @@ public class Validator {
                     throw new IllegalArgumentException("Index definitions are only allowed for properties of type List or arrays: " + propertyPart);
                 }
             }
-            propertyKey += (propertyKey == "" ? "" : ".") + propertyPart;
+            propertyKey += ("".equals(propertyKey) ? "" : ".") + propertyPart;
             propertyToGetterReturnTypeCache.put(new PropertyDescriptor(propertyKey, clazz),
                     getterReturnType);
         }
@@ -296,7 +300,7 @@ public class Validator {
         Object propertyObject = object;
         Object returnValue = null;
         for (final String propertyPart : propertyParts) {
-            propertyKey += (propertyKey == "" ? "" : ".") + propertyPart;
+            propertyKey += ("".equals(propertyKey) ? "" : ".") + propertyPart;
             final PropertyDescriptor cacheKey = new PropertyDescriptor(propertyKey, object.getClass());
             final GetterInfo getter = propertyToGetterReturnTypeCache.get(cacheKey);
             try {
@@ -327,7 +331,7 @@ public class Validator {
                         // Process list
                         if (((List<?>) returnValue).size() > index) {
                             returnValue = ((List<?>) returnValue).get(index);
-                            log.debug("list.get(" + index + "): " + returnValue);
+                            log.debug("list.get({}}): {}", index, returnValue);
                         } else {
                             log.warn("{} does not exist! Returning null. Or better throw an exception? ...", propertyPart);
                             returnValue = null;
@@ -336,7 +340,6 @@ public class Validator {
                         // process array
                         if (Array.getLength(returnValue) > index) {
                             returnValue = Array.get(returnValue, index);
-                            //log.debug("array[" + index + "]: " + returnValue);
                         } else {
                             log.warn("{} does not exist! Returning null. Or better throw an exception? ...", propertyPart);
                             returnValue = null;
@@ -412,7 +415,7 @@ public class Validator {
 
 
         final Object value = getPropertyResultObject(propConstraint.getProperty(), object);
-        log.debug("Value of property '" + propConstraint.getProperty() + "' is '" + value + "'");
+        log.debug("Value of property '{}' is '{}'", propConstraint.getProperty(), value);
 //        if (value == null) {
 //            return false;
 //        }
@@ -421,8 +424,7 @@ public class Validator {
 
     // Inflate property with multi-index definitions to properties with single-index definitions, e.g.
     // "foo.bar[0,1].zoo.baz[2-3]" -> ["foo.bar[0].zoo.baz[2]", "foo.bar[0].zoo.baz[3]", "foo.bar[1].zoo.baz[2]", "foo.bar[1].zoo.baz[3]"]
-    private List<String> inflateIndexedProperty(String property, Object object) {
-        System.out.println("Inflate " + property);
+    protected List<String> inflateIndexedProperty(String property, Object object) {
         final String[] propertyParts = property.split("\\.");
         List<String> inflatedProperties = new ArrayList<>();
         inflatedProperties.add("");
@@ -451,14 +453,13 @@ public class Validator {
                         .collect(Collectors.toList());
             }
             delimiter = ".";
-            System.out.println(inflatedProperties);
+            log.debug("Inflated properties for {}: {}", propertyPart, inflatedProperties);
         }
         inflatedProperties.stream().forEach(p -> validateProperty(p, object.getClass()));
         return inflatedProperties;
     }
 
     private List<String> inflateListProperty(String p, List<Integer> indexes) {
-        //TODO hier indexe checken?
         return indexes.stream()
                 .map(i -> p + "[" + i + "]").
                 collect(Collectors.toList());
@@ -475,7 +476,9 @@ public class Validator {
         } else {
             throw new IllegalArgumentException("Should not happen! propertyResultObject is neither List nor Array");
         }
-        return IntStream.rangeClosed(0, numberOfElements).boxed()
+        return IntStream.range(0, numberOfElements).boxed()
+                .filter(i -> i >= startIndex)
+                .filter(i -> (i - startIndex) % increment == 0)
                 .map(i -> property + "[" + i + "]")
                 .collect(Collectors.toList());
     }
@@ -511,15 +514,12 @@ public class Validator {
     private Map<String, Method> getNoArgGetterMethodMap(final BeanInfo beanInfo) {
         final Map<String, Method> methodNamesMap = new HashMap<>();
         for (final MethodDescriptor md : beanInfo.getMethodDescriptors()) {
-            // log.debug("MethodDescriptor: " + md);
             if (md.getName().startsWith("is") && md.getMethod().getParameterTypes().length == 0
                     && (md.getMethod().getReturnType().equals(boolean.class) || md.getMethod().getReturnType().equals(Boolean.class))) {
                 methodNamesMap.put(md.getName(), md.getMethod());
-                // log.debug("No-arg getter found: " + md);
             }
             if (md.getName().startsWith("get") && md.getMethod().getParameterTypes().length == 0) {
                 methodNamesMap.put(md.getName(), md.getMethod());
-                // log.debug("No-arg getter found: " + md);
             }
         }
         return methodNamesMap;

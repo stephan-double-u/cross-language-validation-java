@@ -23,7 +23,7 @@ public class Dates extends ConstraintRoot {
 
     private static Logger log = LoggerFactory.getLogger(Dates.class);
 
-    private static final String type = "DATE";
+    private static final String TYPE = "DATE";
 
     public static final String FUTURE_DATE_TOKEN = "FUTURE";
     public static final String PAST_DATE_TOKEN = "PAST";
@@ -88,7 +88,7 @@ public class Dates extends ConstraintRoot {
         } else {
             throw new IllegalArgumentException("Unsupported type: " + dateObject.getClass());
         }
-        log.debug("Date '" + dateObject + "' is " + token + "(" + daysOffset + "): " + match);
+        log.debug("Date '{}' is {}({}): {}", dateObject, token, daysOffset, match);
         return match;
     }
 
@@ -129,11 +129,11 @@ public class Dates extends ConstraintRoot {
     public String serializeToJson() {
         String token = (String) getValues().get(0);
         int daysOffset = (int) getValues().get(1);
-        return asKey("type") + quoted(type + "_" + token) + "," + asKey("days") + daysOffset;
+        return asKey("type") + quoted(TYPE + "_" + token) + "," + asKey("days") + daysOffset;
     }
 
     @Override
     public String getType() {
-        return type + "_" + getValues().get(0);
+        return TYPE + "_" + getValues().get(0);
     }
 }

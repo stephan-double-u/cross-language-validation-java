@@ -5,6 +5,7 @@ import de.swa.clv.json.JsonSerializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.swa.clv.json.JsonUtil.asArray;
@@ -28,17 +29,13 @@ public class ContentPropertyMap implements JsonSerializable {
     }
 
     public ContentPermissionsMap getOrInit(final String property) {
-        if (map.get(property) == null) {
-            map.put(property, new ContentPermissionsMap());
-        }
-        return map.get(property);
+        return map.computeIfAbsent(property, key -> new ContentPermissionsMap());
     }
 
     @Override
     public String serializeToJson() {
-        final String mapAsJson = map.entrySet().stream()
+        return map.entrySet().stream()
                 .map(e -> asKey(e.getKey()) + asArray(e.getValue().serializeToJson()))
                 .collect(Collectors.joining(","));
-        return mapAsJson;
     }
 }

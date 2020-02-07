@@ -137,13 +137,41 @@ public class ValidatorTest {
 
 
     @Test
+    public void inflateIndexedProperty_starAndIncrement() {
+        List<String> expected = Arrays.asList(
+                "subClassArrayProp[0].stringArrayProp[2]",
+                "subClassArrayProp[0].stringArrayProp[4]",
+                "subClassArrayProp[1].stringArrayProp[2]");
+
+        List<String> inflated = Validator.instance().inflateIndexedProperty("subClassArrayProp[*].stringArrayProp[2/2]", new ClassUnderTest());
+
+        assertEquals(expected, inflated);
+    }
+
+    @Test
+    public void inflateIndexedProperty_listAndRange() {
+        List<String> expected = Arrays.asList(
+                "subClassArrayProp[2].stringListProp[7]",
+                "subClassArrayProp[2].stringListProp[8]",
+                "subClassArrayProp[2].stringListProp[9]",
+                "subClassArrayProp[3].stringListProp[7]",
+                "subClassArrayProp[3].stringListProp[8]",
+                "subClassArrayProp[3].stringListProp[9]");
+
+        List<String> inflated = Validator.instance().inflateIndexedProperty("subClassArrayProp[2,3].stringListProp[7-9]", new ClassUnderTest());
+
+        assertEquals(expected, inflated);
+    }
+
+
+    @Test
     @Ignore
     public void todoTestIndexProps() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         //rules.content("stringArrayProp[0]", Equals.anyRef("stringArrayProp[0]"), Constraint.ref("stringArrayProp[0]", Equals.anyRef("stringArrayProp[0]")));
         rules.content("subClassArrayProp[*].stringArrayProp[0-3]", Equals.any("foo"));
         final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
-        System.out.println("errors: " + errors);
+        assertEquals("[]", errors);
     }
 
 
@@ -152,8 +180,8 @@ public class ValidatorTest {
         private SomeEnum enumProp;
         private SubClass subClassProp = new SubClass("a1", new String[] {"b1", "c1"}, Arrays.asList("d1", "e1", "f1"));
         private SubClass[] subClassArrayProp = {
-                new SubClass("a2", new String[] {"b2", "c2", "d2"}, Arrays.asList("e2", "f2")),
-                new SubClass("a3", new String[] {"b3", "c3"}, Arrays.asList("d3", "e3", "f3"))};
+                new SubClass("a2", new String[] {"b2", "c2", "d2", "e2", "f2"}, Arrays.asList("g2", "h2")),
+                new SubClass("a3", new String[] {"b3", "c3", "d3"}, Arrays.asList("e3", "f3", "g3", "h3"))};
 
         public ClassUnderTest() {
             super(1);

@@ -1,8 +1,5 @@
 package de.swa.clv.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,8 +11,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class IndexedPropertyHelper {
+    
+    private IndexedPropertyHelper() {
+    }
 
-    private static Logger log = LoggerFactory.getLogger(IndexedPropertyHelper.class);
+    public static final String INVALID_INDEXED_PROPERTY_MESSAGE = "Not a valid indexed property: ";
 
     // Regular expression for valid index definitions
     private static final String IDX_REG_EXP = "^\\*$|^\\d+\\/\\d$|^\\d+(-\\d+)?(,\\d+(-\\d+)?)*$";
@@ -68,13 +68,13 @@ public class IndexedPropertyHelper {
         final int startPos = indexedProperty.lastIndexOf('[');
         final int endPos = indexedProperty.indexOf(']');
         if (endPos - startPos < 2) {
-            throw new IllegalArgumentException("Not a valid indexed property: " + indexedProperty);
+            throw new IllegalArgumentException(INVALID_INDEXED_PROPERTY_MESSAGE + indexedProperty);
         }
         // Check for valid content_ within brackets
         final String indexStr = indexedProperty.substring(startPos + 1, endPos);
         final Matcher matcher = PATTERN.matcher(indexStr);
         if (!matcher.matches()) {
-            throw new IllegalArgumentException("Not a valid indexed property: " + indexedProperty);
+            throw new IllegalArgumentException(INVALID_INDEXED_PROPERTY_MESSAGE + indexedProperty);
         }
         // Handle 'all' definition; same as 'increment 0/1'
         if (indexStr.equals("*")) {
@@ -83,10 +83,10 @@ public class IndexedPropertyHelper {
         // Handle 'increment' definition
         if (indexStr.contains("/")) {
             final String[] startIncr = indexStr.split("/");
-            final int startIndex = Integer.valueOf(startIncr[0]);
-            final int increment = Integer.valueOf(startIncr[1]);
+            final int startIndex = Integer.parseInt(startIncr[0]);
+            final int increment = Integer.parseInt(startIncr[1]);
             if (startIndex < 0 || increment < 1) {
-                throw new IllegalArgumentException("Not a valid indexed property: " + indexedProperty);
+                throw new IllegalArgumentException(INVALID_INDEXED_PROPERTY_MESSAGE + indexedProperty);
             }
             return new IndexInfo(IndexType.INCREMENT, Arrays.asList(startIndex, increment));
         }
@@ -96,18 +96,18 @@ public class IndexedPropertyHelper {
         for (final String indexPart : indexParts) {
             if (indexPart.contains("-")) {
                 final String[] rangePart = indexPart.split("-");
-                final int from = Integer.valueOf(rangePart[0]);
-                final int to = Integer.valueOf(rangePart[1]);
+                final int from = Integer.parseInt(rangePart[0]);
+                final int to = Integer.parseInt(rangePart[1]);
                 if (from < 0 || to < from) {
-                    throw new IllegalArgumentException("Not a valid indexed property: " + indexedProperty);
+                    throw new IllegalArgumentException(INVALID_INDEXED_PROPERTY_MESSAGE + indexedProperty);
                 }
                 for (int i = from; i <= to; i++) {
                     values.add(i);
                 }
             } else {
-                final Integer index = Integer.valueOf(indexPart);
+                final Integer index = Integer.parseInt(indexPart);
                 if (index < 0) {
-                    throw new IllegalArgumentException("Not a valid indexed property: " + indexedProperty);
+                    throw new IllegalArgumentException(INVALID_INDEXED_PROPERTY_MESSAGE + indexedProperty);
                 }
                 values.add(index);
             }

@@ -48,8 +48,8 @@ public class ContentPermissionsMap implements JsonSerializable {
         final String contentConstraintJson = asKey("contentConstraint") + asObject(e.getValue().getContentConstraint().serializeToJson());
         final String permsissionsJson = e.getKey().serializeToJson();
         final String relationsTopGroupJson = e.getValue().getRelationsTopGroup().serializeToJson();
-        final String sep1 = permsissionsJson == "" ? "" : ",";
-        final String sep2 = relationsTopGroupJson == "" ? "" : ",";
+        final String sep1 =  "".equals(permsissionsJson) ? "" : ",";
+        final String sep2 = "".equals(relationsTopGroupJson) ? "" : ",";
         return asObject(contentConstraintJson + sep1 + permsissionsJson + sep2 + relationsTopGroupJson);
     }
 }
