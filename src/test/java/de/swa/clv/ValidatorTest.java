@@ -165,13 +165,11 @@ public class ValidatorTest {
 
 
     @Test
-    @Ignore
-    public void todoTestIndexProps() {
+    public void validateContentRules_nestedIndexed() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
-        //rules.content("stringArrayProp[0]", Equals.anyRef("stringArrayProp[0]"), Constraint.ref("stringArrayProp[0]", Equals.anyRef("stringArrayProp[0]")));
-        rules.content("subClassArrayProp[*].stringArrayProp[0-3]", Equals.any("foo"));
+        rules.content("subClassArrayProp[*].stringArrayProp[0-3]", Equals.any("b2", "b3", "c2", "c3", "d2", "d3"));
         final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
-        assertEquals("[]", errors);
+        assertTrue(errors.isEmpty());
     }
 
 

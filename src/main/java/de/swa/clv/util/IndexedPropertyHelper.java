@@ -66,7 +66,7 @@ public class IndexedPropertyHelper {
     private static IndexInfo createIndexInfo(final String indexedProperty) {
         // Check for valid bracket positions
         final int startPos = indexedProperty.lastIndexOf('[');
-        final int endPos = indexedProperty.indexOf(']');
+        final int endPos = indexedProperty.indexOf(']', startPos);
         if (endPos - startPos < 2) {
             throw new IllegalArgumentException(INVALID_INDEXED_PROPERTY_MESSAGE + indexedProperty);
         }

@@ -211,7 +211,7 @@ public class Validator {
             && allRulesAreMet(matchingContentConstraints.get().getRelationsTopGroup(), object)) {
             contentConstraint = matchingContentConstraints.get().getContentConstraint();
         }
-        log.debug("{}.{} HAS {} content rules", rules.getSimpleTypeName(), property, ((contentConstraint != null) ? "" : " NO") );
+        log.debug("{}.{} HAS{} content rules", rules.getSimpleTypeName(), property, ((contentConstraint != null) ? "" : " NO") );
         return Optional.ofNullable(contentConstraint);
     }
 
@@ -384,15 +384,15 @@ public class Validator {
 
     // All rules of an AndGroup must be true, but only one of an OrGroup!
     private boolean groupRulesAreMet(final RelationsSubGroup group, final Object object) {
-        if (group instanceof AndGroup) {
-            for (final PropConstraint constraint : ((AndGroup) group).getPropConstraints()) {
+        if (group instanceof RelationsAndGroup) {
+            for (final PropConstraint constraint : ((RelationsAndGroup) group).getPropConstraints()) {
                 if (!constraintIsMet(constraint, object)) {
                     return false;
                 }
             }
             return true;
-        } else if (group instanceof OrGroup) {
-            for (final PropConstraint constraint : ((OrGroup) group).getPropConstraints()) {
+        } else if (group instanceof RelationsOrGroup) {
+            for (final PropConstraint constraint : ((RelationsOrGroup) group).getPropConstraints()) {
                 if (constraintIsMet(constraint, object)) {
                     return true;
                 }
@@ -403,23 +403,22 @@ public class Validator {
         }
     }
 
-    // TODO? handle array resp. list of values for e.g. articled[*].name ...
     private boolean constraintIsMet(final PropConstraint propConstraint, final Object object) {
-        // TODO ...
-        if (IndexedPropertyHelper.isIndexedProperty(propConstraint.getProperty())) {
-            List<String> inflatedProperties = inflateIndexedProperty(propConstraint.getProperty(), object);
-            // foreach:
-            // getPropertyResultObject(inflatedProperty, object);
-            // constraintRef.getConstraint().validate(value, object)
+        List<String> propertiesToCheck = new ArrayList<>();
+        if (!IndexedPropertyHelper.isIndexedProperty(propConstraint.getProperty())) {
+            propertiesToCheck.add(propConstraint.getProperty());
+        } else {
+            propertiesToCheck = inflateIndexedProperty(propConstraint.getProperty(), object);
         }
+        for (String propertyToCheck : propertiesToCheck) {
+            Object value = getPropertyResultObject(propertyToCheck, object);
+            log.debug("Value of property '{}' is '{}'", propConstraint.getProperty(), value);
+            if (!propConstraint.getConstraint().validate(value, object)) {
+                return false;
+            }
 
-
-        final Object value = getPropertyResultObject(propConstraint.getProperty(), object);
-        log.debug("Value of property '{}' is '{}'", propConstraint.getProperty(), value);
-//        if (value == null) {
-//            return false;
-//        }
-        return propConstraint.getConstraint().validate(value, object);
+        }
+        return true;
     }
 
     // Inflate property with multi-index definitions to properties with single-index definitions, e.g.

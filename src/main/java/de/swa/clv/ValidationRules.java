@@ -133,10 +133,10 @@ public class ValidationRules<T> {
      * E.g. [Group.and(a, b), Group.and(c, d)] is evaluated as: a && b || c && d
      *
      * @param property
-     * @param andGroups
+     * @param relationsAndGroups
      */
-    public void mandatory(final String property, final AndGroup... andGroups) {
-        mandatory(property, NO_PERMISSIONS_KEY, andGroups);
+    public void mandatory(final String property, final RelationsAndGroup... relationsAndGroups) {
+        mandatory(property, NO_PERMISSIONS_KEY, relationsAndGroups);
     }
 
     /**
@@ -146,10 +146,10 @@ public class ValidationRules<T> {
      *
      * @param property    the property name
      * @param permissions the permissions
-     * @param andGroups
+     * @param relationsAndGroups
      */
-    public void mandatory(final String property, final Permissions permissions, final AndGroup... andGroups) {
-        mandatory(property, permissions, RelationsTopGroup.OR(andGroups));
+    public void mandatory(final String property, final Permissions permissions, final RelationsAndGroup... relationsAndGroups) {
+        mandatory(property, permissions, RelationsTopGroup.OR(relationsAndGroups));
     }
 
     /**
@@ -158,10 +158,10 @@ public class ValidationRules<T> {
      * E.g. [Group.or(e, f), Group.or(g, h)] is evaluated as: (e || f) && (g || h)
      *
      * @param property    the property name
-     * @param orGroups
+     * @param relationsOrGroups
      */
-    public void mandatory(final String property, final OrGroup... orGroups) {
-        mandatory(property, NO_PERMISSIONS_KEY, orGroups);
+    public void mandatory(final String property, final RelationsOrGroup... relationsOrGroups) {
+        mandatory(property, NO_PERMISSIONS_KEY, relationsOrGroups);
     }
 
     /**
@@ -171,10 +171,10 @@ public class ValidationRules<T> {
      *
      * @param property    the property name
      * @param permissions the permissions
-     * @param orGroups
+     * @param relationsOrGroups
      */
-    public void mandatory(final String property, final Permissions permissions, final OrGroup... orGroups) {
-        mandatory(property, permissions, RelationsTopGroup.AND(orGroups));
+    public void mandatory(final String property, final Permissions permissions, final RelationsOrGroup... relationsOrGroups) {
+        mandatory(property, permissions, RelationsTopGroup.AND(relationsOrGroups));
     }
 
     /**
@@ -227,20 +227,20 @@ public class ValidationRules<T> {
         immutable(property, permissions, RelationsTopGroup.AND(RelationsSubGroup.AND(propConstraints)));
     }
 
-    public void immutable(final String property, final AndGroup... andGroups) {
-        immutable(property, NO_PERMISSIONS_KEY, andGroups);
+    public void immutable(final String property, final RelationsAndGroup... relationsAndGroups) {
+        immutable(property, NO_PERMISSIONS_KEY, relationsAndGroups);
     }
 
-    public void immutable(final String property, final Permissions permissions, final AndGroup... andGroups) {
-        immutable(property, permissions, RelationsTopGroup.OR(andGroups));
+    public void immutable(final String property, final Permissions permissions, final RelationsAndGroup... relationsAndGroups) {
+        immutable(property, permissions, RelationsTopGroup.OR(relationsAndGroups));
     }
 
-    public void immutable(final String property, final OrGroup... orGroups) {
-        immutable(property, NO_PERMISSIONS_KEY, orGroups);
+    public void immutable(final String property, final RelationsOrGroup... relationsOrGroups) {
+        immutable(property, NO_PERMISSIONS_KEY, relationsOrGroups);
     }
 
-    public void immutable(final String property, final Permissions permissions, final OrGroup... orGroups) {
-        immutable(property, permissions, RelationsTopGroup.AND(orGroups));
+    public void immutable(final String property, final Permissions permissions, final RelationsOrGroup... relationsOrGroups) {
+        immutable(property, permissions, RelationsTopGroup.AND(relationsOrGroups));
     }
 
     public void immutable(final String property, final RelationsTopGroup topGroup) {
@@ -318,10 +318,10 @@ public class ValidationRules<T> {
      *
      * @param property
      * @param constraint
-     * @param andGroups
+     * @param relationsAndGroups
      */
-    public void content(final String property, final ConstraintRoot constraint, final AndGroup... andGroups) {
-        content(property, constraint, NO_PERMISSIONS_KEY, andGroups);
+    public void content(final String property, final ConstraintRoot constraint, final RelationsAndGroup... relationsAndGroups) {
+        content(property, constraint, NO_PERMISSIONS_KEY, relationsAndGroups);
     }
 
     /**
@@ -332,10 +332,10 @@ public class ValidationRules<T> {
      * @param property
      * @param constraint
      * @param permissions
-     * @param andGroups
+     * @param relationsAndGroups
      */
-    public void content(final String property, final ConstraintRoot constraint, final Permissions permissions, final AndGroup... andGroups) {
-        content(property, constraint, permissions, RelationsTopGroup.OR(andGroups));
+    public void content(final String property, final ConstraintRoot constraint, final Permissions permissions, final RelationsAndGroup... relationsAndGroups) {
+        content(property, constraint, permissions, RelationsTopGroup.OR(relationsAndGroups));
     }
 
     /**
@@ -345,10 +345,10 @@ public class ValidationRules<T> {
      *
      * @param property
      * @param constraint
-     * @param orGroups
+     * @param relationsOrGroups
      */
-    public void content(final String property, final ConstraintRoot constraint, final OrGroup... orGroups) {
-        content(property, constraint, NO_PERMISSIONS_KEY, orGroups);
+    public void content(final String property, final ConstraintRoot constraint, final RelationsOrGroup... relationsOrGroups) {
+        content(property, constraint, NO_PERMISSIONS_KEY, relationsOrGroups);
     }
 
     /**
@@ -359,10 +359,10 @@ public class ValidationRules<T> {
      * @param property
      * @param constraint
      * @param permissions
-     * @param orGroups
+     * @param relationsOrGroups
      */
-    public void content(final String property, final ConstraintRoot constraint, final Permissions permissions, final OrGroup... orGroups) {
-        content(property, constraint, permissions, RelationsTopGroup.AND(orGroups));
+    public void content(final String property, final ConstraintRoot constraint, final Permissions permissions, final RelationsOrGroup... relationsOrGroups) {
+        content(property, constraint, permissions, RelationsTopGroup.AND(relationsOrGroups));
     }
 
     /**

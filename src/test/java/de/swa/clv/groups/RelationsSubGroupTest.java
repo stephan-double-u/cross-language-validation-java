@@ -9,13 +9,13 @@ public class RelationsSubGroupTest {
 
     @Test
     public void serializeAndGroup() {
-        String json = new AndGroup().serializeToJson();
+        String json = new RelationsAndGroup().serializeToJson();
         assertEquals(Util.doubleQuote("{'operator':'AND','constraints':[]}"), json);
     }
 
     @Test
     public void serializeOrGroup() {
-        String json = new OrGroup().serializeToJson();
+        String json = new RelationsOrGroup().serializeToJson();
         assertEquals(Util.doubleQuote("{'operator':'OR','constraints':[]}"), json);
     }
 

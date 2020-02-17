@@ -22,12 +22,12 @@ public abstract class RelationsSubGroup implements JsonSerializable {
     public static final String ANDED_GROUP_JSON_VALUE = "AND";
     public static final String ORED_GROUP_JSON_VALUE = "OR";
 
-    public static AndGroup AND(final PropConstraint... propConstraints) {
-        return new AndGroup(propConstraints);
+    public static RelationsAndGroup AND(final PropConstraint... propConstraints) {
+        return new RelationsAndGroup(propConstraints);
     }
 
-    public static OrGroup OR(final PropConstraint... propConstraints) {
-        return new OrGroup(propConstraints);
+    public static RelationsOrGroup OR(final PropConstraint... propConstraints) {
+        return new RelationsOrGroup(propConstraints);
     }
 
     public PropConstraint[] getPropConstraints() {
@@ -36,7 +36,7 @@ public abstract class RelationsSubGroup implements JsonSerializable {
 
     @Override
     public String serializeToJson() {
-        String operator = (this instanceof AndGroup) ? LogicalOperator.AND.name() : LogicalOperator.OR.name();
+        String operator = (this instanceof RelationsAndGroup) ? LogicalOperator.AND.name() : LogicalOperator.OR.name();
         final String refsAsJson = Arrays.stream(propConstraints).map(r -> r.serializeToJson()).collect(Collectors.joining(","));
         return asObject(asKey("operator") + quoted(operator) + "," + asKey("constraints") + asArray(refsAsJson));
     }
