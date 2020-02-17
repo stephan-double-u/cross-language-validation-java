@@ -167,7 +167,7 @@ public class ValidatorTest {
     @Test
     public void validateContentRules_nestedIndexed() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
-        rules.content("subClassArrayProp[*].stringArrayProp[0-3]", Equals.any("b2", "b3", "c2", "c3", "d2", "d3"));
+        rules.content("subClassArrayProp[*].stringArrayProp[0-2]", Equals.any("b2", "b3", "c2", "c3", "d2", "d3"));
         final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
         assertTrue(errors.isEmpty());
     }
