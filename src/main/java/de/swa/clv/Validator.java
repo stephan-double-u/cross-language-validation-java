@@ -5,7 +5,7 @@ import de.swa.clv.constraints.ConstraintRoot;
 import de.swa.clv.constraints.PropConstraint;
 import de.swa.clv.constraints.Permissions;
 import de.swa.clv.groups.*;
-import de.swa.clv.groups.RelationsSubGroup;
+import de.swa.clv.groups.ConstraintsSubGroup;
 import de.swa.clv.util.IndexedPropertyHelper;
 import de.swa.clv.util.IndexedPropertyHelper.IndexInfo;
 import org.slf4j.Logger;
@@ -133,7 +133,7 @@ public class Validator {
     private boolean isPropertyMandatoryRespImmutable(final PermissionsMap permissionMap, final Object object,
                                                      final UserPermissions userPermissions) {
         boolean isMet = false;
-        final Optional<RelationsTopGroup> matchingConstraintTopGroup = getMatchingConstraints(permissionMap, userPermissions);
+        final Optional<ConstraintsTopGroup> matchingConstraintTopGroup = getMatchingConstraints(permissionMap, userPermissions);
         if (matchingConstraintTopGroup.isPresent()) {
             isMet = allRulesAreMet(matchingConstraintTopGroup.get(), object);
         }
@@ -152,8 +152,8 @@ public class Validator {
         INSTANCE.validateProperty(property, typeClass); // TODO? optional here
     }
 
-    private Optional<RelationsTopGroup> getMatchingConstraints(PermissionsMap permissionMap, UserPermissions userPermissions) {
-        final Optional<RelationsTopGroup> match = permissionMap.entrySet().stream()
+    private Optional<ConstraintsTopGroup> getMatchingConstraints(PermissionsMap permissionMap, UserPermissions userPermissions) {
+        final Optional<ConstraintsTopGroup> match = permissionMap.entrySet().stream()
                 .filter(p -> arePermissionsMatching(p.getKey(), userPermissions))
                 .map(p -> p.getValue())
                 .findFirst();
@@ -208,7 +208,7 @@ public class Validator {
         ContentPermissionsMap permissionMap = rules.getContentPermissionsMap(property);
         final Optional<ContentConstraints> matchingContentConstraints = getMatchingContentConstraints(permissionMap, userPermissions);
         if (matchingContentConstraints.isPresent()
-            && allRulesAreMet(matchingContentConstraints.get().getRelationsTopGroup(), object)) {
+            && allRulesAreMet(matchingContentConstraints.get().getConstraintsTopGroup(), object)) {
             contentConstraint = matchingContentConstraints.get().getContentConstraint();
         }
         log.debug("{}.{} HAS{} content rules", rules.getSimpleTypeName(), property, ((contentConstraint != null) ? "" : " NO") );
@@ -225,7 +225,7 @@ public class Validator {
      */
     public Class<?> validateProperty(final String property, final Class<?> clazz) {
         Objects.requireNonNull(property, ERR_MSG_PROPERTY_NULL);
-        Objects.requireNonNull(property, "clazz must not be null");
+        Objects.requireNonNull(clazz, "clazz must not be null");
         if (property.isEmpty()) {
             throw new IllegalArgumentException("property must not be empty");
         }
@@ -239,55 +239,68 @@ public class Validator {
      * 2nd check: Location.address exist, cache ("location.address", Article.class) -> (getAddress(), Address.class) <br/>
      * 3rd check: Address.city exist, cache ("location.address.city", Article.class) -> (getCity(), String.class)
      */
-    private Class<?> validatePropertyAndCache(final String nestedProperty, final Class<?> clazz) {
+    private Class<?> validatePropertyAndCache(final String nestedProperty, final Class<?> propertyClass) {
         // Split a nested property into its parts; e.g. ["location", "address", "city"]
         final String[] propertyParts = nestedProperty.split("\\.");
-        Class<?> propertyClass = clazz;
+        Class<?> propertyPartClass = propertyClass;
         String propertyKey = "";
-        GetterInfo getterReturnType = null; // TODO not useful?! Cache Method instead ...
         for (final String propertyPart : propertyParts) {
-            if (!IndexedPropertyHelper.getIndexInfo(propertyPart).isPresent()) {
-                // process 'simple' property
-                final Method getterMethod = getGetterMethodOrFail(propertyPart, propertyClass);
-                getterReturnType = getGetterReturnType(getterMethod);
-                propertyClass = getterReturnType.getReturnType();
+            GetterInfo getterInfo = null;
+            if (!IndexedPropertyHelper.getIndexInfo(propertyPart, false).isPresent()) {
+                // process simple property
+                getterInfo = createGetterInfoForSimpleProperty(propertyPart, propertyPartClass);
             } else {
                 // process property with index definitions (e.g. articles[0])
-                final String propertyName = propertyPart.substring(0, propertyPart.indexOf('['));
-                final Method getterMethod = getGetterMethodOrFail(propertyName, propertyClass);
-                if (List.class.isAssignableFrom(getterMethod.getReturnType())) {
-                    // Process list (e.g. for property articles[*])
-                    // 1. get list field (-> articles)
-                    final Field listField;
-                    try {
-                        listField = propertyClass.getDeclaredField(propertyName);
-                    } catch (final NoSuchFieldException | SecurityException e) {
-                        throw new IllegalArgumentException("Property " + propertyName + " is not a declared field of " + propertyClass);
-                    }
-                    // 2. get generic type (-> Article.class)
-                    final ParameterizedType listType = (ParameterizedType) listField.getGenericType();
-                    final Class<?> listClass = (Class<?>) listType.getActualTypeArguments()[0];
-                    // 3. get getter method (-> getArticles())
-                    getterReturnType = getGetterReturnType(getterMethod);
-                    // 4. ignore return type 'List' and remember the type of its get(int) call (-> Article)
-                    getterReturnType.setReturnType(listClass); // is this too tricky?
-                    propertyClass = listClass;
-                } else if (getterMethod.getReturnType().isArray()) {
-                    // process array
-                    final Class<?> arrayTypeClass = getterMethod.getReturnType().getComponentType();
-                    getterReturnType = getGetterReturnType(getterMethod);
-                    getterReturnType.setReturnType(arrayTypeClass); // is this too tricky?
-                    propertyClass = arrayTypeClass;
-                } else {
-                    throw new IllegalArgumentException("Index definitions are only allowed for properties of type List or arrays: " + propertyPart);
-                }
+                getterInfo = createGetterInfoForIndexedProperty(propertyPart, propertyPartClass);
             }
+            propertyPartClass = getterInfo.getReturnType();
             propertyKey += ("".equals(propertyKey) ? "" : ".") + propertyPart;
-            propertyToGetterReturnTypeCache.put(new PropertyDescriptor(propertyKey, clazz),
-                    getterReturnType);
+            propertyToGetterReturnTypeCache.put(new PropertyDescriptor(propertyKey, propertyClass),
+                    getterInfo);
         }
 
-        return propertyClass;
+        return propertyPartClass;
+    }
+
+    private GetterInfo createGetterInfoForSimpleProperty(String propertyPart, Class<?> propertyPartClass) {
+        final Method getterMethod = getGetterMethodOrFail(propertyPart, propertyPartClass);
+        return createGetterInfo(getterMethod);
+    }
+
+    private GetterInfo createGetterInfoForIndexedProperty(String propertyPart, Class<?> propertyPartClass) {
+        final String propertyName = propertyPart.substring(0, propertyPart.indexOf('['));
+        final Method getterMethod = getGetterMethodOrFail(propertyName, propertyPartClass);
+        GetterInfo getterInfo = null;
+        if (List.class.isAssignableFrom(getterMethod.getReturnType())) {
+            // Process list
+            // 1. get list field (e.g. articles)
+            final Field listField;
+            try {
+                listField = propertyPartClass.getDeclaredField(propertyName);
+            } catch (final NoSuchFieldException | SecurityException e) {
+                throw new IllegalArgumentException("Property " + propertyName + " is not a declared field of " + propertyPartClass);
+            }
+            // 2. get generic type (e.g. Article.class)
+            final ParameterizedType listType = (ParameterizedType) listField.getGenericType();
+            final Class<?> listClass = (Class<?>) listType.getActualTypeArguments()[0];
+            // 3. get getter method (e.g. getArticles())
+            getterInfo = createGetterInfo(getterMethod);
+            // 4. ignore return type 'java.util.List' and remember the type of its get(int) call (e.g. Article)
+            getterInfo.setReturnType(listClass); // !
+        } else if (getterMethod.getReturnType().isArray()) {
+            // process array
+            final Class<?> arrayTypeClass = getterMethod.getReturnType().getComponentType();
+            getterInfo = createGetterInfo(getterMethod);
+            //  ignore array type (e.g. Article[]) and remember array component type (e.g. Article)
+            getterInfo.setReturnType(arrayTypeClass); // !
+        } else {
+            throw new IllegalArgumentException("Index definitions are only allowed for properties of type List or arrays: " + propertyPart);
+        }
+        return getterInfo;
+    }
+
+    private GetterInfo createGetterInfo(final Method getterMethod) {
+        return new GetterInfo(getterMethod, getterMethod.getReturnType());
     }
 
 
@@ -306,25 +319,17 @@ public class Validator {
             try {
                 returnValue = getter.getMethod().invoke(propertyObject);
                 // If e.g. for "foo.bar" getFoo() returns null, we should prevent a NPE
+                // null may be ok if it's a leaf: e.g. foo.value, foo.array
+                // Error if foo is null or for foo.array[0] if foo.array is null ? ...
                 // TODO or is it better to throw IllArgEx? Or make this configurable?
-                // null kann ok sein, wenn es ein 'Blatt' ist: z.B. foo.value, foo.array
-                // Fehler wenn foo null ist oder bei foo.array[0], wenn foo.array null ist ...
                 if (returnValue == null) {
                     break;
                 }
-                final Optional<IndexInfo> indexInfoOptional = IndexedPropertyHelper.getIndexInfo(propertyKey);
-                // How to handle [*] etc.?
-                /* propertyObject -> List<Object>, bei Simple-Props und Single-Ixd-Props ist size == 1
-                 * Sonst loopen. Wenn IndexInfo != LIST or size > 1: propertyObject = new ArrayList<Object>
-                 * propertyObject.addAll(returnValues) ...
-                 */
+                final Optional<IndexInfo> indexInfoOptional = IndexedPropertyHelper.getIndexInfo(propertyPart, false);
                 if (indexInfoOptional.isPresent()) {
                     final IndexInfo indexInfo = indexInfoOptional.get();
-                    if (indexInfo.getIndexType() == IndexedPropertyHelper.IndexType.INCREMENT) {
-                        throw new IllegalArgumentException("IndexType.INCREMENT is not yet implemented");
-                    }
-                    if (indexInfo.getValues().size() != 1) {
-                        throw new IllegalArgumentException("IndexType.LIST with more than one value is not yet implemented");
+                    if (indexInfo.getIndexType() != IndexedPropertyHelper.IndexType.LIST || indexInfo.getValues().size() != 1) {
+                        throw new IllegalArgumentException("Should not happen: index definition is not valid here!");
                     }
                     final Integer index = indexInfo.getValues().get(0);
                     if (List.class.isAssignableFrom(returnValue.getClass())) {
@@ -362,13 +367,13 @@ public class Validator {
     }
 
     // If groups are ANDed each group must be met, if they are ORed only one must be met.
-    private boolean allRulesAreMet(final RelationsTopGroup topGroup, final Object object) {
-        if (topGroup.getRelationsSubGroups().length == 0) {
+    private boolean allRulesAreMet(final ConstraintsTopGroup topGroup, final Object object) {
+        if (topGroup.getConstraintsSubGroups().length == 0) {
             log.debug("No constraints defined -> allRulesAreMet = true");
             return true;
         }
         final LogicalOperator operator = topGroup.getLogicalOperator();
-        for (final RelationsSubGroup group : topGroup.getRelationsSubGroups()) {
+        for (final ConstraintsSubGroup group : topGroup.getConstraintsSubGroups()) {
             if (groupRulesAreMet(group, object)) {
                 if (operator == LogicalOperator.OR) {
                     return true;
@@ -383,16 +388,16 @@ public class Validator {
     }
 
     // All rules of an AndGroup must be true, but only one of an OrGroup!
-    private boolean groupRulesAreMet(final RelationsSubGroup group, final Object object) {
-        if (group instanceof RelationsAndGroup) {
-            for (final PropConstraint constraint : ((RelationsAndGroup) group).getPropConstraints()) {
+    private boolean groupRulesAreMet(final ConstraintsSubGroup group, final Object object) {
+        if (group instanceof ConstraintsAndGroup) {
+            for (final PropConstraint constraint : ((ConstraintsAndGroup) group).getPropConstraints()) {
                 if (!constraintIsMet(constraint, object)) {
                     return false;
                 }
             }
             return true;
-        } else if (group instanceof RelationsOrGroup) {
-            for (final PropConstraint constraint : ((RelationsOrGroup) group).getPropConstraints()) {
+        } else if (group instanceof ConstraintsOrGroup) {
+            for (final PropConstraint constraint : ((ConstraintsOrGroup) group).getPropConstraints()) {
                 if (constraintIsMet(constraint, object)) {
                     return true;
                 }
@@ -430,7 +435,7 @@ public class Validator {
         String delimiter = "";
         for (final String propertyPart : propertyParts) {
             if (IndexedPropertyHelper.isIndexedProperty(propertyPart)) {
-                final IndexInfo indexInfo = IndexedPropertyHelper.getIndexInfo(propertyPart).get();
+                final IndexInfo indexInfo = IndexedPropertyHelper.getIndexInfo(propertyPart, false).get();
                 String propertyPartName = delimiter + propertyPart.substring(0, propertyPart.indexOf('['));
                 if (indexInfo.getIndexType() == IndexedPropertyHelper.IndexType.LIST) {
                     inflatedProperties = inflatedProperties.stream()
@@ -494,10 +499,6 @@ public class Validator {
             }
         }
         return getterMethod;
-    }
-
-    private GetterInfo getGetterReturnType(final Method getterMethod) {
-        return new GetterInfo(getterMethod, getterMethod.getReturnType());
     }
 
     private Map<String, Method> getNoArgGetterMethodMap(final Class<?> clazz) {

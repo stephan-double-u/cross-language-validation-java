@@ -13,21 +13,21 @@ import static de.swa.clv.json.JsonUtil.asKey;
 import static de.swa.clv.json.JsonUtil.asObject;
 import static de.swa.clv.json.JsonUtil.quoted;
 
-public abstract class RelationsSubGroup implements JsonSerializable {
+public abstract class ConstraintsSubGroup implements JsonSerializable {
 
-    private static Logger log = LoggerFactory.getLogger(RelationsSubGroup.class);
+    private static Logger log = LoggerFactory.getLogger(ConstraintsSubGroup.class);
 
     protected PropConstraint[] propConstraints;
 
     public static final String ANDED_GROUP_JSON_VALUE = "AND";
     public static final String ORED_GROUP_JSON_VALUE = "OR";
 
-    public static RelationsAndGroup AND(final PropConstraint... propConstraints) {
-        return new RelationsAndGroup(propConstraints);
+    public static ConstraintsAndGroup AND(final PropConstraint... propConstraints) {
+        return new ConstraintsAndGroup(propConstraints);
     }
 
-    public static RelationsOrGroup OR(final PropConstraint... propConstraints) {
-        return new RelationsOrGroup(propConstraints);
+    public static ConstraintsOrGroup OR(final PropConstraint... propConstraints) {
+        return new ConstraintsOrGroup(propConstraints);
     }
 
     public PropConstraint[] getPropConstraints() {
@@ -36,7 +36,7 @@ public abstract class RelationsSubGroup implements JsonSerializable {
 
     @Override
     public String serializeToJson() {
-        String operator = (this instanceof RelationsAndGroup) ? LogicalOperator.AND.name() : LogicalOperator.OR.name();
+        String operator = (this instanceof ConstraintsAndGroup) ? LogicalOperator.AND.name() : LogicalOperator.OR.name();
         final String refsAsJson = Arrays.stream(propConstraints).map(r -> r.serializeToJson()).collect(Collectors.joining(","));
         return asObject(asKey("operator") + quoted(operator) + "," + asKey("constraints") + asArray(refsAsJson));
     }

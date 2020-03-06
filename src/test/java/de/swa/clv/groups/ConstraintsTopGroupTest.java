@@ -7,23 +7,23 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class RelationsTopGroupTest {
+public class ConstraintsTopGroupTest {
 
     @Test
     public void serializeEmpty() {
-        RelationsTopGroup topGroup = RelationsTopGroup.AND();
+        ConstraintsTopGroup topGroup = ConstraintsTopGroup.AND();
         assertEquals("",topGroup.serializeToJson());
     }
     @Test
     public void serializeToJson() {
-        RelationsTopGroup topGroup = RelationsTopGroup.AND(
-                RelationsSubGroup.OR(
+        ConstraintsTopGroup topGroup = ConstraintsTopGroup.AND(
+                ConstraintsSubGroup.OR(
                         Constraint.ref("prop1", Equals.any("FOO")),
                         Constraint.ref("prop2", Equals.any("BAR"))),
-                RelationsSubGroup.AND(
+                ConstraintsSubGroup.AND(
                         Constraint.ref("prop3", Equals.any("ZOO")))
         );
-        final String expected = Util.doubleQuote("'relationsTopGroup':{'operator':'AND','relationsSubGroups':[" +
+        final String expected = Util.doubleQuote("'constraintsTopGroup':{'operator':'AND','constraintsSubGroups':[" +
                 "{'operator':'OR','constraints':[{'property':'prop1','type':'EQUALS_ANY','values':['FOO']},{'property':'prop2','type':'EQUALS_ANY','values':['BAR']}]}," +
                 "{'operator':'AND','constraints':[{'property':'prop3','type':'EQUALS_ANY','values':['ZOO']}]}]}");
         assertEquals(expected,topGroup.serializeToJson());

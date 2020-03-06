@@ -4,7 +4,7 @@ import de.swa.clv.constraints.ConstraintRoot;
 import de.swa.clv.constraints.PropConstraint;
 import de.swa.clv.constraints.Permissions;
 import de.swa.clv.groups.*;
-import de.swa.clv.groups.RelationsSubGroup;
+import de.swa.clv.groups.ConstraintsSubGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +30,7 @@ import static de.swa.clv.json.JsonUtil.quoted;
 public class ValidationRules<T> {
 
     public static final Permissions NO_PERMISSIONS_KEY = Permissions.any(new String[]{});
-    public static final RelationsTopGroup NO_CONSTRAINT_REF_TOP_GROUP_VALUE = RelationsTopGroup.AND();
+    public static final ConstraintsTopGroup NO_CONSTRAINT_REF_TOP_GROUP_VALUE = ConstraintsTopGroup.AND();
 
     private static final Logger log = LoggerFactory.getLogger(ValidationRules.class);
 
@@ -124,7 +124,7 @@ public class ValidationRules<T> {
      * @param propConstraints
      */
     public void mandatory(final String property, final Permissions permissions, final PropConstraint... propConstraints) {
-        mandatory(property, permissions, RelationsTopGroup.AND(RelationsSubGroup.AND(propConstraints)));
+        mandatory(property, permissions, ConstraintsTopGroup.AND(ConstraintsSubGroup.AND(propConstraints)));
     }
 
     /**
@@ -133,10 +133,10 @@ public class ValidationRules<T> {
      * E.g. [Group.and(a, b), Group.and(c, d)] is evaluated as: a && b || c && d
      *
      * @param property
-     * @param relationsAndGroups
+     * @param constraintsAndGroups
      */
-    public void mandatory(final String property, final RelationsAndGroup... relationsAndGroups) {
-        mandatory(property, NO_PERMISSIONS_KEY, relationsAndGroups);
+    public void mandatory(final String property, final ConstraintsAndGroup... constraintsAndGroups) {
+        mandatory(property, NO_PERMISSIONS_KEY, constraintsAndGroups);
     }
 
     /**
@@ -146,10 +146,10 @@ public class ValidationRules<T> {
      *
      * @param property    the property name
      * @param permissions the permissions
-     * @param relationsAndGroups
+     * @param constraintsAndGroups
      */
-    public void mandatory(final String property, final Permissions permissions, final RelationsAndGroup... relationsAndGroups) {
-        mandatory(property, permissions, RelationsTopGroup.OR(relationsAndGroups));
+    public void mandatory(final String property, final Permissions permissions, final ConstraintsAndGroup... constraintsAndGroups) {
+        mandatory(property, permissions, ConstraintsTopGroup.OR(constraintsAndGroups));
     }
 
     /**
@@ -158,10 +158,10 @@ public class ValidationRules<T> {
      * E.g. [Group.or(e, f), Group.or(g, h)] is evaluated as: (e || f) && (g || h)
      *
      * @param property    the property name
-     * @param relationsOrGroups
+     * @param constraintsOrGroups
      */
-    public void mandatory(final String property, final RelationsOrGroup... relationsOrGroups) {
-        mandatory(property, NO_PERMISSIONS_KEY, relationsOrGroups);
+    public void mandatory(final String property, final ConstraintsOrGroup... constraintsOrGroups) {
+        mandatory(property, NO_PERMISSIONS_KEY, constraintsOrGroups);
     }
 
     /**
@@ -171,16 +171,16 @@ public class ValidationRules<T> {
      *
      * @param property    the property name
      * @param permissions the permissions
-     * @param relationsOrGroups
+     * @param constraintsOrGroups
      */
-    public void mandatory(final String property, final Permissions permissions, final RelationsOrGroup... relationsOrGroups) {
-        mandatory(property, permissions, RelationsTopGroup.AND(relationsOrGroups));
+    public void mandatory(final String property, final Permissions permissions, final ConstraintsOrGroup... constraintsOrGroups) {
+        mandatory(property, permissions, ConstraintsTopGroup.AND(constraintsOrGroups));
     }
 
     /**
      * If the logical relation between the constraints are really complicated, this method may be your last resort.
      * <p/>
-     * This version defines the property as mandatory if the {@code RelationsTopGroup} object evaluates to true.
+     * This version defines the property as mandatory if the {@code ConstraintsTopGroup} object evaluates to true.
      * <p/>
      * According to the logical operation the AndGroups and OrGroups are either ANDed or ORed.
      * <p/>
@@ -189,14 +189,14 @@ public class ValidationRules<T> {
      * @param property
      * @param topGroup
      */
-    public void mandatory(final String property, final RelationsTopGroup topGroup) {
+    public void mandatory(final String property, final ConstraintsTopGroup topGroup) {
         mandatory(property, NO_PERMISSIONS_KEY, topGroup);
     }
 
     /**
      * If the logical relation between the constraints are really complicated, this method may be your last resort.
      * <p/>
-     * This version defines the property as mandatory if permissions are met and the {@code RelationsTopGroup} object evaluates to true.
+     * This version defines the property as mandatory if permissions are met and the {@code ConstraintsTopGroup} object evaluates to true.
      * <p/>
      * According to the logical operation the AndGroups and OrGroups are either ANDed or ORed.
      * <p/>
@@ -206,7 +206,7 @@ public class ValidationRules<T> {
      * @param permissions
      * @param topGroup
      */
-    public void mandatory(final String property, final Permissions permissions, final RelationsTopGroup topGroup) {
+    public void mandatory(final String property, final Permissions permissions, final ConstraintsTopGroup topGroup) {
         putRulesToPropertyMap(mandatoryPropertyMap, property, permissions, topGroup);
     }
 
@@ -224,35 +224,35 @@ public class ValidationRules<T> {
     }
 
     public void immutable(final String property, final Permissions permissions, final PropConstraint... propConstraints) {
-        immutable(property, permissions, RelationsTopGroup.AND(RelationsSubGroup.AND(propConstraints)));
+        immutable(property, permissions, ConstraintsTopGroup.AND(ConstraintsSubGroup.AND(propConstraints)));
     }
 
-    public void immutable(final String property, final RelationsAndGroup... relationsAndGroups) {
-        immutable(property, NO_PERMISSIONS_KEY, relationsAndGroups);
+    public void immutable(final String property, final ConstraintsAndGroup... constraintsAndGroups) {
+        immutable(property, NO_PERMISSIONS_KEY, constraintsAndGroups);
     }
 
-    public void immutable(final String property, final Permissions permissions, final RelationsAndGroup... relationsAndGroups) {
-        immutable(property, permissions, RelationsTopGroup.OR(relationsAndGroups));
+    public void immutable(final String property, final Permissions permissions, final ConstraintsAndGroup... constraintsAndGroups) {
+        immutable(property, permissions, ConstraintsTopGroup.OR(constraintsAndGroups));
     }
 
-    public void immutable(final String property, final RelationsOrGroup... relationsOrGroups) {
-        immutable(property, NO_PERMISSIONS_KEY, relationsOrGroups);
+    public void immutable(final String property, final ConstraintsOrGroup... constraintsOrGroups) {
+        immutable(property, NO_PERMISSIONS_KEY, constraintsOrGroups);
     }
 
-    public void immutable(final String property, final Permissions permissions, final RelationsOrGroup... relationsOrGroups) {
-        immutable(property, permissions, RelationsTopGroup.AND(relationsOrGroups));
+    public void immutable(final String property, final Permissions permissions, final ConstraintsOrGroup... constraintsOrGroups) {
+        immutable(property, permissions, ConstraintsTopGroup.AND(constraintsOrGroups));
     }
 
-    public void immutable(final String property, final RelationsTopGroup topGroup) {
+    public void immutable(final String property, final ConstraintsTopGroup topGroup) {
         immutable(property, NO_PERMISSIONS_KEY, topGroup);
     }
 
-    public void immutable(final String property, final Permissions permissions, final RelationsTopGroup topGroup) {
+    public void immutable(final String property, final Permissions permissions, final ConstraintsTopGroup topGroup) {
         putRulesToPropertyMap(immutablePropertyMap, property, permissions, topGroup);
     }
 
     private void putRulesToPropertyMap(final PropertyMap propertyMap, final String property, final Permissions permissions,
-                                            final RelationsTopGroup topGroup) {
+                                            final ConstraintsTopGroup topGroup) {
         Objects.requireNonNull(propertyMap, "propertyMap must not be null");
         Objects.requireNonNull(property, "property must not be null");
         Objects.requireNonNull(permissions, "permissions must not be null");
@@ -284,7 +284,7 @@ public class ValidationRules<T> {
      * @param permissions
      */
     public void content(final String property, final ConstraintRoot contentConstraint, final Permissions permissions) {
-        content(property, contentConstraint, permissions, RelationsTopGroup.AND());
+        content(property, contentConstraint, permissions, ConstraintsTopGroup.AND());
     }
 
     /**
@@ -308,7 +308,7 @@ public class ValidationRules<T> {
      * @param propConstraints
      */
     public void content(final String property, final ConstraintRoot constraint, final Permissions permissions, final PropConstraint... propConstraints) {
-        content(property, constraint, permissions, RelationsTopGroup.AND(RelationsSubGroup.AND(propConstraints)));
+        content(property, constraint, permissions, ConstraintsTopGroup.AND(ConstraintsSubGroup.AND(propConstraints)));
     }
 
     /**
@@ -318,10 +318,10 @@ public class ValidationRules<T> {
      *
      * @param property
      * @param constraint
-     * @param relationsAndGroups
+     * @param constraintsAndGroups
      */
-    public void content(final String property, final ConstraintRoot constraint, final RelationsAndGroup... relationsAndGroups) {
-        content(property, constraint, NO_PERMISSIONS_KEY, relationsAndGroups);
+    public void content(final String property, final ConstraintRoot constraint, final ConstraintsAndGroup... constraintsAndGroups) {
+        content(property, constraint, NO_PERMISSIONS_KEY, constraintsAndGroups);
     }
 
     /**
@@ -332,10 +332,10 @@ public class ValidationRules<T> {
      * @param property
      * @param constraint
      * @param permissions
-     * @param relationsAndGroups
+     * @param constraintsAndGroups
      */
-    public void content(final String property, final ConstraintRoot constraint, final Permissions permissions, final RelationsAndGroup... relationsAndGroups) {
-        content(property, constraint, permissions, RelationsTopGroup.OR(relationsAndGroups));
+    public void content(final String property, final ConstraintRoot constraint, final Permissions permissions, final ConstraintsAndGroup... constraintsAndGroups) {
+        content(property, constraint, permissions, ConstraintsTopGroup.OR(constraintsAndGroups));
     }
 
     /**
@@ -345,10 +345,10 @@ public class ValidationRules<T> {
      *
      * @param property
      * @param constraint
-     * @param relationsOrGroups
+     * @param constraintsOrGroups
      */
-    public void content(final String property, final ConstraintRoot constraint, final RelationsOrGroup... relationsOrGroups) {
-        content(property, constraint, NO_PERMISSIONS_KEY, relationsOrGroups);
+    public void content(final String property, final ConstraintRoot constraint, final ConstraintsOrGroup... constraintsOrGroups) {
+        content(property, constraint, NO_PERMISSIONS_KEY, constraintsOrGroups);
     }
 
     /**
@@ -359,10 +359,10 @@ public class ValidationRules<T> {
      * @param property
      * @param constraint
      * @param permissions
-     * @param relationsOrGroups
+     * @param constraintsOrGroups
      */
-    public void content(final String property, final ConstraintRoot constraint, final Permissions permissions, final RelationsOrGroup... relationsOrGroups) {
-        content(property, constraint, permissions, RelationsTopGroup.AND(relationsOrGroups));
+    public void content(final String property, final ConstraintRoot constraint, final Permissions permissions, final ConstraintsOrGroup... constraintsOrGroups) {
+        content(property, constraint, permissions, ConstraintsTopGroup.AND(constraintsOrGroups));
     }
 
     /**
@@ -378,7 +378,7 @@ public class ValidationRules<T> {
      * @param constraint
      * @param groups
      */
-    public void content(final String property, final ConstraintRoot constraint, final RelationsTopGroup groups) {
+    public void content(final String property, final ConstraintRoot constraint, final ConstraintsTopGroup groups) {
         content(property, constraint, NO_PERMISSIONS_KEY, groups);
     }
 
@@ -397,7 +397,7 @@ public class ValidationRules<T> {
      * @param topGroup
      */
     public void content(final String property, final ConstraintRoot contentConstraint, final Permissions permissions,
-                        final RelationsTopGroup topGroup) {
+                        final ConstraintsTopGroup topGroup) {
         Objects.requireNonNull(property, "property must not be null");
         Objects.requireNonNull(contentConstraint, "contentConstraint must not be null");
         Objects.requireNonNull(permissions, "permissions must not be null");
@@ -416,21 +416,21 @@ public class ValidationRules<T> {
     }
 
 
-    private void validatePermissions(Set<Permissions> permissionsMap, Permissions permissions, String property) {
+    private void validatePermissions(Set<Permissions> permissionsMap, Permissions permissions, String propertyToLog) {
         permissions.validateValuesOrFail(null);
         // Check if any permissions are 'not unique'; e.g. Perm.any(A,B), followed by Perm.any(C,B) -> constraints for B is not unique
         if (permissions == NO_PERMISSIONS_KEY) {
             if (permissionsMap.contains(permissions)) {
-                throw new IllegalArgumentException(String.format("Validation rules for property '%s' (w/o permissions) are already defined.", property));
+                throw new IllegalArgumentException(String.format("Validation rules for property '%s' (w/o permissions) are already defined.", propertyToLog));
             }
         } else {
             if(permissions.getValues().isEmpty()) {
-                throw new IllegalArgumentException(String.format("Permissions for property '%s' must not be empty.", property));
+                throw new IllegalArgumentException(String.format("Permissions for property '%s' must not be empty.", propertyToLog));
             }
             Optional<String> nonUniquePermission = checkPermissionUniqueness(permissionsMap, permissions);
             if (nonUniquePermission.isPresent()) {
                 throw new IllegalArgumentException(String.format("Validation rules for property '%s' and permission '%s' are already defined.",
-                        property, nonUniquePermission.get().toString()));
+                        propertyToLog, nonUniquePermission.get().toString()));
             }
         }
     }
@@ -450,9 +450,9 @@ public class ValidationRules<T> {
         return existingPerms.stream().findFirst();
     }
 
-    private void validatePropertyAndConstraintRefs(String property, RelationsTopGroup topGroup) {
+    private void validatePropertyAndConstraintRefs(String property, ConstraintsTopGroup topGroup) {
         Validator.instance().validateProperty(property, typeClass);
-        for (final RelationsSubGroup group : topGroup.getRelationsSubGroups()) {
+        for (final ConstraintsSubGroup group : topGroup.getConstraintsSubGroups()) {
             for (final PropConstraint ref : group.getPropConstraints()) {
                 validateConstraintRef(ref);
             }
@@ -478,7 +478,7 @@ public class ValidationRules<T> {
                             + property + " (" + propertyType + ")");
         }
         // Do further constraint specific validations
-        //TODO haben property und refProperty den selben Typ ...
+        //TODO have property and refProperty same type?
         constraint.validateValuesOrFail(typeClass);
     }
 

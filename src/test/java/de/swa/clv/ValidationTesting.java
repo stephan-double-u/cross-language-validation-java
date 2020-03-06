@@ -1,8 +1,8 @@
 package de.swa.clv;
 
 import de.swa.clv.constraints.*;
-import de.swa.clv.groups.RelationsSubGroup;
-import de.swa.clv.groups.RelationsTopGroup;
+import de.swa.clv.groups.ConstraintsSubGroup;
+import de.swa.clv.groups.ConstraintsTopGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,11 +40,11 @@ public class ValidationTesting {
                 Constraint.ref("articleArray", Size.min(2)),
                 Constraint.ref("someMap", Size.max(2)));
         rules.mandatory("id",
-                RelationsTopGroup.AND(
-                        RelationsSubGroup.OR(
+                ConstraintsTopGroup.AND(
+                        ConstraintsSubGroup.OR(
                                 Constraint.ref("id", Equals.none(1, 2, 3)),
                                 Constraint.ref("id", Equals.none(4)) ),
-                        RelationsSubGroup.AND(
+                        ConstraintsSubGroup.AND(
                                 Constraint.ref("id", Equals.any(1)) )
                 )
         );
@@ -60,7 +60,7 @@ public class ValidationTesting {
                 );
 
         rules.mandatory("status",
-                RelationsSubGroup.AND(
+                ConstraintsSubGroup.AND(
                         Constraint.ref("someInt", Range.minMax(1, 999)),
                         Constraint.ref("someInt", Range.min(1).max(999)),
                         Constraint.ref("someLong", Range.max(RangeRoot.SAVE_INTEGER_MAX)),
@@ -69,15 +69,15 @@ public class ValidationTesting {
                         Constraint.ref("aBoolean", Equals.any(TRUE)),
                         Constraint.ref("someInt", Equals.notNull()),
                         Constraint.ref("id", Equals.none(-1, 123456789)) ),
-                RelationsSubGroup.AND(
+                ConstraintsSubGroup.AND(
                         Constraint.ref("id", Equals.none(666, 999)))
                 );
         rules.mandatory("aBoolean",
-                RelationsSubGroup.OR(
+                ConstraintsSubGroup.OR(
                         Constraint.ref("someString", Size.minMax(1, 100)),
                         Constraint.ref("articleList", Size.min(1)),
                         Constraint.ref("articleArray", Size.max(100)) ),
-                RelationsSubGroup.OR(
+                ConstraintsSubGroup.OR(
                         Constraint.ref("id", Equals.none(404)) )
                 );
         rules.mandatory("customer.name",
@@ -95,7 +95,7 @@ public class ValidationTesting {
 
         rules.content("status", Equals.any("one", "two"), Permissions.any(Perms.aaa));
         rules.content("status", Equals.any("NEW", "four"), Permissions.any("baz", "bar"));
-        rules.content("status", Equals.any("five"), Permissions.any("baz"), a);
+        rules.content("status", Equals.any("five"), Permissions.any("..."), a);
         rules.content("status", Equals.any("five"));
 
         rules.content("stringList[0]", Equals.any("one", "two"));
@@ -105,29 +105,29 @@ public class ValidationTesting {
 
 
 //        rules.content("id", Equals.any(101, 202, 303),
-//                RelationsSubGroup.OR(a, a),
-//                RelationsSubGroup.OR(a, a)
+//                ConstraintsSubGroup.OR(a, a),
+//                ConstraintsSubGroup.OR(a, a)
 //                );
 //        rules.content("id", Equals.any(101, 202, 303),
-//                RelationsSubGroup.AND(a, a),
-//                RelationsSubGroup.AND(a, a)
+//                ConstraintsSubGroup.AND(a, a),
+//                ConstraintsSubGroup.AND(a, a)
 //                );
 //        rules.content("id", Equals.any(101, 202, 303),
-//                RelationsTopGroup.OR(
-//                        RelationsSubGroup.AND(a, a),
-//                        RelationsSubGroup.OR(a, a)
+//                ConstraintsTopGroup.OR(
+//                        ConstraintsSubGroup.AND(a, a),
+//                        ConstraintsSubGroup.OR(a, a)
 //                        )
 //                );
 
 
         final ValidationRules<Article> articleRules = new ValidationRules<>(Article.class);
         articleRules.immutable("animalUse",
-                RelationsTopGroup.OR(
-                        RelationsSubGroup.AND(
+                ConstraintsTopGroup.OR(
+                        ConstraintsSubGroup.AND(
                                 Constraint.ref("animalUse", Equals.any(TRUE)),
                                 Constraint.ref("usedOnce", Equals.any(TRUE))
                         ),
-                        RelationsSubGroup.AND(
+                        ConstraintsSubGroup.AND(
                                 Constraint.ref("medicalSetId", Equals.notNull())
                         )
                 )

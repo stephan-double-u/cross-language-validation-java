@@ -70,6 +70,12 @@ public class DatesTest {
         assertTrue(dates.validate(tomorrowPlus1Sec, null));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void validateUnsupportedType() {
+        Dates dates = Dates.future();
+        assertTrue(dates.validate("string is unsupported", null));
+    }
+
     @Test
     public void serializeDateFuture() {
         Dates dates = Dates.future(1);

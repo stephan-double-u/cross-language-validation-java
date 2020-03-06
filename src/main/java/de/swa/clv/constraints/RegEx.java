@@ -62,6 +62,9 @@ public class RegEx extends ConstraintRoot {
         if (object == null) {
             return true;
         }
+        if (!isSupportedType(object.getClass())) {
+            throw new IllegalArgumentException("Unsupported type: " + object.getClass());
+        }
         return patterns.stream()
                 .peek(pattern -> log.debug("'" + object.toString() + (pattern.matcher(object.toString()).find() ? "' does" : "' does NOT") +" match regex '" + pattern + "'"))
                 .map(pattern -> pattern.matcher(object.toString()).find())

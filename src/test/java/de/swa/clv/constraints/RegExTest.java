@@ -24,6 +24,11 @@ public class RegExTest {
         RegEx.any("[a-c]+.", null);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void unsupportedType() {
+        regEx.validate(123, null);
+    }
+
     @Test
     public void firstRegExMatch() {
         assertTrue(regEx.validate("foobarzoo", null));

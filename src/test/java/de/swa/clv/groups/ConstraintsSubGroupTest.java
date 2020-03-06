@@ -5,17 +5,17 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class RelationsSubGroupTest {
+public class ConstraintsSubGroupTest {
 
     @Test
     public void serializeAndGroup() {
-        String json = new RelationsAndGroup().serializeToJson();
+        String json = new ConstraintsAndGroup().serializeToJson();
         assertEquals(Util.doubleQuote("{'operator':'AND','constraints':[]}"), json);
     }
 
     @Test
     public void serializeOrGroup() {
-        String json = new RelationsOrGroup().serializeToJson();
+        String json = new ConstraintsOrGroup().serializeToJson();
         assertEquals(Util.doubleQuote("{'operator':'OR','constraints':[]}"), json);
     }
 
