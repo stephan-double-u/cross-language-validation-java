@@ -246,7 +246,7 @@ public class Validator {
         String propertyKey = "";
         for (final String propertyPart : propertyParts) {
             GetterInfo getterInfo = null;
-            if (!IndexedPropertyHelper.getIndexInfo(propertyPart, false).isPresent()) {
+            if (!IndexedPropertyHelper.getIndexInfo(propertyPart).isPresent()) {
                 // process simple property
                 getterInfo = createGetterInfoForSimpleProperty(propertyPart, propertyPartClass);
             } else {
@@ -325,7 +325,7 @@ public class Validator {
                 if (returnValue == null) {
                     break;
                 }
-                final Optional<IndexInfo> indexInfoOptional = IndexedPropertyHelper.getIndexInfo(propertyPart, false);
+                final Optional<IndexInfo> indexInfoOptional = IndexedPropertyHelper.getIndexInfo(propertyPart);
                 if (indexInfoOptional.isPresent()) {
                     final IndexInfo indexInfo = indexInfoOptional.get();
                     if (indexInfo.getIndexType() != IndexedPropertyHelper.IndexType.LIST || indexInfo.getValues().size() != 1) {
@@ -435,7 +435,7 @@ public class Validator {
         String delimiter = "";
         for (final String propertyPart : propertyParts) {
             if (IndexedPropertyHelper.isIndexedProperty(propertyPart)) {
-                final IndexInfo indexInfo = IndexedPropertyHelper.getIndexInfo(propertyPart, false).get();
+                final IndexInfo indexInfo = IndexedPropertyHelper.getIndexInfo(propertyPart).get();
                 String propertyPartName = delimiter + propertyPart.substring(0, propertyPart.indexOf('['));
                 if (indexInfo.getIndexType() == IndexedPropertyHelper.IndexType.LIST) {
                     inflatedProperties = inflatedProperties.stream()
