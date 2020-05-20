@@ -173,6 +173,47 @@ public class ValidatorTest {
     }
 
 
+    @Test
+    public void validateMandatoryRules_star() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.mandatory("subClassArrayProp[*].stringProp");
+        final List<String> errors = Validator.instance().validateMandatoryRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void validateMandatoryRules_starFail() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.mandatory("subClassArrayProp[*].stringProp");
+
+        ClassUnderTest classUnderTest = new ClassUnderTest();
+        classUnderTest.subClassArrayProp[0].stringProp = null;
+
+        final List<String> errors = Validator.instance().validateMandatoryRules(classUnderTest, rules);
+        assertEquals(Arrays.asList("error.validation.mandatory.classundertest.subClassArrayProp[*].stringProp"), errors);
+    }
+
+    @Test
+    public void validateImmutableRules_star() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.mandatory("subClassArrayProp[*].stringProp");
+        final List<String> errors = Validator.instance().validateImmutableRules(new ClassUnderTest(), new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void validateImmutableRules_starFail() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.immutable("subClassArrayProp[*].stringProp");
+
+        ClassUnderTest modifiedObject = new ClassUnderTest();
+        modifiedObject.subClassArrayProp[1].stringProp = "modified";
+
+        final List<String> errors = Validator.instance().validateImmutableRules(new ClassUnderTest(), modifiedObject, rules);
+        assertEquals(Arrays.asList("error.validation.immutable.classundertest.subClassArrayProp[*].stringProp"), errors);
+    }
+
+
     class ClassUnderTest extends BaseClass implements Identifiable<Integer> {
         private String stringProp;
         private SomeEnum enumProp;
@@ -232,7 +273,7 @@ public class ValidatorTest {
     }
 
     class SubClass {
-        private String stringProp = "someString";
+        private String stringProp = null;
         private String[] stringArrayProp;
         private List<String> stringListProp;
 

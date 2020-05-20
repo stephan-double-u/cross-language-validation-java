@@ -24,7 +24,7 @@ public class IndexedPropertyHelper {
     private static final Map<String, IndexInfo> propertyToIndexInfoCache = new HashMap<>();
 
     public static boolean isIndexedProperty(final String property) {
-        return property.endsWith("]");
+        return property.contains("]");
     }
 
     /**

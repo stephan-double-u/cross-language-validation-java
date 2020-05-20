@@ -1,9 +1,6 @@
 package de.swa.clv;
 
-import de.swa.clv.constraints.Constraint;
-import de.swa.clv.constraints.ConstraintRoot;
-import de.swa.clv.constraints.PropConstraint;
-import de.swa.clv.constraints.Permissions;
+import de.swa.clv.constraints.*;
 import de.swa.clv.groups.*;
 import de.swa.clv.groups.ConstraintsSubGroup;
 import de.swa.clv.util.IndexedPropertyHelper;
@@ -63,10 +60,9 @@ public class Validator {
                                                            final ValidationRules<?> rules) {
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
 
-        // TODO better returnType? e.g. ValidationError with key, value?
         final List<String> errors = rules.getMandatoryPropertyKeys().stream()
                 .filter(property -> isPropertyMandatory(property, object, userPermissions, rules))
-                .filter(property -> getPropertyResultObject(property, object) == null)
+                .filter(property -> !constraintIsMet(Constraint.ref(property, Equals.notNull()), object))
                 .map(property -> defaultMandatoryMessage + "." + rules.getTypeJsonKey() + "." + property)
                 .collect(Collectors.toList());
         return errors;
@@ -102,10 +98,9 @@ public class Validator {
             throw new IllegalArgumentException("originalObject and modifiedObject must have same type");
         }
 
-        // TODO better returnType? e.g. ValidationError with key, value?
         final List<String> errors = rules.getImmutablePropertyKeys().stream()
                 .filter(property -> isPropertyImmutable(property, originalObject, userPermissions, rules))
-                .filter(property -> !Objects.equals(getPropertyResultObject(property, originalObject), getPropertyResultObject(property, modifiedObject)))
+                .filter(property -> !propertyValuesEquals(property, originalObject, modifiedObject))
                 .map(property -> defaultImmutableMessage + "." + rules.getTypeJsonKey() + "." + property)
                 .collect(Collectors.toList());
         return errors;
@@ -184,7 +179,6 @@ public class Validator {
     public List<String> validateContentRules(Object object, UserPermissions userPermissions, ValidationRules<?> rules) {
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
 
-        // TODO better returnType? e.g. ValidationError with key, value?
         final List<String> errors = new ArrayList<>();
         for (String property : rules.getContentPropertyKeys()) {
             final Optional<ConstraintRoot> propertyContentConstraint = getPropertyContentConstraint(property, object, userPermissions, rules);
@@ -350,7 +344,7 @@ public class Validator {
                             returnValue = null;
                         }
                     } else {
-                        log.error("Should not happen: Indexed property is neiter a List nor an Array");
+                        log.error("Should not happen: indexed property is neiter a List nor an Array");
                         returnValue = null;
                     }
                 }
@@ -404,7 +398,7 @@ public class Validator {
             }
             return false;
         } else {
-            throw new IllegalArgumentException("Wrong ConditionGroup type ...");
+            throw new IllegalArgumentException("Should not happen: wrong ConditionGroup type");
         }
     }
 
@@ -422,6 +416,28 @@ public class Validator {
                 return false;
             }
 
+        }
+        return true;
+    }
+
+    private boolean propertyValuesEquals(final String property, final Object originalObject, final Object modifiedObject) {
+        List<String> propertiesToCheck = new ArrayList<>();
+        if (!IndexedPropertyHelper.isIndexedProperty(property)) {
+            propertiesToCheck.add(property);
+        } else {
+            propertiesToCheck = inflateIndexedProperty(property, originalObject);
+            if (propertiesToCheck.size() != inflateIndexedProperty(property, modifiedObject).size()) {
+                return false;
+            }
+        }
+        for (String propertyToCheck : propertiesToCheck) {
+            Object originalValue = getPropertyResultObject(propertyToCheck, originalObject);
+            Object modifiedValue = getPropertyResultObject(propertyToCheck, modifiedObject);
+            log.debug("Property '{}': original value is '{}', modified value is '{}'", propertyToCheck, originalValue, modifiedValue);
+
+        if (!Objects.equals(originalValue, modifiedValue)) {
+                return false;
+            }
         }
         return true;
     }
@@ -448,7 +464,7 @@ public class Validator {
                             .flatMap(p -> inflateIncrementProperty(p, object, indexInfo.getValues().get(0), indexInfo.getValues().get(1)).stream())
                             .collect(Collectors.toList());
                 } else {
-                    throw new IllegalArgumentException("Should never happen! Unknown IndexType: " + indexInfo.getIndexType());
+                    throw new IllegalArgumentException("Should not happen:  unknown IndexType: " + indexInfo.getIndexType());
                 }
             } else {
                 String propertyPartName = delimiter + propertyPart;
@@ -478,7 +494,7 @@ public class Validator {
         } else if (propertyResultObject.getClass().isArray()) {
             numberOfElements = Array.getLength(propertyResultObject);
         } else {
-            throw new IllegalArgumentException("Should not happen! propertyResultObject is neither List nor Array");
+            throw new IllegalArgumentException("Should not happen: propertyResultObject is neither List nor Array");
         }
         return IntStream.range(0, numberOfElements).boxed()
                 .filter(i -> i >= startIndex)
