@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
 
 public class EqualsNoneRefTest {
 
-    private static Foo foo = new Foo(new Bar("baz", Enum.VALID, (short) 1, true));
+    private static Foo foo = new Foo(new Bar("baz", Enum.ABC, (short) 1, true));
 
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
@@ -44,7 +44,7 @@ public class EqualsNoneRefTest {
         EqualsNoneRef constraint = Equals.noneRef("bar.enumProp");
         // Validating caches the getEnumProp() method!
         Validator.instance().validateProperty("bar.enumProp", Foo.class);
-        assertTrue(constraint.validate(Enum.INVALID, foo));
+        assertTrue(constraint.validate(Enum.DEF, foo));
     }
 
     @Test
@@ -64,6 +64,30 @@ public class EqualsNoneRefTest {
     }
 
     @Test
+    public void validateIndexedProperty() {
+        EqualsNoneRef constraint = Equals.noneRef("enum2Prop.nestedEnums[*]");
+        // Validating caches the getStringProp() method!
+        Validator.instance().validateProperty("enum2Prop.nestedEnums[*]", Foo.class);
+        assertTrue(constraint.validate(Enum.JKL, new Foo(Enum2.ONE)));
+    }
+
+    @Test
+    public void validateIndexedPropertyFail() {
+        EqualsNoneRef constraint = Equals.noneRef("enum2Prop.nestedEnums[*]");
+        // Validating caches the getStringProp() method!
+        Validator.instance().validateProperty("enum2Prop.nestedEnums[*]", Foo.class);
+        assertFalse(constraint.validate(Enum.GHI, new Foo(Enum2.ONE)));
+    }
+
+    @Test
+    public void validateNoIndexedProperty() {
+        EqualsNoneRef constraint = Equals.noneRef("enum2Prop.nestedEnums[*]");
+        // Validating caches the getStringProp() method!
+        Validator.instance().validateProperty("enum2Prop.nestedEnums[*]", Foo.class);
+        assertTrue(constraint.validate(Enum.GHI, new Foo(Enum2.TWO)));
+    }
+
+    @Test
     public void serializeToJson() {
         EqualsNoneRef constraint = Equals.noneRef("bar.stringProp");
         assertEquals(Util.doubleQuote("'type':'EQUALS_NONE_REF','values':['bar.stringProp']"), constraint.serializeToJson());
@@ -71,11 +95,19 @@ public class EqualsNoneRefTest {
 
     protected static class Foo {
         private Bar bar;
+        private Enum2 enum2Prop;
+
         public Foo(Bar bar) {
             this.bar = bar;
         }
+        public Foo(Enum2 enum2Prop) {
+            this.enum2Prop = enum2Prop;
+        }
         public Bar getBar() {
             return bar;
+        }
+        public Enum2 getEnum2Prop() {
+            return enum2Prop;
         }
     }
 
@@ -105,6 +137,21 @@ public class EqualsNoneRefTest {
     }
 
     enum Enum {
-        VALID, INVALID
+        ABC, DEF, GHI, JKL
+    }
+
+    public enum Enum2 {
+        ONE(Enum.ABC, Enum.DEF, Enum.GHI),
+        TWO();
+
+        private Enum[] nestedEnums;
+
+        Enum2(Enum... enums) {
+            this.nestedEnums = enums;
+        }
+
+        public Enum[] getNestedEnums() {
+            return nestedEnums;
+        }
     }
 }

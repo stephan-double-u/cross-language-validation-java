@@ -32,6 +32,7 @@ public class EqualsNoneRef extends EqualsRoot {
         }
 
         final Boolean equals = getValues().stream()
+                .flatMap(property -> Validator.instance().inflatePropertyIfIndexed((String) property, constraintObject).stream())
                 .map(property -> Validator.instance().getPropertyResultObject((String) property, constraintObject))
                 .map(referencedValue -> EqualsRoot.equals(valueToValidate, referencedValue))
                 .filter(e -> e == true)

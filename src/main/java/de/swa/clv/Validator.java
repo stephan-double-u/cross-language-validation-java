@@ -403,12 +403,7 @@ public class Validator {
     }
 
     private boolean constraintIsMet(final PropConstraint propConstraint, final Object object) {
-        List<String> propertiesToCheck = new ArrayList<>();
-        if (!IndexedPropertyHelper.isIndexedProperty(propConstraint.getProperty())) {
-            propertiesToCheck.add(propConstraint.getProperty());
-        } else {
-            propertiesToCheck = inflateIndexedProperty(propConstraint.getProperty(), object);
-        }
+        List<String> propertiesToCheck = inflatePropertyIfIndexed(propConstraint.getProperty(), object);
         for (String propertyToCheck : propertiesToCheck) {
             Object value = getPropertyResultObject(propertyToCheck, object);
             log.debug("Value of property '{}' is '{}'", propConstraint.getProperty(), value);
@@ -420,15 +415,20 @@ public class Validator {
         return true;
     }
 
-    private boolean propertyValuesEquals(final String property, final Object originalObject, final Object modifiedObject) {
+    public List<String> inflatePropertyIfIndexed(String property, Object object) {
         List<String> propertiesToCheck = new ArrayList<>();
         if (!IndexedPropertyHelper.isIndexedProperty(property)) {
             propertiesToCheck.add(property);
         } else {
-            propertiesToCheck = inflateIndexedProperty(property, originalObject);
-            if (propertiesToCheck.size() != inflateIndexedProperty(property, modifiedObject).size()) {
-                return false;
-            }
+            propertiesToCheck = inflateIndexedProperty(property, object);
+        }
+        return propertiesToCheck;
+    }
+
+    private boolean propertyValuesEquals(final String property, final Object originalObject, final Object modifiedObject) {
+        List<String> propertiesToCheck = inflatePropertyIfIndexed(property, originalObject);
+        if (propertiesToCheck.size() != inflatePropertyIfIndexed(property, modifiedObject).size()) {
+            return false;
         }
         for (String propertyToCheck : propertiesToCheck) {
             Object originalValue = getPropertyResultObject(propertyToCheck, originalObject);

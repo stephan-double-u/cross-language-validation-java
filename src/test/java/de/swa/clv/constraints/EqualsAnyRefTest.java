@@ -64,6 +64,30 @@ public class EqualsAnyRefTest {
     }
 
     @Test
+    public void validateIndexedProperty() {
+        EqualsAnyRef constraint = Equals.anyRef("enum2Prop.nestedEnums[*]");
+        // Validating caches the getStringProp() method!
+        Validator.instance().validateProperty("enum2Prop.nestedEnums[*]", Foo.class);
+        assertTrue(constraint.validate(Enum.GHI, new Foo(Enum2.ONE)));
+    }
+
+    @Test
+    public void validateIndexedPropertyFail() {
+        EqualsAnyRef constraint = Equals.anyRef("enum2Prop.nestedEnums[*]");
+        // Validating caches the getStringProp() method!
+        Validator.instance().validateProperty("enum2Prop.nestedEnums[*]", Foo.class);
+        assertFalse(constraint.validate(Enum.JKL, new Foo(Enum2.ONE)));
+    }
+
+    @Test
+    public void validateNoIndexedPropertyFail() {
+        EqualsAnyRef constraint = Equals.anyRef("enum2Prop.nestedEnums[*]");
+        // Validating caches the getStringProp() method!
+        Validator.instance().validateProperty("enum2Prop.nestedEnums[*]", Foo.class);
+        assertFalse(constraint.validate(Enum.JKL, new Foo(Enum2.TWO)));
+    }
+
+    @Test
     public void serializeToJson() {
         EqualsAnyRef constraint = Equals.anyRef("bar.stringProp");
         assertEquals(Util.doubleQuote("'type':'EQUALS_ANY_REF','values':['bar.stringProp']"), constraint.serializeToJson());
@@ -71,11 +95,19 @@ public class EqualsAnyRefTest {
 
     protected static class Foo {
         private Bar bar;
+        private Enum2 enum2Prop;
+
         public Foo(Bar bar) {
             this.bar = bar;
         }
+        public Foo(Enum2 enum2Prop) {
+            this.enum2Prop = enum2Prop;
+        }
         public Bar getBar() {
             return bar;
+        }
+        public Enum2 getEnum2Prop() {
+            return enum2Prop;
         }
     }
 
@@ -105,6 +137,21 @@ public class EqualsAnyRefTest {
     }
 
     enum Enum {
-        ABC
+        ABC, DEF, GHI, JKL
+    }
+
+    public enum Enum2 {
+        ONE(Enum.ABC, Enum.DEF, Enum.GHI),
+        TWO();
+
+        private Enum[] nestedEnums;
+
+        Enum2(Enum... enums) {
+            this.nestedEnums = enums;
+        }
+
+        public Enum[] getNestedEnums() {
+            return nestedEnums;
+        }
     }
 }

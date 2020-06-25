@@ -1,10 +1,10 @@
 package de.swa.clv.constraints;
 
-import java.util.Arrays;
-
 import de.swa.clv.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
 
 public class EqualsAnyRef extends EqualsRoot {
 
@@ -32,7 +32,8 @@ public class EqualsAnyRef extends EqualsRoot {
         }
 
         final Boolean equals = getValues().stream()
-                .map(property -> Validator.instance().getPropertyResultObject((String) property, constraintObject))
+                .flatMap(property -> Validator.instance().inflatePropertyIfIndexed((String) property, constraintObject).stream())
+                .map(property -> Validator.instance().getPropertyResultObject(property, constraintObject))
                 .map(referencedValue -> EqualsRoot.equals(valueToValidate, referencedValue))
                 .filter(e -> e == true)
                 .findFirst().orElse(false);
