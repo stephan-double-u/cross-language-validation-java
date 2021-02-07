@@ -10,6 +10,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -28,6 +30,17 @@ public class ValidationRulesTest {
         expectedEx.expectMessage(StringContains.containsString("rules for property 'stringProp' (w/o permissions) are already defined"));
 
         rules.mandatory("stringProp", Constraint.ref("stringProp", Size.minMax(1, 100)));
+    }
+
+    @Test
+    public void exceptionIfPropertyHasWildcardTypeWithLowerBounds() {
+        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
+
+        expectedEx.expect(IllegalArgumentException.class);
+        expectedEx.expectMessage(StringContains.containsString(
+                "Index definitions for generics with lower bounds wildcard type is not implemented (and quite useless(?)): supInteger[*]"));
+
+        rules.mandatory("supInteger[*]");
     }
 
     @Test
@@ -50,6 +63,19 @@ public class ValidationRulesTest {
         expectedEx.expectMessage(StringContains.containsString("Index definitions are only allowed for properties of type List or arrays: stringProp[0]"));
         rules.mandatory("stringProp[0]");
     }
+
+    @Test
+    public void mandatoryIndexedPropertiesEverywhere() {
+        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
+        rules.mandatory("stringArrayProp[1-3]", Constraint.ref("stringArrayProp[4]", Equals.anyRef("stringArrayProp[5,6]")));
+    }
+
+    @Test
+    public void mandatoryIndexedPropertyWildcardUpperBounds() {
+        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
+        rules.mandatory("extNumber[*]");
+    }
+
 
     @Test
     public void serializeEmptyRulesInstance() {
@@ -85,23 +111,18 @@ public class ValidationRulesTest {
 
     }
 
-
-    @Test
-    public void temp() {
-        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
-        rules.mandatory("stringArrayProp[1-3]", Constraint.ref("stringArrayProp[4]", Equals.anyRef("stringArrayProp[5,6]")));
-        assertTrue(true);
-    }
-
     @Test
     public void manyManyMore() {
         assertTrue(true);
     }
 
+
     class ClassOne {
         private String stringProp;
         private String[] stringArrayProp;
         private List<String> stringListProp;
+        private List<? extends Number> extNumber;
+        private List<? super Integer> supInteger = new ArrayList<>();
         public String getStringProp() {
             return stringProp;
         }
@@ -110,6 +131,12 @@ public class ValidationRulesTest {
         }
         public List<String> getStringListProp() {
             return stringListProp;
+        }
+        public List<? extends Number> getExtNumber() {
+            return extNumber;
+        }
+        public List<? super Integer> getSupInteger() {
+            return supInteger;
         }
     }
 

@@ -97,11 +97,14 @@ public class ValidationTesting {
         rules.content("status", Equals.any("NEW", "four"), Permissions.any("baz", "bar"));
         rules.content("status", Equals.any("five"), Permissions.any("..."), a);
         rules.content("status", Equals.any("five"));
-
         rules.content("stringList[0]", Equals.any("one", "two"));
         rules.content("someString", Equals.anyRef("articleList[0].name"));
+        //TODO List<ContentConstraints>!?: status == "foo" if other == 1 OR status == "bar" if other == 2
         rules.content("id", Equals.any(101, 202, 303),
                 a, a, a, a);
+
+        rules.content("status", Equals.any("five"));
+
 
 
 //        rules.content("id", Equals.any(101, 202, 303),

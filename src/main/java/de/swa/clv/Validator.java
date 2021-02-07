@@ -12,11 +12,7 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.MethodDescriptor;
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +45,7 @@ public class Validator {
 
     public static Validator instance() {
         return INSTANCE;
-    };
+    }
 
 
     public List<String> validateMandatoryRules(final Object object, final ValidationRules<?> rules) {
@@ -60,27 +56,26 @@ public class Validator {
                                                            final ValidationRules<?> rules) {
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
 
-        final List<String> errors = rules.getMandatoryPropertyKeys().stream()
-                .filter(property -> isPropertyMandatory(property, object, userPermissions, rules))
+        return rules.getMandatoryPropertyKeys().stream()
+                .filter(property -> shouldPropertyBeMandatory(property, object, userPermissions, rules))
                 .filter(property -> !constraintIsMet(Constraint.ref(property, Equals.notNull()), object))
                 .map(property -> defaultMandatoryMessage + "." + rules.getTypeJsonKey() + "." + property)
                 .collect(Collectors.toList());
-        return errors;
     }
 
-    public boolean isPropertyMandatory(final String property, final Object object, final ValidationRules<?> rules) {
-        return isPropertyMandatory(property, object, NO_USER_PERMISSIONS, rules);
+    public boolean shouldPropertyBeMandatory(final String property, final Object object, final ValidationRules<?> rules) {
+        return shouldPropertyBeMandatory(property, object, NO_USER_PERMISSIONS, rules);
     }
 
-    public boolean isPropertyMandatory(final String property, final Object object, final UserPermissions userPermissions,
-                                              final ValidationRules<?> rules) {
+    public boolean shouldPropertyBeMandatory(final String property, final Object object, final UserPermissions userPermissions,
+                                             final ValidationRules<?> rules) {
         Objects.requireNonNull(property, ERR_MSG_PROPERTY_NULL);
         Objects.requireNonNull(object, ERR_MSG_OBJECT_NULL);
         Objects.requireNonNull(userPermissions, ERR_MSG_USER_PERMISSIONS_NULL);
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
         validateArguments(property, object, rules);
 
-        boolean isMandatory = isPropertyMandatoryRespImmutable(rules.getMandatoryPermissionsMap(property), object, userPermissions);
+        boolean isMandatory = shouldPropertyBeMandatoryRespImmutable(rules.getMandatoryPermissionsMap(property), object, userPermissions);
         log.debug("{}.{} IS{} mandatory", rules.getSimpleTypeName(), property, (isMandatory ? "" : "NOT"));
 
         return isMandatory;
@@ -98,35 +93,34 @@ public class Validator {
             throw new IllegalArgumentException("originalObject and modifiedObject must have same type");
         }
 
-        final List<String> errors = rules.getImmutablePropertyKeys().stream()
-                .filter(property -> isPropertyImmutable(property, originalObject, userPermissions, rules))
+        return rules.getImmutablePropertyKeys().stream()
+                .filter(property -> shouldPropertyBeImmutable(property, originalObject, userPermissions, rules))
                 .filter(property -> !propertyValuesEquals(property, originalObject, modifiedObject))
                 .map(property -> defaultImmutableMessage + "." + rules.getTypeJsonKey() + "." + property)
                 .collect(Collectors.toList());
-        return errors;
     }
 
-    public boolean isPropertyImmutable(final String property, final Object object, final ValidationRules<?> rules) {
-        return isPropertyImmutable(property, object, NO_USER_PERMISSIONS, rules);
+    public boolean shouldPropertyBeImmutable(final String property, final Object object, final ValidationRules<?> rules) {
+        return shouldPropertyBeImmutable(property, object, NO_USER_PERMISSIONS, rules);
     }
 
 
-    public boolean isPropertyImmutable(final String property, final Object object, final UserPermissions userPermissions,
-                                              final ValidationRules<?> rules) {
+    public boolean shouldPropertyBeImmutable(final String property, final Object object, final UserPermissions userPermissions,
+                                             final ValidationRules<?> rules) {
         Objects.requireNonNull(property, ERR_MSG_PROPERTY_NULL);
         Objects.requireNonNull(object, ERR_MSG_OBJECT_NULL);
         Objects.requireNonNull(userPermissions, ERR_MSG_USER_PERMISSIONS_NULL);
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
         validateArguments(property, object, rules);
 
-        boolean isImmutable = isPropertyMandatoryRespImmutable(rules.getImmutablePermissionsMap(property), object, userPermissions);
+        boolean isImmutable = shouldPropertyBeMandatoryRespImmutable(rules.getImmutablePermissionsMap(property), object, userPermissions);
         log.debug("{}.{} IS{} immutable", rules.getSimpleTypeName(), property, (isImmutable ? "" : "NOT"));
 
         return isImmutable;
     }
 
-    private boolean isPropertyMandatoryRespImmutable(final PermissionsMap permissionMap, final Object object,
-                                                     final UserPermissions userPermissions) {
+    private boolean shouldPropertyBeMandatoryRespImmutable(final PermissionsMap permissionMap, final Object object,
+                                                           final UserPermissions userPermissions) {
         boolean isMet = false;
         final Optional<ConstraintsTopGroup> matchingConstraintTopGroup = getMatchingConstraints(permissionMap, userPermissions);
         if (matchingConstraintTopGroup.isPresent()) {
@@ -150,7 +144,7 @@ public class Validator {
     private Optional<ConstraintsTopGroup> getMatchingConstraints(PermissionsMap permissionMap, UserPermissions userPermissions) {
         final Optional<ConstraintsTopGroup> match = permissionMap.entrySet().stream()
                 .filter(p -> arePermissionsMatching(p.getKey(), userPermissions))
-                .map(p -> p.getValue())
+                .map(Map.Entry::getValue)
                 .findFirst();
         return Optional.ofNullable(match.orElseGet(() -> permissionMap.get(ValidationRules.NO_PERMISSIONS_KEY)));
     }
@@ -158,7 +152,7 @@ public class Validator {
     private Optional<ContentConstraints> getMatchingContentConstraints(ContentPermissionsMap permissionMap, UserPermissions userPermissions) {
         final Optional<ContentConstraints> match = permissionMap.entrySet().stream()
                 .filter(p -> arePermissionsMatching(p.getKey(), userPermissions))
-                .map(p -> p.getValue())
+                .map(Map.Entry::getValue)
                 .findFirst();
         return Optional.ofNullable(match.orElseGet(() -> permissionMap.get(ValidationRules.NO_PERMISSIONS_KEY)));
     }
@@ -166,9 +160,7 @@ public class Validator {
     private boolean arePermissionsMatching(Permissions constraintPermissions, UserPermissions userPermissions) {
         // Note: this implements 'match any'
         return constraintPermissions.getValues().stream()
-                .filter(p -> userPermissions.getValues().contains(p))
-                .findFirst()
-                .isPresent();
+                .anyMatch(p -> userPermissions.getValues().contains(p));
     }
 
 
@@ -276,7 +268,18 @@ public class Validator {
             }
             // 2. get generic type (e.g. Article.class)
             final ParameterizedType listType = (ParameterizedType) listField.getGenericType();
-            final Class<?> listClass = (Class<?>) listType.getActualTypeArguments()[0];
+            Type actualTypeArgument = listType.getActualTypeArguments()[0];
+            if (actualTypeArgument instanceof WildcardType) {
+                WildcardType wildcardType = (WildcardType) actualTypeArgument;
+                if (wildcardType.getLowerBounds().length == 0) {
+                    actualTypeArgument = wildcardType.getUpperBounds()[0]; // '? extends Foo'
+                } else {
+                    throw new IllegalArgumentException("Index definitions for generics with lower bounds wildcard type is not implemented (and quite useless(?)): " + propertyPart);
+                }
+            } else if (actualTypeArgument instanceof TypeVariable) {
+                throw new IllegalArgumentException("Index definitions for generics with type variable not implemented yet: " + propertyPart);
+            }
+            final Class<?> listClass = (Class<?>) actualTypeArgument;
             // 3. get getter method (e.g. getArticles())
             getterInfo = createGetterInfo(getterMethod);
             // 4. ignore return type 'java.util.List' and remember the type of its get(int) call (e.g. Article)

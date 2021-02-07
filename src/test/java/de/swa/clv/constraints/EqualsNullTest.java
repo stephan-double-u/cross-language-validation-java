@@ -10,8 +10,8 @@ public class EqualsNullTest {
 
     @Test
     public void serializeToJson() {
-        EqualsNull null​_ = Equals.null_();
-        assertEquals(Util.doubleQuote("'type':'EQUALS_NULL'"), null​_.serializeToJson());
+        EqualsNull null_ = Equals.null_();
+        assertEquals(Util.doubleQuote("'type':'EQUALS_NULL'"), null_.serializeToJson());
     }
 
 }

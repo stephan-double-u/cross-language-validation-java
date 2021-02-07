@@ -43,6 +43,7 @@ public abstract class EqualsRoot extends ConstraintRoot {
         if (clazz.isPrimitive()) {
             clazz = TypeHelper.PRIMITIVE_TO_WRAPPER_TYPES.get(clazz);
         }
+        //TODO allow LocalDateTime and util.Date?!
         return String.class == clazz // String is final
                 || Boolean.class == clazz // Boolean is final
                 || Enum.class.isAssignableFrom(clazz)
