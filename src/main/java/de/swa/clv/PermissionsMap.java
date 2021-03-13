@@ -1,7 +1,7 @@
 package de.swa.clv;
 
 import de.swa.clv.constraints.Permissions;
-import de.swa.clv.groups.ConstraintsTopGroup;
+import de.swa.clv.groups.ConditionsTopGroup;
 import de.swa.clv.json.JsonSerializable;
 
 import java.util.LinkedHashMap;
@@ -17,33 +17,32 @@ import static de.swa.clv.json.JsonUtil.asObject;
 public class PermissionsMap implements JsonSerializable {
 
     // Linked HashMap to preserve insertion order
-    private final Map<Permissions, ConstraintsTopGroup> map = new LinkedHashMap<>();
+    private final Map<Permissions, ConditionsTopGroup> map = new LinkedHashMap<>();
 
     public Set<Permissions> keySet() {
         return map.keySet();
     }
 
-    public ConstraintsTopGroup get(final Permissions permissions) {
+    public ConditionsTopGroup get(final Permissions permissions) {
         return map.get(permissions);
     }
 
-    public Set<Map.Entry<Permissions, ConstraintsTopGroup>> entrySet() {
+    public Set<Map.Entry<Permissions, ConditionsTopGroup>> entrySet() {
         return map.entrySet();
     }
 
-    public void put(Permissions permissions, ConstraintsTopGroup topGroup) {
+    public void put(Permissions permissions, ConditionsTopGroup topGroup) {
         map.put(permissions, topGroup);
     }
 
     @Override
     public String serializeToJson() {
-        final String mapAsJson = map.entrySet().stream()
-                .map(e -> serialize(e))
+        return map.entrySet().stream()
+                .map(this::serialize)
                 .collect(Collectors.joining(","));
-        return mapAsJson;
     }
 
-    private String serialize(Map.Entry<Permissions, ConstraintsTopGroup> e) {
+    private String serialize(Map.Entry<Permissions, ConditionsTopGroup> e) {
         final String key = e.getKey().serializeToJson();
         final String val = e.getValue().serializeToJson();
         final String sep = key.isEmpty() || val.isEmpty() ? "" : ",";

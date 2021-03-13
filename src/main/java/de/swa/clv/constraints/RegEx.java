@@ -16,7 +16,7 @@ public class RegEx extends ConstraintRoot {
 
     private static Logger log = LoggerFactory.getLogger(RegEx.class);
 
-    private static final String type = "REGEX_ANY";
+    private static final String TYPE = "REGEX_ANY";
 
     private final String messageDefault = "{validation.constraint.regex}";
 
@@ -74,11 +74,11 @@ public class RegEx extends ConstraintRoot {
 
     @Override
     public String serializeToJson() {
-        return asKey("type") + quoted(type) + "," + asKey("values") + asArray(getValues());
+        return asKey("type") + quoted(TYPE) + "," + asKey("values") + asArray(getValues());
     }
 
     @Override
     public String getType() {
-        return type;
+        return TYPE;
     }
 }

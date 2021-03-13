@@ -1,5 +1,4 @@
 de/swa/clv/constraints/EqualsAny.class
-de/swa/clv/constraints/RangeRoot.class
 de/swa/clv/Validator.class
 de/swa/clv/PropertyMap.class
 de/swa/clv/UserPermissions.class
@@ -9,7 +8,6 @@ de/swa/clv/PermissionsMap.class
 de/swa/clv/constraints/ConstraintRoot.class
 de/swa/clv/json/JsonSerializable.class
 de/swa/clv/constraints/EqualsAnyRef.class
-de/swa/clv/groups/OrGroup.class
 de/swa/clv/json/JsonUtil.class
 de/swa/clv/util/IndexedPropertyHelper$IndexInfo.class
 de/swa/clv/constraints/PermissionsAny.class
@@ -17,17 +15,13 @@ de/swa/clv/constraints/Permissions.class
 de/swa/clv/util/IndexedPropertyHelper.class
 de/swa/clv/constraints/Constraint.class
 de/swa/clv/util/IndexedPropertyHelper$IndexType.class
-de/swa/clv/groups/AndGroup.class
 de/swa/clv/constraints/Equals.class
 de/swa/clv/constraints/RegEx.class
 de/swa/clv/constraints/EqualsNotNull.class
 de/swa/clv/ValidationRules.class
-de/swa/clv/groups/RelationsTopGroup.class
 de/swa/clv/constraints/EqualsNoneRef.class
 de/swa/clv/Validator$PropertyDescriptor.class
-de/swa/clv/constraints/RangeAny.class
 de/swa/clv/constraints/EqualsNone.class
-de/swa/clv/groups/ContentConstraints.class
 de/swa/clv/ContentPropertyMap.class
 de/swa/clv/constraints/Size.class
 de/swa/clv/constraints/EqualsRoot.class
@@ -35,8 +29,6 @@ de/swa/clv/groups/LogicalOperator.class
 de/swa/clv/constraints/PropConstraint.class
 de/swa/clv/ContentPermissionsMap.class
 de/swa/clv/constraints/Dates.class
-de/swa/clv/groups/RelationsSubGroup.class
 de/swa/clv/constraints/Range.class
-de/swa/clv/constraints/RangeStringAny.class
 de/swa/clv/constraints/ComparisonType.class
 de/swa/clv/constraints/EqualsNull.class

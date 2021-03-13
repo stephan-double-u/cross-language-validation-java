@@ -1,10 +1,11 @@
 package de.swa.clv;
 
 import de.swa.clv.constraints.Permissions;
-import de.swa.clv.groups.ContentConstraints;
+import de.swa.clv.constraints.Conditions;
 import de.swa.clv.json.JsonSerializable;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -17,39 +18,38 @@ import static de.swa.clv.json.JsonUtil.asObject;
  */
 public class ContentPermissionsMap implements JsonSerializable {
     // Linked HashMap to preserve insertion order ?!
-    private final Map<Permissions, ContentConstraints> map = new LinkedHashMap<>();
+    private final Map<Permissions, List<Conditions>> map = new LinkedHashMap<>();
 
     public Set<Permissions> keySet() {
         return map.keySet();
     }
 
-    public ContentConstraints get(final Permissions permissions) {
+    public List<Conditions> get(final Permissions permissions) {
         return map.get(permissions);
     }
 
-    public Set<Map.Entry<Permissions, ContentConstraints>> entrySet() {
+    public Set<Map.Entry<Permissions, List<Conditions>>> entrySet() {
         return map.entrySet();
     }
 
-    public void put(Permissions permissions, ContentConstraints contentConstraints) {
+    public void put(Permissions permissions, List<Conditions> contentConstraints) {
         map.put(permissions, contentConstraints);
     }
 
     @Override
     public String serializeToJson() {
-        final String mapAsJson = map.entrySet().stream()
-                .map(e -> serialize(e))
+        return map.entrySet().stream()
+                .map(this::serialize)
                 .collect(Collectors.joining(","));
-        return mapAsJson;
     }
 
     // Special treatment here: sequence should be <contentConstraint>[,<permsissions>][,<constraintsTopGroup>]
-    private String serialize(Map.Entry<Permissions, ContentConstraints> e) {
-        final String contentConstraintJson = asKey("contentConstraint") + asObject(e.getValue().getContentConstraint().serializeToJson());
-        final String permsissionsJson = e.getKey().serializeToJson();
-        final String constraintsTopGroupJson = e.getValue().getConstraintsTopGroup().serializeToJson();
-        final String sep1 =  "".equals(permsissionsJson) ? "" : ",";
+    private String serialize(Map.Entry<Permissions, List<Conditions>> e) {
+        final String contentConstraintJson = asKey("constraint") + asObject(e.getValue().get(0).getConstraint().serializeToJson());
+        final String permissionsJson = e.getKey().serializeToJson();
+        final String constraintsTopGroupJson = e.getValue().get(0).getConditionsTopGroup().serializeToJson();
+        final String sep1 =  "".equals(permissionsJson) ? "" : ",";
         final String sep2 = "".equals(constraintsTopGroupJson) ? "" : ",";
-        return asObject(contentConstraintJson + sep1 + permsissionsJson + sep2 + constraintsTopGroupJson);
+        return asObject(contentConstraintJson + sep1 + permissionsJson + sep2 + constraintsTopGroupJson);
     }
 }

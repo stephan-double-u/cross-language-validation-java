@@ -5,12 +5,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
+import java.util.Date;
 
 import static de.swa.clv.json.JsonUtil.*;
 
 public abstract class EqualsRoot extends ConstraintRoot {
-
-    private static Logger log = LoggerFactory.getLogger(EqualsRoot.class);
 
     EqualsRoot() {
     }
@@ -43,12 +42,13 @@ public abstract class EqualsRoot extends ConstraintRoot {
         if (clazz.isPrimitive()) {
             clazz = TypeHelper.PRIMITIVE_TO_WRAPPER_TYPES.get(clazz);
         }
-        //TODO allow LocalDateTime and util.Date?!
+        //TODO allow LocalDateTime
         return String.class == clazz // String is final
                 || Boolean.class == clazz // Boolean is final
                 || Enum.class.isAssignableFrom(clazz)
                 || Number.class.isAssignableFrom(clazz)
-                || LocalDate.class == clazz;
+                || LocalDate.class == clazz  // LocalDate is final
+                || Date.class.isAssignableFrom(clazz);
     }
     
     @Override

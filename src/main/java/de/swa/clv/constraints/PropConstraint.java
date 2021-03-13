@@ -24,7 +24,7 @@ public class PropConstraint implements JsonSerializable {
 
     @Override
     public String serializeToJson() {
-        return asObject(asKey("property") + quoted(property) + "," + constraint.serializeToJson());
+        return asObject(asKey("property") + quoted(property) + "," + asKey("constraint") + asObject(constraint.serializeToJson()));
     }
 
 

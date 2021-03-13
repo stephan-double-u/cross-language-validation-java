@@ -77,7 +77,7 @@ public class Dates extends ConstraintRoot {
         }
         final String token = (String) getValues().get(0);
         final int daysOffset = (int) getValues().get(1);
-        final long millisDaysOffset = daysOffset * 24 * 60 * 60 * 1000;
+        final long millisDaysOffset = (long) daysOffset * 24 * 60 * 60 * 1000;
         final boolean match;
         if (dateObject instanceof LocalDate) {
             match = validate((LocalDate) dateObject, token, daysOffset);

@@ -116,7 +116,7 @@ public class IndexedPropertyHelper {
     }
 
 
-    public static enum IndexType {
+    public enum IndexType {
         LIST, INCREMENT
     }
 

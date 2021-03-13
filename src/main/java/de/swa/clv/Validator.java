@@ -2,7 +2,6 @@ package de.swa.clv;
 
 import de.swa.clv.constraints.*;
 import de.swa.clv.groups.*;
-import de.swa.clv.groups.ConstraintsSubGroup;
 import de.swa.clv.util.IndexedPropertyHelper;
 import de.swa.clv.util.IndexedPropertyHelper.IndexInfo;
 import org.slf4j.Logger;
@@ -22,6 +21,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static de.swa.clv.ValidationRules.NO_PERMISSIONS;
+
 public class Validator {
 
     public static final String ERR_MSG_RULES_NULL = "rules must not be null";
@@ -31,12 +32,13 @@ public class Validator {
 
     private final Logger log = LoggerFactory.getLogger(Validator.class);
 
-    private final UserPermissions NO_USER_PERMISSIONS = UserPermissions.of(new String[0]);
+    private static final UserPermissions NO_USER_PERMISSIONS = UserPermissions.of(new String[0]);
     private final Map<PropertyDescriptor, GetterInfo> propertyToGetterReturnTypeCache = new HashMap<>();
 
     private String defaultMandatoryMessage = "error.validation.mandatory";
     private String defaultImmutableMessage = "error.validation.immutable";
     private String defaultContentMessage = "error.validation.content";
+    private String defaultUpdateMessage = "error.validation.update";
 
     private Validator() {
     }
@@ -52,82 +54,52 @@ public class Validator {
         return validateMandatoryRules(object, NO_USER_PERMISSIONS, rules);
     }
 
-    public List<String> validateMandatoryRules(final Object object, final UserPermissions userPermissions,
-                                                           final ValidationRules<?> rules) {
+    public List<String> validateMandatoryRules(Object object, UserPermissions userPermissions, ValidationRules<?> rules) {
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
 
-        return rules.getMandatoryPropertyKeys().stream()
-                .filter(property -> shouldPropertyBeMandatory(property, object, userPermissions, rules))
-                .filter(property -> !constraintIsMet(Constraint.ref(property, Equals.notNull()), object))
+        return rules.getMandatoryConditionsKeys().stream()
+                .filter(property -> isPropertyMandatory(property, object, userPermissions, rules))
+                .filter(property -> !constraintIsMet(Condition.of(property, Equals.notNull()), object))
                 .map(property -> defaultMandatoryMessage + "." + rules.getTypeJsonKey() + "." + property)
                 .collect(Collectors.toList());
     }
 
-    public boolean shouldPropertyBeMandatory(final String property, final Object object, final ValidationRules<?> rules) {
-        return shouldPropertyBeMandatory(property, object, NO_USER_PERMISSIONS, rules);
-    }
-
-    public boolean shouldPropertyBeMandatory(final String property, final Object object, final UserPermissions userPermissions,
-                                             final ValidationRules<?> rules) {
-        Objects.requireNonNull(property, ERR_MSG_PROPERTY_NULL);
-        Objects.requireNonNull(object, ERR_MSG_OBJECT_NULL);
-        Objects.requireNonNull(userPermissions, ERR_MSG_USER_PERMISSIONS_NULL);
-        Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
-        validateArguments(property, object, rules);
-
-        boolean isMandatory = shouldPropertyBeMandatoryRespImmutable(rules.getMandatoryPermissionsMap(property), object, userPermissions);
-        log.debug("{}.{} IS{} mandatory", rules.getSimpleTypeName(), property, (isMandatory ? "" : "NOT"));
-
-        return isMandatory;
+    private boolean isPropertyMandatory(final String property, final Object object,
+                                        final UserPermissions userPermissions, final ValidationRules<?> rules) {
+        final Optional<ConstraintRoot> match = getMatchingPropertyConstraint(
+                property, object, userPermissions, rules, RulesType.MANDATORY);
+        log.debug("{}.{} IS{} mandatory", rules.getSimpleTypeName(), property, (match.isPresent() ? "" : "NOT"));
+        return match.isPresent();
     }
 
 
-    public <T> List<String> validateImmutableRules(final Object originalObject, final Object modifiedObject, final ValidationRules<T> rules) {
+    public List<String> validateImmutableRules(final Object originalObject, final Object modifiedObject,
+                                               final ValidationRules<?> rules) {
         return validateImmutableRules(originalObject, modifiedObject, NO_USER_PERMISSIONS, rules);
     }
 
-    public <T> List<String> validateImmutableRules(final Object originalObject, final Object modifiedObject, final UserPermissions userPermissions,
-                                                               final ValidationRules<T> rules) {
+    public List<String> validateImmutableRules(final Object originalObject, final Object modifiedObject,
+                                               final UserPermissions userPermissions, final ValidationRules<?> rules) {
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
         if (originalObject.getClass() != modifiedObject.getClass()) {
             throw new IllegalArgumentException("originalObject and modifiedObject must have same type");
         }
 
-        return rules.getImmutablePropertyKeys().stream()
-                .filter(property -> shouldPropertyBeImmutable(property, originalObject, userPermissions, rules))
+        return rules.getImmutableConditionsKeys().stream()
+                .filter(property -> isPropertyImmutable(property, originalObject, userPermissions, rules))
                 .filter(property -> !propertyValuesEquals(property, originalObject, modifiedObject))
                 .map(property -> defaultImmutableMessage + "." + rules.getTypeJsonKey() + "." + property)
                 .collect(Collectors.toList());
     }
 
-    public boolean shouldPropertyBeImmutable(final String property, final Object object, final ValidationRules<?> rules) {
-        return shouldPropertyBeImmutable(property, object, NO_USER_PERMISSIONS, rules);
+    private boolean isPropertyImmutable(final String property, final Object object,
+                                        final UserPermissions userPermissions, final ValidationRules<?> rules) {
+        final Optional<ConstraintRoot> match = getMatchingPropertyConstraint(
+                property, object, userPermissions, rules, RulesType.IMMUTABLE);
+        log.debug("{}.{} IS{} immutable", rules.getSimpleTypeName(), property, (match.isPresent() ? "" : "NOT"));
+        return match.isPresent();
     }
 
-
-    public boolean shouldPropertyBeImmutable(final String property, final Object object, final UserPermissions userPermissions,
-                                             final ValidationRules<?> rules) {
-        Objects.requireNonNull(property, ERR_MSG_PROPERTY_NULL);
-        Objects.requireNonNull(object, ERR_MSG_OBJECT_NULL);
-        Objects.requireNonNull(userPermissions, ERR_MSG_USER_PERMISSIONS_NULL);
-        Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
-        validateArguments(property, object, rules);
-
-        boolean isImmutable = shouldPropertyBeMandatoryRespImmutable(rules.getImmutablePermissionsMap(property), object, userPermissions);
-        log.debug("{}.{} IS{} immutable", rules.getSimpleTypeName(), property, (isImmutable ? "" : "NOT"));
-
-        return isImmutable;
-    }
-
-    private boolean shouldPropertyBeMandatoryRespImmutable(final PermissionsMap permissionMap, final Object object,
-                                                           final UserPermissions userPermissions) {
-        boolean isMet = false;
-        final Optional<ConstraintsTopGroup> matchingConstraintTopGroup = getMatchingConstraints(permissionMap, userPermissions);
-        if (matchingConstraintTopGroup.isPresent()) {
-            isMet = allRulesAreMet(matchingConstraintTopGroup.get(), object);
-        }
-        return isMet;
-    }
 
     private void validateArguments(final String property, final Object object, final ValidationRules<?> rules) {
         if (property.isEmpty()) {
@@ -141,26 +113,25 @@ public class Validator {
         INSTANCE.validateProperty(property, typeClass); // TODO? optional here
     }
 
-    private Optional<ConstraintsTopGroup> getMatchingConstraints(PermissionsMap permissionMap, UserPermissions userPermissions) {
-        final Optional<ConstraintsTopGroup> match = permissionMap.entrySet().stream()
-                .filter(p -> arePermissionsMatching(p.getKey(), userPermissions))
-                .map(Map.Entry::getValue)
-                .findFirst();
-        return Optional.ofNullable(match.orElseGet(() -> permissionMap.get(ValidationRules.NO_PERMISSIONS_KEY)));
-    }
-
-    private Optional<ContentConstraints> getMatchingContentConstraints(ContentPermissionsMap permissionMap, UserPermissions userPermissions) {
-        final Optional<ContentConstraints> match = permissionMap.entrySet().stream()
-                .filter(p -> arePermissionsMatching(p.getKey(), userPermissions))
-                .map(Map.Entry::getValue)
-                .findFirst();
-        return Optional.ofNullable(match.orElseGet(() -> permissionMap.get(ValidationRules.NO_PERMISSIONS_KEY)));
-    }
-
     private boolean arePermissionsMatching(Permissions constraintPermissions, UserPermissions userPermissions) {
+        List<String> constraintPermissionsAsStrings = getPermissionsAsStrings(constraintPermissions.getValues());
+        List<String> userPermissionsAsStrings = getPermissionsAsStrings(userPermissions.getValues());
         // Note: this implements 'match any'
-        return constraintPermissions.getValues().stream()
-                .anyMatch(p -> userPermissions.getValues().contains(p));
+        return constraintPermissionsAsStrings.stream()
+                .anyMatch(userPermissionsAsStrings::contains);
+    }
+
+    private List<String>  getPermissionsAsStrings(List<Object> permissionValues) {
+        if (!permissionValues.isEmpty()
+                && permissionValues.get(0) instanceof Enum<?>) {
+            return permissionValues.stream()
+                    .map(p -> ((Enum<?>) p).name())
+                    .collect(Collectors.toList());
+        } else {
+            return permissionValues.stream()
+                    .map(p -> (String) p)
+                    .collect(Collectors.toList());
+        }
     }
 
 
@@ -172,33 +143,93 @@ public class Validator {
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
 
         final List<String> errors = new ArrayList<>();
-        for (String property : rules.getContentPropertyKeys()) {
-            final Optional<ConstraintRoot> propertyContentConstraint = getPropertyContentConstraint(property, object, userPermissions, rules);
-            if (propertyContentConstraint.isPresent()
-                    && !constraintIsMet(Constraint.ref(property, propertyContentConstraint.get()), object)) {
-                errors.add(defaultContentMessage + "." + propertyContentConstraint.get().getType().toLowerCase() + "." + rules.getTypeJsonKey() + "." + property);
+        for (String property : rules.getContentConditionsKeys()) {
+            final Optional<ConstraintRoot> contentConstraint = getMatchingPropertyConstraint(
+                    property, object, userPermissions, rules, RulesType.CONTENT);
+            if (contentConstraint.isPresent()
+                    && !constraintIsMet(Condition.of(property, contentConstraint.get()), object)) {
+                errors.add(defaultContentMessage + "." + contentConstraint.get().getType().toLowerCase() + "." +
+                        rules.getTypeJsonKey() + "." + property);
             }
         }
         return errors;
     }
 
-    public Optional<ConstraintRoot> getPropertyContentConstraint(final String property, final Object object, final UserPermissions userPermissions,
-                                                        final ValidationRules<?> rules) {
+
+    public List<String> validateUpdateRules(final Object originalObject,
+                                            final Object modifiedObject,
+                                            final ValidationRules<?> rules) {
+        return validateUpdateRules(originalObject, modifiedObject, NO_USER_PERMISSIONS, rules);
+    }
+
+    public List<String> validateUpdateRules(final Object originalObject,
+                                            final Object modifiedObject,
+                                            UserPermissions userPermissions,
+                                            ValidationRules<?> rules) {
+        Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
+        if (originalObject.getClass() != modifiedObject.getClass()) {
+            throw new IllegalArgumentException("originalObject and modifiedObject must have same type");
+        }
+
+        final List<String> errors = new ArrayList<>();
+        for (String property : rules.getUpdateConditionsKeys()) {
+            final Optional<ConstraintRoot> updateConstraint = getMatchingPropertyConstraint(
+                    property, originalObject, userPermissions, rules, RulesType.UPDATE);
+            if (updateConstraint.isPresent()
+                    && !constraintIsMet(Condition.of(property, updateConstraint.get()), modifiedObject)) {
+                errors.add(defaultUpdateMessage + "." + updateConstraint.get().getType().toLowerCase() + "." +
+                        rules.getTypeJsonKey() + "." + property);
+            }
+        }
+        return errors;
+    }
+
+    private Optional<ConstraintRoot> getMatchingPropertyConstraint(final String property, final Object object,
+                                                                   final UserPermissions userPermissions,
+                                                                   final ValidationRules<?> rules,
+                                                                   RulesType rulesType) {
         Objects.requireNonNull(property, ERR_MSG_PROPERTY_NULL);
         Objects.requireNonNull(object, ERR_MSG_OBJECT_NULL);
         Objects.requireNonNull(userPermissions, ERR_MSG_USER_PERMISSIONS_NULL);
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
         validateArguments(property, object, rules);
 
-        ConstraintRoot contentConstraint = null;
-        ContentPermissionsMap permissionMap = rules.getContentPermissionsMap(property);
-        final Optional<ContentConstraints> matchingContentConstraints = getMatchingContentConstraints(permissionMap, userPermissions);
-        if (matchingContentConstraints.isPresent()
-            && allRulesAreMet(matchingContentConstraints.get().getConstraintsTopGroup(), object)) {
-            contentConstraint = matchingContentConstraints.get().getContentConstraint();
+        List<Conditions> conditionsList;
+        switch (rulesType) {
+            case MANDATORY: conditionsList = rules.getMandatoryConditionsList(property);
+            break;
+            case IMMUTABLE: conditionsList = rules.getImmutableConditionsList(property);
+            break;
+            case CONTENT: conditionsList = rules.getContentConditionsList(property);
+            break;
+            case UPDATE: conditionsList = rules.getUpdateConditionsList(property);
+            break;
+            default: throw new RuntimeException("Should not happen - unknown rules type: " + rulesType);
         }
-        log.debug("{}.{} HAS{} content rules", rules.getSimpleTypeName(), property, ((contentConstraint != null) ? "" : " NO") );
-        return Optional.ofNullable(contentConstraint);
+
+        Optional<ConstraintRoot> propertyConstraint = getMatchingConstraint(conditionsList, object, userPermissions);
+
+        log.debug("{}.{} has{} matching {} rule", rules.getSimpleTypeName(), property,
+                (propertyConstraint.isPresent() ? "" : " NO"), rulesType);
+        return propertyConstraint;
+    }
+
+    private Optional<ConstraintRoot> getMatchingConstraint(List<Conditions> conditionsList, Object object,
+                                                           UserPermissions userPermissions) {
+        // find first constraint with matching permission and valid reference constraints
+        Optional<ConstraintRoot> constraint = conditionsList.stream()
+                .filter(cc -> arePermissionsMatching(cc.getPermissions(), userPermissions))
+                .filter(cc -> allRulesAreMet(cc.getConditionsTopGroup(), object))
+                .map(Conditions::getConstraint)
+                .findFirst();
+        // find first default constraint (w/o any permission) and valid reference constraints
+        if (!constraint.isPresent())
+            constraint = conditionsList.stream()
+                    .filter(cc -> cc.getPermissions() == NO_PERMISSIONS)
+                    .filter(cc -> allRulesAreMet(cc.getConditionsTopGroup(), object))
+                    .map(Conditions::getConstraint)
+                    .findFirst();
+        return constraint;
     }
 
 
@@ -264,7 +295,8 @@ public class Validator {
             try {
                 listField = propertyPartClass.getDeclaredField(propertyName);
             } catch (final NoSuchFieldException | SecurityException e) {
-                throw new IllegalArgumentException("Property " + propertyName + " is not a declared field of " + propertyPartClass);
+                throw new IllegalArgumentException("Property " + propertyName + " is not a declared field of "
+                        + propertyPartClass);
             }
             // 2. get generic type (e.g. Article.class)
             final ParameterizedType listType = (ParameterizedType) listField.getGenericType();
@@ -274,10 +306,12 @@ public class Validator {
                 if (wildcardType.getLowerBounds().length == 0) {
                     actualTypeArgument = wildcardType.getUpperBounds()[0]; // '? extends Foo'
                 } else {
-                    throw new IllegalArgumentException("Index definitions for generics with lower bounds wildcard type is not implemented (and quite useless(?)): " + propertyPart);
+                    throw new IllegalArgumentException("Index definitions for generics with lower bounds wildcard " +
+                            "type is not implemented (and quite useless(?)): " + propertyPart);
                 }
             } else if (actualTypeArgument instanceof TypeVariable) {
-                throw new IllegalArgumentException("Index definitions for generics with type variable not implemented yet: " + propertyPart);
+                throw new IllegalArgumentException("Index definitions for generics with type variable not " +
+                        "implemented yet: " + propertyPart);
             }
             final Class<?> listClass = (Class<?>) actualTypeArgument;
             // 3. get getter method (e.g. getArticles())
@@ -291,7 +325,8 @@ public class Validator {
             //  ignore array type (e.g. Article[]) and remember array component type (e.g. Article)
             getterInfo.setReturnType(arrayTypeClass); // !
         } else {
-            throw new IllegalArgumentException("Index definitions are only allowed for properties of type List or arrays: " + propertyPart);
+            throw new IllegalArgumentException("Index definitions are only allowed for properties of type List or " +
+                    "arrays: " + propertyPart);
         }
         return getterInfo;
     }
@@ -325,7 +360,8 @@ public class Validator {
                 final Optional<IndexInfo> indexInfoOptional = IndexedPropertyHelper.getIndexInfo(propertyPart);
                 if (indexInfoOptional.isPresent()) {
                     final IndexInfo indexInfo = indexInfoOptional.get();
-                    if (indexInfo.getIndexType() != IndexedPropertyHelper.IndexType.LIST || indexInfo.getValues().size() != 1) {
+                    if (indexInfo.getIndexType() != IndexedPropertyHelper.IndexType.LIST
+                            || indexInfo.getValues().size() != 1) {
                         throw new IllegalArgumentException("Should not happen: index definition is not valid here!");
                     }
                     final Integer index = indexInfo.getValues().get(0);
@@ -335,7 +371,8 @@ public class Validator {
                             returnValue = ((List<?>) returnValue).get(index);
                             log.debug("list.get({}}): {}", index, returnValue);
                         } else {
-                            log.warn("{} does not exist! Returning null. Or better throw an exception? ...", propertyPart);
+                            log.warn("{} does not exist! Returning null. Or better throw an exception? ...",
+                                    propertyPart);
                             returnValue = null;
                         }
                     } else if (returnValue.getClass().isArray()) {
@@ -343,7 +380,8 @@ public class Validator {
                         if (Array.getLength(returnValue) > index) {
                             returnValue = Array.get(returnValue, index);
                         } else {
-                            log.warn("{} does not exist! Returning null. Or better throw an exception? ...", propertyPart);
+                            log.warn("{} does not exist! Returning null. Or better throw an exception? ...",
+                                    propertyPart);
                             returnValue = null;
                         }
                     } else {
@@ -364,13 +402,13 @@ public class Validator {
     }
 
     // If groups are ANDed each group must be met, if they are ORed only one must be met.
-    private boolean allRulesAreMet(final ConstraintsTopGroup topGroup, final Object object) {
+    private boolean allRulesAreMet(final ConditionsTopGroup topGroup, final Object object) {
         if (topGroup.getConstraintsSubGroups().length == 0) {
             log.debug("No constraints defined -> allRulesAreMet = true");
             return true;
         }
         final LogicalOperator operator = topGroup.getLogicalOperator();
-        for (final ConstraintsSubGroup group : topGroup.getConstraintsSubGroups()) {
+        for (final ConditionsGroup group : topGroup.getConstraintsSubGroups()) {
             if (groupRulesAreMet(group, object)) {
                 if (operator == LogicalOperator.OR) {
                     return true;
@@ -381,20 +419,20 @@ public class Validator {
                 }
             }
         }
-        return (operator == LogicalOperator.AND) ? true : false;
+        return operator == LogicalOperator.AND;
     }
 
     // All rules of an AndGroup must be true, but only one of an OrGroup!
-    private boolean groupRulesAreMet(final ConstraintsSubGroup group, final Object object) {
-        if (group instanceof ConstraintsAndGroup) {
-            for (final PropConstraint constraint : ((ConstraintsAndGroup) group).getPropConstraints()) {
+    private boolean groupRulesAreMet(final ConditionsGroup group, final Object object) {
+        if (group instanceof ConditionsAndGroup) {
+            for (final PropConstraint constraint : ((ConditionsAndGroup) group).getPropConstraints()) {
                 if (!constraintIsMet(constraint, object)) {
                     return false;
                 }
             }
             return true;
-        } else if (group instanceof ConstraintsOrGroup) {
-            for (final PropConstraint constraint : ((ConstraintsOrGroup) group).getPropConstraints()) {
+        } else if (group instanceof ConditionsOrGroup) {
+            for (final PropConstraint constraint : ((ConditionsOrGroup) group).getPropConstraints()) {
                 if (constraintIsMet(constraint, object)) {
                     return true;
                 }
@@ -428,7 +466,9 @@ public class Validator {
         return propertiesToCheck;
     }
 
-    private boolean propertyValuesEquals(final String property, final Object originalObject, final Object modifiedObject) {
+    private boolean propertyValuesEquals(final String property,
+                                         final Object originalObject,
+                                         final Object modifiedObject) {
         List<String> propertiesToCheck = inflatePropertyIfIndexed(property, originalObject);
         if (propertiesToCheck.size() != inflatePropertyIfIndexed(property, modifiedObject).size()) {
             return false;
@@ -436,7 +476,8 @@ public class Validator {
         for (String propertyToCheck : propertiesToCheck) {
             Object originalValue = getPropertyResultObject(propertyToCheck, originalObject);
             Object modifiedValue = getPropertyResultObject(propertyToCheck, modifiedObject);
-            log.debug("Property '{}': original value is '{}', modified value is '{}'", propertyToCheck, originalValue, modifiedValue);
+            log.debug("Property '{}': original value is '{}', modified value is '{}'", propertyToCheck, originalValue,
+                    modifiedValue);
 
         if (!Objects.equals(originalValue, modifiedValue)) {
                 return false;
@@ -446,7 +487,8 @@ public class Validator {
     }
 
     // Inflate property with multi-index definitions to properties with single-index definitions, e.g.
-    // "foo.bar[0,1].zoo.baz[2-3]" -> ["foo.bar[0].zoo.baz[2]", "foo.bar[0].zoo.baz[3]", "foo.bar[1].zoo.baz[2]", "foo.bar[1].zoo.baz[3]"]
+    // "foo.bar[0,1].zoo.baz[2-3]" ->
+    // ["foo.bar[0].zoo.baz[2]", "foo.bar[0].zoo.baz[3]", "foo.bar[1].zoo.baz[2]", "foo.bar[1].zoo.baz[3]"]
     protected List<String> inflateIndexedProperty(String property, Object object) {
         final String[] propertyParts = property.split("\\.");
         List<String> inflatedProperties = new ArrayList<>();
@@ -464,10 +506,12 @@ public class Validator {
                 } else if (indexInfo.getIndexType() == IndexedPropertyHelper.IndexType.INCREMENT) {
                     inflatedProperties = inflatedProperties.stream()
                             .map(ip -> ip + propertyPartName)
-                            .flatMap(p -> inflateIncrementProperty(p, object, indexInfo.getValues().get(0), indexInfo.getValues().get(1)).stream())
+                            .flatMap(p -> inflateIncrementProperty(p, object, indexInfo.getValues().get(0),
+                                    indexInfo.getValues().get(1)).stream())
                             .collect(Collectors.toList());
                 } else {
-                    throw new IllegalArgumentException("Should not happen:  unknown IndexType: " + indexInfo.getIndexType());
+                    throw new IllegalArgumentException("Should not happen:  unknown IndexType: "
+                            + indexInfo.getIndexType());
                 }
             } else {
                 String propertyPartName = delimiter + propertyPart;
@@ -488,7 +532,10 @@ public class Validator {
                 collect(Collectors.toList());
     }
 
-    private List<String> inflateIncrementProperty(String property, Object object, Integer startIndex, Integer increment) {
+    private List<String> inflateIncrementProperty(String property,
+                                                  Object object,
+                                                  Integer startIndex,
+                                                  Integer increment) {
         validateProperty(property, object.getClass());
         final Object propertyResultObject = getPropertyResultObject(property, object);
         int numberOfElements = 0;
@@ -534,7 +581,8 @@ public class Validator {
         final Map<String, Method> methodNamesMap = new HashMap<>();
         for (final MethodDescriptor md : beanInfo.getMethodDescriptors()) {
             if (md.getName().startsWith("is") && md.getMethod().getParameterTypes().length == 0
-                    && (md.getMethod().getReturnType().equals(boolean.class) || md.getMethod().getReturnType().equals(Boolean.class))) {
+                    && (md.getMethod().getReturnType().equals(boolean.class)
+                    || md.getMethod().getReturnType().equals(Boolean.class))) {
                 methodNamesMap.put(md.getName(), md.getMethod());
             }
             if (md.getName().startsWith("get") && md.getMethod().getParameterTypes().length == 0) {
@@ -659,4 +707,9 @@ public class Validator {
             return "GetterInfo [method=" + method + ", returnType=" + returnType + "]";
         }
     }
+
+    enum RulesType {
+        MANDATORY, IMMUTABLE, CONTENT, UPDATE
+    }
+
 }

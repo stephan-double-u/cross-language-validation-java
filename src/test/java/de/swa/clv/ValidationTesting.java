@@ -1,8 +1,8 @@
 package de.swa.clv;
 
 import de.swa.clv.constraints.*;
-import de.swa.clv.groups.ConstraintsSubGroup;
-import de.swa.clv.groups.ConstraintsTopGroup;
+import de.swa.clv.groups.ConditionsGroup;
+import de.swa.clv.groups.ConditionsTopGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,62 +32,59 @@ public class ValidationTesting {
     public void test() {
         final ValidationRules<Reservation> rules = new ValidationRules<>(Reservation.class);
         //rules.mandatory("customer", Constraint.ref("aBoolean", Equals.any("NEW")));
-        rules.mandatory("customer", Constraint.ref("aBoolean", Equals.any(TRUE)));
+        rules.mandatory("customer", Condition.of("aBoolean", Equals.any(TRUE)));
         rules.mandatory("customer", Permissions.any("aaa"));
         rules.mandatory("id", Permissions.any("aaa"));
         rules.mandatory("id", Permissions.any("bbb"),
-                Constraint.ref("someString", Size.minMax(1,3)),
-                Constraint.ref("articleArray", Size.min(2)),
-                Constraint.ref("someMap", Size.max(2)));
+                Condition.of("someString", Size.minMax(1,3)),
+                Condition.of("articleArray", Size.min(2)),
+                Condition.of("someMap", Size.max(2)));
         rules.mandatory("id",
-                ConstraintsTopGroup.AND(
-                        ConstraintsSubGroup.OR(
-                                Constraint.ref("id", Equals.none(1, 2, 3)),
-                                Constraint.ref("id", Equals.none(4)) ),
-                        ConstraintsSubGroup.AND(
-                                Constraint.ref("id", Equals.any(1)) )
+                ConditionsTopGroup.AND(
+                        ConditionsGroup.OR(
+                                Condition.of("id", Equals.none(1, 2, 3)),
+                                Condition.of("id", Equals.none(4)) ),
+                        ConditionsGroup.AND(
+                                Condition.of("id", Equals.any(1)) )
                 )
         );
 
         rules.mandatory("articleList[0].name",
-                Constraint.ref("articleArray[0].name", Equals.null_()));
+                Condition.of("articleArray[0].name", Equals.null_()));
         rules.mandatory("someInt",
-                Constraint.ref("someString", RegEx.any("nomatch", "N[A-Z]+")),
-                Constraint.ref("status", RegEx.any("E")),
-                Constraint.ref("startDate", Dates.future()),
-                Constraint.ref("startLocalDate", Dates.past(2)),
-                Constraint.ref("startCalDate", Dates.future(100))
+                Condition.of("someString", RegEx.any("nomatch", "N[A-Z]+")),
+                Condition.of("status", RegEx.any("E")),
+                Condition.of("startDate", Dates.future()),
+                Condition.of("startLocalDate", Dates.past(2)),
+                Condition.of("startCalDate", Dates.future(100))
                 );
 
         rules.mandatory("status",
-                ConstraintsSubGroup.AND(
-                        Constraint.ref("someInt", Range.minMax(1, 999)),
-                        Constraint.ref("someInt", Range.min(1).max(999)),
-                        Constraint.ref("someLong", Range.max(RangeRoot.SAVE_INTEGER_MAX)),
-                        Constraint.ref("someInt", Range.minAny(1, 2).maxAny(8, 999)),
-                        Constraint.ref("someInt", Range.maxAny(999)),
-                        Constraint.ref("aBoolean", Equals.any(TRUE)),
-                        Constraint.ref("someInt", Equals.notNull()),
-                        Constraint.ref("id", Equals.none(-1, 123456789)) ),
-                ConstraintsSubGroup.AND(
-                        Constraint.ref("id", Equals.none(666, 999)))
+                ConditionsGroup.AND(
+                        Condition.of("someInt", Range.minMax(1, 999)),
+                        Condition.of("someInt", Range.min(1).max(999)),
+                        Condition.of("someLong", Range.max(Range.SAVE_INTEGER_MAX)),
+                        Condition.of("aBoolean", Equals.any(TRUE)),
+                        Condition.of("someInt", Equals.notNull()),
+                        Condition.of("id", Equals.none(-1, 123456789)) ),
+                ConditionsGroup.AND(
+                        Condition.of("id", Equals.none(666, 999)))
                 );
         rules.mandatory("aBoolean",
-                ConstraintsSubGroup.OR(
-                        Constraint.ref("someString", Size.minMax(1, 100)),
-                        Constraint.ref("articleList", Size.min(1)),
-                        Constraint.ref("articleArray", Size.max(100)) ),
-                ConstraintsSubGroup.OR(
-                        Constraint.ref("id", Equals.none(404)) )
+                ConditionsGroup.OR(
+                        Condition.of("someString", Size.minMax(1, 100)),
+                        Condition.of("articleList", Size.min(1)),
+                        Condition.of("articleArray", Size.max(100)) ),
+                ConditionsGroup.OR(
+                        Condition.of("id", Equals.none(404)) )
                 );
         rules.mandatory("customer.name",
                 //Constraint.ref("customer", EqualsAny.values(new Customer("aaa"))),
-                Constraint.ref("customer.name", Range.min("GreatestStringEver").maxAny("X", "Y").use(ComparisonType.LEXICOGRAPHICAL_UNICODE)),
-                Constraint.ref("status", Equals.any(ReservationStatus.NEW)),
-                Constraint.ref("status", Equals.notNull())
+                Condition.of("status", Equals.any(ReservationStatus.NEW)),
+                Condition.of("status", Equals.notNull())
                 );
 
-        final PropConstraint a = Constraint.ref("someString", Size.minMax(1, 100));
+        final PropConstraint a = Condition.of("someString", Size.minMax(1, 100));
 
         rules.immutable("id");
         rules.immutable("status", a);
@@ -99,13 +96,32 @@ public class ValidationTesting {
         rules.content("status", Equals.any("five"));
         rules.content("stringList[0]", Equals.any("one", "two"));
         rules.content("someString", Equals.anyRef("articleList[0].name"));
-        //TODO List<ContentConstraints>!?: status == "foo" if other == 1 OR status == "bar" if other == 2
         rules.content("id", Equals.any(101, 202, 303),
                 a, a, a, a);
+        //TODO List<ContentConstraints>!?: status == "foo" if other == 1 OR status == "bar" if other == 2
 
-        rules.content("status", Equals.any("five"));
-
-
+        // For validation of 'state-transitions' multiple rules per property are needed
+        // ERules are evaluated in defintione sequence, first rules with matching permission, last rules w/o permissions
+        // E.g. ONE -> [TWO, THREE], [TWO, THREE] -> FOUR
+        // MANAGER is allowed to set any value
+        rules.update("someEnum",
+                Equals.any(SomeEnum.values()),
+                Permissions.any("MANAGER"),
+                Condition.of("someEnum",  Equals.any(ValidationTesting.SomeEnum.values())));
+        rules.update("someEnum",
+                Equals.any("ONE", "TWO", "THREE"),
+                Condition.of("someEnum",  Equals.any("ONE")));
+        rules.update("someEnum",
+                Equals.any("TWO", "THREE", "FOUR"),
+                Condition.of("someEnum",  Equals.any("TWO", "THREE")));
+        rules.update("someEnum",
+                Equals.any("FOUR"),
+                Condition.of("someEnum",  Equals.any("FOUR")));
+        // EXPERT is allowed to set FOUR (back to) ONE in addition to the default rules (i.e. w/o permissions)
+        rules.update("someEnum",
+                Equals.any("ONE", "FOUR"),
+                Permissions.any("EXPERT"),
+                Condition.of("someEnum",  Equals.any("FOUR")));
 
 //        rules.content("id", Equals.any(101, 202, 303),
 //                ConstraintsSubGroup.OR(a, a),
@@ -125,13 +141,13 @@ public class ValidationTesting {
 
         final ValidationRules<Article> articleRules = new ValidationRules<>(Article.class);
         articleRules.immutable("animalUse",
-                ConstraintsTopGroup.OR(
-                        ConstraintsSubGroup.AND(
-                                Constraint.ref("animalUse", Equals.any(TRUE)),
-                                Constraint.ref("usedOnce", Equals.any(TRUE))
+                ConditionsTopGroup.OR(
+                        ConditionsGroup.AND(
+                                Condition.of("animalUse", Equals.any(TRUE)),
+                                Condition.of("usedOnce", Equals.any(TRUE))
                         ),
-                        ConstraintsSubGroup.AND(
-                                Constraint.ref("medicalSetId", Equals.notNull())
+                        ConditionsGroup.AND(
+                                Condition.of("medicalSetId", Equals.notNull())
                         )
                 )
         );
@@ -145,7 +161,7 @@ public class ValidationTesting {
         final List<String> err1 = Validator.instance().validateMandatoryRules(reservation1, rules);
         System.out.println("Validation errors: " + err1);
 
-        final List<String> errx = Validator.instance().validateMandatoryRules(reservation1, UserPermissions.of(Perms.aaa, OtherEnum.dummy), rules);
+        final List<String> errx = Validator.instance().validateMandatoryRules(reservation1, UserPermissions.of(Perms.aaa, SomeEnum.ONE), rules);
         System.out.println("Validation errors: " + errx);
 
         final List<String> erry = Validator.instance().validateMandatoryRules(reservation1, UserPermissions.of(ps.toArray(new Perms[0])), rules);
@@ -163,7 +179,7 @@ public class ValidationTesting {
         final List<String> err3 = Validator.instance().validateContentRules(reservation1, rules);
         System.out.println("Validation errors: " + err3);
 
-        final List<String> err4 = Validator.instance().validateContentRules(reservation1, UserPermissions.of(Perms.aaa, OtherEnum.dummy), rules);
+        final List<String> err4 = Validator.instance().validateContentRules(reservation1, UserPermissions.of(Perms.aaa, SomeEnum.ONE), rules);
         System.out.println("Validation errors: " + err4);
 
         final List<String> err5 = Validator.instance().validateContentRules(reservation1, rules);
@@ -183,28 +199,28 @@ public class ValidationTesting {
 
         final ValidationRules<Reservation> condAllInOne = new ValidationRules<>(Reservation.class);
         condAllInOne.mandatory("id",
-                Constraint.ref("status", Equals.any(ReservationStatus.NEW)),
-                Constraint.ref("someString", Equals.any("NEW")),
-                Constraint.ref("someInt", Equals.any(123)),
-                Constraint.ref("startLocalDate", Equals.any(LocalDate.now().minusDays(10))),
-                Constraint.ref("aBoolean", Equals.any(TRUE)),
-                Constraint.ref("status", Equals.anyRef("someString")),
+                Condition.of("status", Equals.any(ReservationStatus.NEW)),
+                Condition.of("someString", Equals.any("NEW")),
+                Condition.of("someInt", Equals.any(123)),
+                Condition.of("startLocalDate", Equals.any(LocalDate.now().minusDays(10))),
+                Condition.of("aBoolean", Equals.any(TRUE)),
+                Condition.of("status", Equals.anyRef("someString")),
 
-                Constraint.ref("status", Equals.none(ReservationStatus.RETURNED)),
-                Constraint.ref("someString", Equals.none("OLD")),
-                Constraint.ref("someInt", Equals.none(1d, 2L, 3f)),
-                Constraint.ref("startLocalDate", Equals.none(LocalDate.now())),
-                Constraint.ref("aBoolean", Equals.none(FALSE)),
-                Constraint.ref("id", Equals.noneRef("someInt")),
+                Condition.of("status", Equals.none(ReservationStatus.RETURNED)),
+                Condition.of("someString", Equals.none("OLD")),
+                Condition.of("someInt", Equals.none(1d, 2L, 3f)),
+                Condition.of("startLocalDate", Equals.none(LocalDate.now())),
+                Condition.of("aBoolean", Equals.none(FALSE)),
+                Condition.of("id", Equals.noneRef("someInt")),
 
-                Constraint.ref("nullString", Equals.null_()),
-                Constraint.ref("someString", Equals.notNull()),
+                Condition.of("nullString", Equals.null_()),
+                Condition.of("someString", Equals.notNull()),
 
-                Constraint.ref("someString", RegEx.any("nomatch", "N[A-Z]+")),
+                Condition.of("someString", RegEx.any("nomatch", "N[A-Z]+")),
 
-                Constraint.ref("startDate", Dates.future()),
-                Constraint.ref("startLocalDate", Dates.past(2)),
-                Constraint.ref("startCalDate", Dates.future(100))
+                Condition.of("startDate", Dates.future()),
+                Condition.of("startLocalDate", Dates.past(2)),
+                Condition.of("startCalDate", Dates.future(100))
         );
         System.out.println("serializeToJson: " + ValidationRules.serializeToJson(condAllInOne));
     }
@@ -213,8 +229,8 @@ public class ValidationTesting {
         foo, bar, baz, aaa, xxx
     }
 
-    enum OtherEnum {
-        dummy
+    enum SomeEnum {
+        ONE, TWO, THREE, FOUR
     }
 
     class ReservationValidationRules {}
@@ -229,6 +245,7 @@ public class ValidationTesting {
         private final int someInt = 123;
         private final long someLong = 123456789L;
         private final BigInteger someBigInteger = new BigInteger("12345678901234567890123456789012345678901234567890");
+        private final SomeEnum someEnum = SomeEnum.ONE;
 
         private final Boolean aBoolean = true; // Supporting isaBoolean() and getaBoolean getter!
         private final Date startDate = new Date(new Date().getTime() - 1);
@@ -292,10 +309,10 @@ public class ValidationTesting {
         public Calendar getStartCalDate() {
             return startCalDate;
         }
-
         public List<String> getStringList() {
             return stringList;
         }
+        public SomeEnum getSomeEnum() { return someEnum; }
     }
     public static class ReservationVO {
         private final Integer id;

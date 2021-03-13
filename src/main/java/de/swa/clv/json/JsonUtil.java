@@ -6,6 +6,9 @@ import java.util.stream.Collectors;
 
 public abstract class JsonUtil {
 
+    private JsonUtil() {
+    }
+
     public static String asObject(final String value) {
         return "{" + value + "}";
         

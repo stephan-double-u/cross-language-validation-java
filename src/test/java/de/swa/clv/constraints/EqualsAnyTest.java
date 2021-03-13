@@ -6,6 +6,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.sql.Date;
 import java.sql.JDBCType;
 import java.time.LocalDate;
 
@@ -97,9 +98,10 @@ public class EqualsAnyTest {
 
     @Test
     public void validateLocalDate() {
-        final LocalDate localDate = LocalDate.of(2019, 12, 31);
-        EqualsAny any = Equals.any(localDate);
-        assertTrue(any.validate(localDate, null));
+        final LocalDate localDate1 = LocalDate.of(2019, 12, 31);
+        final LocalDate localDate2 = LocalDate.of(2019, 12, 31);
+        EqualsAny any = Equals.any(localDate1);
+        assertTrue(any.validate(localDate2, null));
     }
 
     @Test

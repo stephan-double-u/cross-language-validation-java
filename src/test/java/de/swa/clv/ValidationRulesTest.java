@@ -1,16 +1,13 @@
 package de.swa.clv;
 
-import de.swa.clv.constraints.Constraint;
+import de.swa.clv.constraints.Condition;
 import de.swa.clv.constraints.Equals;
-import de.swa.clv.constraints.Permissions;
-import de.swa.clv.constraints.Size;
 import de.swa.clv.test.Util;
 import org.hamcrest.core.StringContains;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,17 +17,6 @@ public class ValidationRulesTest {
 
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
-
-    @Test
-    public void exceptionIfMandatoryPropertyWithoutPermissionsIsAlreadyDefined() {
-        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
-        rules.mandatory("stringProp");
-
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("rules for property 'stringProp' (w/o permissions) are already defined"));
-
-        rules.mandatory("stringProp", Constraint.ref("stringProp", Size.minMax(1, 100)));
-    }
 
     @Test
     public void exceptionIfPropertyHasWildcardTypeWithLowerBounds() {
@@ -44,19 +30,6 @@ public class ValidationRulesTest {
     }
 
     @Test
-    public void exceptionIfMandatoryPropertyForAnyPermissionIsAlreadyDefined() {
-        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
-        rules.mandatory("stringProp");
-        rules.mandatory("stringProp", Permissions.any("PERM1"));
-        rules.mandatory("stringProp", Permissions.any("PERM2"));
-
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("rules for property 'stringProp' and permission 'PERM2' are already defined"));
-
-        rules.mandatory("stringProp", Permissions.any(Perms.PERM1, Perms.PERM2));
-    }
-
-    @Test
     public void exceptionIfPropertyWithIndexDefinitionHasWrongType() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
         expectedEx.expect(IllegalArgumentException.class);
@@ -67,7 +40,7 @@ public class ValidationRulesTest {
     @Test
     public void mandatoryIndexedPropertiesEverywhere() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
-        rules.mandatory("stringArrayProp[1-3]", Constraint.ref("stringArrayProp[4]", Equals.anyRef("stringArrayProp[5,6]")));
+        rules.mandatory("stringArrayProp[1-3]", Condition.of("stringArrayProp[4]", Equals.anyRef("stringArrayProp[5,6]")));
     }
 
     @Test
@@ -81,7 +54,7 @@ public class ValidationRulesTest {
     public void serializeEmptyRulesInstance() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
         final String jsonResult = rules.serializeToJson();
-        final String expected = Util.doubleQuote("{'schema-version':'0.1','mandatoryRules':{},'immutableRules':{},'contentRules':{}}");
+        final String expected = Util.doubleQuote("{'schema-version':'0.2','mandatoryRules':{},'immutableRules':{},'contentRules':{},'updateRules':{}}");
         assertEquals(expected, jsonResult);
     }
 
@@ -90,7 +63,7 @@ public class ValidationRulesTest {
         ValidationRules<ClassOne> cond1 = new ValidationRules<>(ClassOne.class);
         ValidationRules<ClassTwo> cond2 = new ValidationRules<>(ClassTwo.class);
         final String jsonResult = ValidationRules.serializeToJson(cond1, cond2);
-        final String expected = Util.doubleQuote("{'schema-version':'0.1','mandatoryRules':{},'immutableRules':{},'contentRules':{}}");
+        final String expected = Util.doubleQuote("{'schema-version':'0.2','mandatoryRules':{},'immutableRules':{},'contentRules':{},'updateRules':{}}");
         assertEquals(expected, jsonResult);
     }
 
@@ -103,10 +76,11 @@ public class ValidationRulesTest {
         cond2.immutable("stringProp");
         cond2.content("stringProp", Equals.any("Foo"));
         String jsonResult = ValidationRules.serializeToJson(cond1, cond2);
-        final String expected = Util.doubleQuote("{'schema-version':'0.1'," +
+        final String expected = Util.doubleQuote("{'schema-version':'0.2'," +
                 "'mandatoryRules':{'classone':{'stringArrayProp':[]}}," +
                 "'immutableRules':{'classone':{'stringProp':[]},'classtwo':{'stringProp':[]}}," +
-                "'contentRules':{'classtwo':{'stringProp':[{'contentConstraint':{'type':'EQUALS_ANY','values':['Foo']}}]}}}");
+                "'contentRules':{'classtwo':{'stringProp':[{'constraint':{'type':'EQUALS_ANY','values':['Foo']}}]}}," +
+                "'updateRules':{}}");
         assertEquals(expected, jsonResult);
 
     }

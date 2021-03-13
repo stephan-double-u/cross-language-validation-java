@@ -5,8 +5,6 @@ import org.slf4j.LoggerFactory;
 
 public class EqualsNull extends EqualsRoot {
 
-    private static Logger log = LoggerFactory.getLogger(EqualsNull.class);
-
     EqualsNull() {
     }
 

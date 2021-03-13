@@ -70,6 +70,13 @@ public class DatesTest {
         assertTrue(dates.validate(tomorrowPlus1Sec, null));
     }
 
+    @Test
+    public void validateDateToFalse() {
+        Dates dates = Dates.future();
+        final Date now = new Date();
+        assertFalse(dates.validate(now, null));
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void validateUnsupportedType() {
         Dates dates = Dates.future();

@@ -10,7 +10,7 @@ import static de.swa.clv.json.JsonUtil.quoted;
 
 public class Size extends ConstraintRoot {
 
-    private static final String type = "SIZE";
+    private static final String TYPE = "SIZE";
     private final String messageDefault = "{validation.constraint.size}";
 
     private Size() {
@@ -36,7 +36,7 @@ public class Size extends ConstraintRoot {
      */
     public static Size min(final int minSize) {
         final Size constraint = new Size();
-        constraint.setObjectValues(Arrays.asList((Number) Integer.valueOf(minSize), null));
+        constraint.setObjectValues(Arrays.asList(Integer.valueOf(minSize), null));
         constraint.validateValuesOrFail(null);
         return constraint;
     }
@@ -61,7 +61,7 @@ public class Size extends ConstraintRoot {
      */
     public static Size max(final int maxSize) {
         final Size constraint = new Size();
-        constraint.setObjectValues(Arrays.asList(null, (Number) Integer.valueOf(maxSize)));
+        constraint.setObjectValues(Arrays.asList(null, Integer.valueOf(maxSize)));
         constraint.validateValuesOrFail(null);
         return constraint;
     }
@@ -88,7 +88,7 @@ public class Size extends ConstraintRoot {
      */
     public static Size minMax(final int minSize, final int maxSize) {
         final Size constraint = new Size();
-        constraint.setObjectValues(Arrays.asList((Number) Integer.valueOf(minSize), (Number) Integer.valueOf(maxSize)));
+        constraint.setObjectValues(Arrays.asList(Integer.valueOf(minSize), Integer.valueOf(maxSize)));
         constraint.validateValuesOrFail(null);
         return constraint;
     }
@@ -143,12 +143,12 @@ public class Size extends ConstraintRoot {
         final Integer maxValue = (Integer) getValues().get(1);
         final String minJson = minValue != null ? asKey("min") + minValue : "";
         final String maxJson = maxValue != null ? asKey("max") + maxValue : "";
-        final String delimiter = (minJson == "" || maxJson =="") ? "" : ",";
-        return asKey("type") + quoted(type) + "," + minJson + delimiter + maxJson;
+        final String delimiter = ("".equals(minJson) || "".equals(maxJson)) ? "" : ",";
+        return asKey("type") + quoted(TYPE) + "," + minJson + delimiter + maxJson;
     }
 
     @Override
     public String getType() {
-        return type;
+        return TYPE;
     }
 }

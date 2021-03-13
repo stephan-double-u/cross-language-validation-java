@@ -31,11 +31,11 @@ public class EqualsAnyRef extends EqualsRoot {
             return false;
         }
 
-        final Boolean equals = getValues().stream()
+        final boolean equals = getValues().stream()
                 .flatMap(property -> Validator.instance().inflatePropertyIfIndexed((String) property, constraintObject).stream())
                 .map(property -> Validator.instance().getPropertyResultObject(property, constraintObject))
                 .map(referencedValue -> EqualsRoot.equals(valueToValidate, referencedValue))
-                .filter(e -> e == true)
+                .filter(e -> e)
                 .findFirst().orElse(false);
 
         log.debug("" + valueToValidate + (equals ? " " : " NOT ") + "equals a referenced property of " + getValues());

@@ -8,7 +8,7 @@ import java.util.Objects;
 
 public class PermissionsAny extends Permissions {
 
-    private static Logger log = LoggerFactory.getLogger(Dates.class);
+    private static Logger log = LoggerFactory.getLogger(PermissionsAny.class);
 
     PermissionsAny(final String... values) {
         setObjectValues(Arrays.asList((Object[]) values));
