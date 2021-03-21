@@ -526,12 +526,14 @@ public class Validator {
         return inflatedProperties;
     }
 
+    // ("foo", List.of(2,4,6)) -> List.of("foo[2]","foo[4]","foo[6]")
     private List<String> inflateListProperty(String p, List<Integer> indexes) {
         return indexes.stream()
                 .map(i -> p + "[" + i + "]").
                 collect(Collectors.toList());
     }
 
+    // ("foo", {"foo":["a","b","c","d","e","f",]}, 1, 2) -> List.of("foo[1]","foo[3]","foo[5]")
     private List<String> inflateIncrementProperty(String property,
                                                   Object object,
                                                   Integer startIndex,

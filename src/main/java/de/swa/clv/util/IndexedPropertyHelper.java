@@ -18,7 +18,8 @@ public class IndexedPropertyHelper {
     public static final String INVALID_INDEXED_PROPERTY_MESSAGE = "Not a valid indexed property: ";
 
     // Regular expression for valid index definitions
-    private static final String IDX_REG_EXP = "^\\*$|^\\d+\\/\\d$|^\\d+(-\\d+)?(,\\d+(-\\d+)?)*$";
+    //private static final String IDX_REG_EXP = "^\\*$|^\\d+\\/\\d$|^\\d+(-\\d+)?(,\\d+(-\\d+)?)*$";
+    private static final String IDX_REG_EXP = "\\d+(,\\d+)*$|^\\d+\\/\\d$|^\\d+-\\d+$|^\\*$";
     private static final Pattern PATTERN = Pattern.compile(IDX_REG_EXP);
 
     private static final Map<String, IndexInfo> propertyToIndexInfoCache = new HashMap<>();
@@ -36,20 +37,18 @@ public class IndexedPropertyHelper {
      * <ul>
      * <li>[0] : One single index position (value &gt;= 0). {@code IndexType} is {@code LIST}, list contains the index
      * value.</li>
-     * <li>[1-5] : range of index positions (1<sup>st</sup> value &gt;= 0 and 2<sup>nd</sup> value &gt;= 1st value).
-     * {@code IndexType} is {@code LIST}, list contains the range values.</li>
      * <li>[2,4,8] : list of index positions (values &gt;= 0 in arbitrary sequence). {@code IndexType} is
      * {@code LIST}, list contains the listed values.</li>
+     * <li>[1-5] : range of index positions (1<sup>st</sup> value &gt;= 0 and 2<sup>nd</sup> value &gt;= 1st value).
+     * {@code IndexType} is {@code LIST}, list contains the range values.</li>
      * <li>[0/2] : increment specified index positions (1<sup>st</sup> value &gt;= 0 and 2<sup>nd</sup> value &gt;= 1).
      * {@code IndexType} is {@code INCREMENT}, list contains the start index and the increment.</li>
      * <li>[*] : convenience format for [0/1]
      * </ul>
-     * Range and list definitions can be combined in arbitrary sequence, e.g. [0,7-9,1,2,3-6].<br/>
-     * To sum it up: the content_ between the brackets must match: "^\*$|^\d+\/\d$|^\d+(-\d+)?(,\d+(-\d+)?)*$"<br/>
-     * You are right, spaces are not allowed.<br/>
-     * Values are NOT sorted and duplicate values are NOT overwritten, i.e. [1-4,2] would result in this list of values:
-     * [1,2,3,4,2].<br/>
-     * 
+     * To sum it up: the content_ between the brackets must match: "\d+(,\d+)*$|^\d+\/\d$|^\d+-\d+$|^\*$"<br/>
+     * Values are NOT sorted and duplicate values are NOT removed.<br/>
+     * You are right, spaces are not allowed.
+     *
      * @param indexedProperty
      * @return
      */
@@ -70,7 +69,7 @@ public class IndexedPropertyHelper {
         if (endPos - startPos < 2) {
             throw new IllegalArgumentException(INVALID_INDEXED_PROPERTY_MESSAGE + indexedProperty);
         }
-        // Check for valid content_ within brackets
+        // Check for valid content within brackets
         final String indexStr = indexedProperty.substring(startPos + 1, endPos);
         final Matcher matcher = PATTERN.matcher(indexStr);
         if (!matcher.matches()) {

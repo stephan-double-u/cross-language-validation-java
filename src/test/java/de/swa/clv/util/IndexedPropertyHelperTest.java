@@ -29,6 +29,13 @@ public class IndexedPropertyHelperTest {
     }
 
     @Test
+    public void exceptionIfListAndRange() {
+        expectedEx.expect(IllegalArgumentException.class);
+        expectedEx.expectMessage(StringContains.containsString("Not a valid indexed property"));
+        IndexedPropertyHelper.getIndexInfo("[1,2-3]");
+    }
+
+    @Test
     public void isIndexedProperty() {
         assertTrue(IndexedPropertyHelper.isIndexedProperty("foo[*]"));
     }
@@ -63,9 +70,4 @@ public class IndexedPropertyHelperTest {
         assertEquals(info, IndexedPropertyHelper.getIndexInfo("foo[3/2]").get());
     }
 
-    @Test
-    public void getIndexInfo6() {
-        IndexedPropertyHelper.IndexInfo info = new IndexedPropertyHelper.IndexInfo(IndexedPropertyHelper.IndexType.LIST, Arrays.asList(1, 2, 3, 2, 3, 4));
-        assertEquals(info, IndexedPropertyHelper.getIndexInfo("foo[1-3,2,3-4]").get());
-    }
 }
