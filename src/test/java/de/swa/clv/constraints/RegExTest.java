@@ -1,11 +1,13 @@
 package de.swa.clv.constraints;
 
+import com.sun.tools.javac.util.List;
 import org.hamcrest.core.StringContains;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import static de.swa.clv.test.Util.doubleQuote;
+import static java.lang.Boolean.TRUE;
 import static org.junit.Assert
 
 .assertEquals;
@@ -21,7 +23,7 @@ public class RegExTest {
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
-    private static RegEx regEx = RegEx.any("bar", "[o]{2}");
+    private static RegEx regEx = RegEx.any("bar", "[o]{2}", "^[0-7]+$");
 
     @Test
     public void exceptionIfRegExIsNull() {
@@ -32,17 +34,22 @@ public class RegExTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void unsupportedType() {
-        regEx.validate(123, null);
+        regEx.validate(TRUE, null);
     }
 
     @Test
-    public void firstRegExMatch() {
+    public void stringMatchFirstRegEx() {
         assertTrue(regEx.validate("foobarzoo", null));
     }
 
     @Test
-    public void secondRegExMatch() {
+    public void stringMatchSecondRegEx() {
         assertTrue(regEx.validate("foozoo", null));
+    }
+
+    @Test()
+    public void numberMatchThirsRegEx() {
+        assertTrue(regEx.validate(1234567, null));
     }
 
     @Test
@@ -52,6 +59,6 @@ public class RegExTest {
 
     @Test
     public void serializeToJson() {
-        assertEquals(doubleQuote("'type':'REGEX_ANY','values':['bar','[o]{2}']"), regEx.serializeToJson());
+        assertEquals(doubleQuote("'type':'REGEX_ANY','values':['bar','[o]{2}','^[0-7]+$']"), regEx.serializeToJson());
     }
 }

@@ -52,7 +52,8 @@ public class RegEx extends ConstraintRoot {
     @Override
     public boolean isSupportedType(final Class<?> clazz) {
         return String.class.isAssignableFrom(clazz)
-                || Enum.class.isAssignableFrom(clazz);
+                || Enum.class.isAssignableFrom(clazz)
+                || Number.class.isAssignableFrom(clazz);
     }
 
     @Override
