@@ -3,7 +3,9 @@ package de.swa.clv.groups;
 import de.swa.clv.test.Util;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert
+
+.assertEquals;
 
 public class ConditionsGroupTest {
 

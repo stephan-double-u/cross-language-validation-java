@@ -7,9 +7,9 @@ import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert
+
+.*;
 
 public class DatesTest {
 
@@ -59,7 +59,7 @@ public class DatesTest {
     public void validateCalendarToTrue() {
         Dates dates = Dates.future(1);
         Calendar futureCalDate = Calendar.getInstance();
-        futureCalDate.set(2999, 12, 31);
+        futureCalDate.set(2999, Calendar.DECEMBER, 31);
         assertTrue(dates.validate(futureCalDate, null));
     }
 
@@ -77,10 +77,10 @@ public class DatesTest {
         assertFalse(dates.validate(now, null));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void validateUnsupportedType() {
         Dates dates = Dates.future();
-        assertTrue(dates.validate("string is unsupported", null));
+        assertThrows(IllegalArgumentException.class, () -> dates.validate("string is unsupported", null));
     }
 
     @Test

@@ -11,7 +11,9 @@ import org.junit.rules.ExpectedException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert
+
+.*;
 
 public class ValidationRulesTest {
 
@@ -40,13 +42,22 @@ public class ValidationRulesTest {
     @Test
     public void mandatoryIndexedPropertiesEverywhere() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
-        rules.mandatory("stringArrayProp[1-3]", Condition.of("stringArrayProp[4]", Equals.anyRef("stringArrayProp[5,6]")));
+        try {
+            rules.mandatory("stringArrayProp[1-3]", Condition.of("stringArrayProp[4]", Equals.anyRef("stringArrayProp" +
+                        "[5,6]")));
+        } catch (Exception e) {
+            fail();
+        }
     }
 
     @Test
     public void mandatoryIndexedPropertyWildcardUpperBounds() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
-        rules.mandatory("extNumber[*]");
+        try {
+            rules.mandatory("extNumber[*]");
+        } catch (Exception e) {
+            fail();
+        }
     }
 
 

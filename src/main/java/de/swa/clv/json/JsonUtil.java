@@ -31,15 +31,15 @@ public abstract class JsonUtil {
     /**
      * Values of type String, Enumand LocalDate get quoted.
      *
-     * @param objects
-     * @return
+     * @param objects TODO
+     * @return TODO
      */
     public static String asArray(final List<Object> objects) {
-        return asArray(objects.stream().map(o -> quoteIfNeeded(o)).collect(Collectors.joining(",")));
+        return asArray(objects.stream().map(JsonUtil::quoteIfNeeded).collect(Collectors.joining(",")));
     }
 
     private static String quoteIfNeeded(Object o) {
-        return (o != null && (o instanceof String || o instanceof Enum<?> || o instanceof LocalDate))
+        return (o instanceof String || o instanceof Enum<?> || o instanceof LocalDate)
                 ? quoted(o.toString()) : "" + o;
     }
 

@@ -10,7 +10,9 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert
+
+.*;
 
 public class ValidatorTest {
 
@@ -297,7 +299,7 @@ public class ValidatorTest {
         // everyone: ONE -> [TWO, THREE] resp. [TWO, THREE] -> FOUR
         // MANAGER: may set any value
         // EXPERT: additionally FOUR -> ONE
-        // Note: the rule for MANAGER could be simplified as content rule w/o Constraint.ref
+        // Note: the rule for MANAGER could be simplified as content(!) rule w/o Condition.of
         rules.update("enumProp", Equals.any(ValidationTesting.SomeEnum.values()),
                 Permissions.any("MANAGER"),
                 Condition.of("enumProp",  Equals.any(ValidationTesting.SomeEnum.values())));
@@ -394,7 +396,7 @@ public class ValidatorTest {
     }
 
     class SubClass {
-        private String stringProp = null;
+        private String stringProp;
         private String[] stringArrayProp;
         private List<String> stringListProp;
 

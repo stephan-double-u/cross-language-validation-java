@@ -2,17 +2,13 @@ package de.swa.clv.groups;
 
 import de.swa.clv.constraints.PropConstraint;
 import de.swa.clv.json.JsonSerializable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import static de.swa.clv.json.JsonUtil.asArray;
-import static de.swa.clv.json.JsonUtil.asKey;
-import static de.swa.clv.json.JsonUtil.asObject;
-import static de.swa.clv.json.JsonUtil.quoted;
+import static de.swa.clv.json.JsonUtil.*;
 
+@SuppressWarnings("squid:S100")
 public abstract class ConditionsGroup implements JsonSerializable {
 
     protected PropConstraint[] propConstraints;

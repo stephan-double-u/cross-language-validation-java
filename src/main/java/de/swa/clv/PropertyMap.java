@@ -5,7 +5,6 @@ import de.swa.clv.json.JsonSerializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.swa.clv.json.JsonUtil.asArray;
@@ -34,9 +33,8 @@ public class PropertyMap implements JsonSerializable {
 
     @Override
     public String serializeToJson() {
-        final String mapAsJson = map.entrySet().stream()
+        return map.entrySet().stream()
                 .map(e -> asKey(e.getKey()) + asArray(e.getValue().serializeToJson()))
                 .collect(Collectors.joining(","));
-        return mapAsJson;
     }
 }

@@ -14,8 +14,6 @@ public class Range extends ConstraintRoot {
     public static final long SAVE_INTEGER_MAX = (1L << 53) -1;
     public static final long SAVE_INTEGER_MIN = -((1L << 53) - 1);
 
-    private final String messageDefault = "{validation.constraint.range}";
-
     private Range() {
     }
 
@@ -31,7 +29,7 @@ public class Range extends ConstraintRoot {
      * @param minValue the minimal value of the element
      * @param <T> T extends Number & Comparable
      */
-    public static <T extends Number & Comparable> Range min(final T minValue) {
+    public static <T extends Number & Comparable<T>> Range min(final T minValue) {
         if (minValue == null) {
             throw new IllegalArgumentException("Null values are not allowed");
         }
@@ -53,7 +51,7 @@ public class Range extends ConstraintRoot {
      * @param maxValue the maximal value of the element
      * @param <T> T extends Number & Comparable
      */
-    public static <T extends Number & Comparable> Range max(final T maxValue) {
+    public static <T extends Number & Comparable<T>> Range max(final T maxValue) {
         if (maxValue == null) {
             throw new IllegalArgumentException("Null values are not allowed");
         }
@@ -77,7 +75,7 @@ public class Range extends ConstraintRoot {
      * @param maxValue the maximal value of the element
      * @param <T> T extends Number & Comparable
      */
-    public static <T extends Number & Comparable> Range minMax(final T minValue, final T maxValue) {
+    public static <T extends Number & Comparable<T>> Range minMax(final T minValue, final T maxValue) {
         if (minValue == null || maxValue == null) {
             throw new IllegalArgumentException("Null values are not allowed");
         }
@@ -96,7 +94,7 @@ public class Range extends ConstraintRoot {
         final Object min = getValues().get(0);
         final Object max = getValues().get(1);
         if (min != null) {
-            classAndValuesHaveSameType &= min.getClass().equals(wrappedClass);
+            classAndValuesHaveSameType = min.getClass().equals(wrappedClass);
         }
         if (max != null) {
             classAndValuesHaveSameType &= max.getClass().equals(wrappedClass);
@@ -127,7 +125,7 @@ public class Range extends ConstraintRoot {
         final Object max = getValues().get(1);
         boolean match = true;
         if (min != null) {
-            match &= ((Comparable) min).compareTo(object) <= 0;
+            match = ((Comparable) min).compareTo(object) <= 0;
         }
         if (max != null) {
             match &= ((Comparable) max).compareTo(object) >= 0;

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -18,16 +19,14 @@ public class RegEx extends ConstraintRoot {
 
     private static final String TYPE = "REGEX_ANY";
 
-    private final String messageDefault = "{validation.constraint.regex}";
-
     private final List<Pattern> patterns;
 
     private RegEx(String... regex) {
         super();
-        setObjectValues(Arrays.asList((Object[]) regex));
-        patterns = Arrays.asList(regex).stream()
-                .filter(r -> r != null)
-                .map(r -> Pattern.compile(r))
+        setObjectValues(Arrays.asList(regex));
+        patterns = Arrays.stream(regex)
+                .filter(Objects::nonNull)
+                .map(Pattern::compile)
                 .collect(Collectors.toList());
     }
 
@@ -47,8 +46,7 @@ public class RegEx extends ConstraintRoot {
         if (Arrays.asList(regex).contains(null)) {
             throw new IllegalArgumentException("Null values are not allowed");
         }
-        final RegEx constraint = new RegEx(regex);
-        return constraint;
+        return new RegEx(regex);
     }
 
     @Override
@@ -68,7 +66,7 @@ public class RegEx extends ConstraintRoot {
         return patterns.stream()
                 .peek(pattern -> log.debug("'" + object.toString() + (pattern.matcher(object.toString()).find() ? "' does" : "' does NOT") +" match regex '" + pattern + "'"))
                 .map(pattern -> pattern.matcher(object.toString()).find())
-                .filter(found -> found == true)
+                .filter(found -> found)
                 .findFirst().orElse(false);
     }
 

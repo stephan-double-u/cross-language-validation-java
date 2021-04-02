@@ -22,4 +22,6 @@ public abstract class TypeHelper {
         PRIMITIVE_TO_WRAPPER_TYPES = Collections.unmodifiableMap(tmpMap);
     }
 
+    private TypeHelper() {
+    }
 }

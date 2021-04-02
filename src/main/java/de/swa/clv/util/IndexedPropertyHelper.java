@@ -19,7 +19,7 @@ public class IndexedPropertyHelper {
 
     // Regular expression for valid index definitions
     //private static final String IDX_REG_EXP = "^\\*$|^\\d+\\/\\d$|^\\d+(-\\d+)?(,\\d+(-\\d+)?)*$";
-    private static final String IDX_REG_EXP = "\\d+(,\\d+)*$|^\\d+\\/\\d$|^\\d+-\\d+$|^\\*$";
+    private static final String IDX_REG_EXP = "^\\d+(,\\d+)*$|^\\d+/\\d+$|^\\d+-\\d+$|^\\*$";
     private static final Pattern PATTERN = Pattern.compile(IDX_REG_EXP);
 
     private static final Map<String, IndexInfo> propertyToIndexInfoCache = new HashMap<>();
@@ -49,17 +49,15 @@ public class IndexedPropertyHelper {
      * Values are NOT sorted and duplicate values are NOT removed.<br/>
      * You are right, spaces are not allowed.
      *
-     * @param indexedProperty
-     * @return
+     * @param property property that may contain index definitions
+     * @return an optional IndexInfo
      */
-    public static Optional<IndexInfo> getIndexInfo(final String indexedProperty) {
-        if (!isIndexedProperty(indexedProperty)) {
-            return Optional.ofNullable(null);
+    public static Optional<IndexInfo> getIndexInfo(final String property) {
+        if (!isIndexedProperty(property)) {
+            return Optional.empty();
         }
-        if (!propertyToIndexInfoCache.containsKey(indexedProperty)) {
-            propertyToIndexInfoCache.put(indexedProperty, createIndexInfo(indexedProperty));
-        }
-        return Optional.of(propertyToIndexInfoCache.get(indexedProperty));
+        propertyToIndexInfoCache.putIfAbsent(property, createIndexInfo(property));
+        return Optional.of(propertyToIndexInfoCache.get(property));
     }
 
     private static IndexInfo createIndexInfo(final String indexedProperty) {
@@ -81,15 +79,13 @@ public class IndexedPropertyHelper {
         }
         // Handle 'increment' definition
         if (indexStr.contains("/")) {
-            final String[] startIncr = indexStr.split("/");
-            final int startIndex = Integer.parseInt(startIncr[0]);
-            final int increment = Integer.parseInt(startIncr[1]);
-            if (startIndex < 0 || increment < 1) {
-                throw new IllegalArgumentException(INVALID_INDEXED_PROPERTY_MESSAGE + indexedProperty);
-            }
-            return new IndexInfo(IndexType.INCREMENT, Arrays.asList(startIndex, increment));
+            return getIncrementIndexInfo(indexStr, indexedProperty);
         }
         // Handle 'enumeration' and 'interval' definitions
+        return getListIndexInfo(indexedProperty, indexStr);
+    }
+
+    private static IndexInfo getListIndexInfo(String indexedProperty, String indexStr) {
         final List<Integer> values = new ArrayList<>();
         final String[] indexParts = indexStr.split(",");
         for (final String indexPart : indexParts) {
@@ -104,7 +100,7 @@ public class IndexedPropertyHelper {
                     values.add(i);
                 }
             } else {
-                final Integer index = Integer.parseInt(indexPart);
+                final int index = Integer.parseInt(indexPart);
                 if (index < 0) {
                     throw new IllegalArgumentException(INVALID_INDEXED_PROPERTY_MESSAGE + indexedProperty);
                 }
@@ -114,6 +110,15 @@ public class IndexedPropertyHelper {
         return new IndexInfo(IndexType.LIST, values);
     }
 
+    private static IndexInfo getIncrementIndexInfo(String indexStr, String indexedPropertyToLog) {
+        final String[] startIncr = indexStr.split("/");
+        final int startIndex = Integer.parseInt(startIncr[0]);
+        final int increment = Integer.parseInt(startIncr[1]);
+        if (startIndex < 0 || increment < 1) {
+            throw new IllegalArgumentException(INVALID_INDEXED_PROPERTY_MESSAGE + indexedPropertyToLog);
+        }
+        return new IndexInfo(IndexType.INCREMENT, Arrays.asList(startIndex, increment));
+    }
 
     public enum IndexType {
         LIST, INCREMENT

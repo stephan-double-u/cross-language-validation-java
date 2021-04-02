@@ -11,7 +11,6 @@ import static de.swa.clv.json.JsonUtil.quoted;
 public class Size extends ConstraintRoot {
 
     private static final String TYPE = "SIZE";
-    private final String messageDefault = "{validation.constraint.size}";
 
     private Size() {
     }

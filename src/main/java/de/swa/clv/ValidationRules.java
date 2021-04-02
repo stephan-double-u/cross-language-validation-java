@@ -1,17 +1,15 @@
 package de.swa.clv;
 
 import de.swa.clv.constraints.*;
-import de.swa.clv.groups.*;
+import de.swa.clv.groups.ConditionsAndGroup;
 import de.swa.clv.groups.ConditionsGroup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import de.swa.clv.groups.ConditionsOrGroup;
+import de.swa.clv.groups.ConditionsTopGroup;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static de.swa.clv.json.JsonUtil.asKey;
-import static de.swa.clv.json.JsonUtil.asObject;
-import static de.swa.clv.json.JsonUtil.quoted;
+import static de.swa.clv.json.JsonUtil.*;
 
 /**
  * A class to combine property validation rules for (possibly nested) properties of type {@code T},
@@ -23,6 +21,7 @@ import static de.swa.clv.json.JsonUtil.quoted;
 public class ValidationRules<T> {
 
     public static final ConstraintRoot NO_CONSTRAINT = Equals.none("");
+    @SuppressWarnings("squid:S3878")
     public static final Permissions NO_PERMISSIONS = Permissions.any(new String[0]);
     public static final ConditionsTopGroup NO_CONDITIONS_TOP_GROUP = ConditionsTopGroup.AND();
 

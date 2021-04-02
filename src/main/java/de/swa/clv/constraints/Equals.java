@@ -94,7 +94,7 @@ public class Equals {
     /*
      * Null related methods
      */
-
+    @SuppressWarnings("squid:S100")
     public static EqualsNull null_() {
         return new EqualsNull();
     }

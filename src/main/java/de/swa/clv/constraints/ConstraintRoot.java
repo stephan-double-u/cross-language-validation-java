@@ -39,10 +39,12 @@ public abstract class ConstraintRoot implements JsonSerializable {
     /**
      * Validates the constraint values and the propertyType.
      *
-     * @param propertyType
+     * @param propertyType TODO
      * @return {@code true} if the values and propertyType are o.k., {@code false} otherwise
      */
-    public boolean validateValuesOrFail(final Class<?> propertyType) throws IllegalArgumentException {
+    @SuppressWarnings("squid:S1172")
+
+    public boolean validateValuesOrFail(final Class<?> propertyType) {
         return true;
     }
 

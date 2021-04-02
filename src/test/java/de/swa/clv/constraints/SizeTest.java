@@ -11,7 +11,9 @@ import java.util.List;
 import java.util.Map;
 
 import static de.swa.clv.test.Util.doubleQuote;
-import static org.junit.Assert.*;
+import static org.junit.Assert
+
+.*;
 
 public class SizeTest {
 
