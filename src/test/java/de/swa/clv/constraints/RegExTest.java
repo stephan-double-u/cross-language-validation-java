@@ -1,6 +1,5 @@
 package de.swa.clv.constraints;
 
-import com.sun.tools.javac.util.List;
 import org.hamcrest.core.StringContains;
 import org.junit.Rule;
 import org.junit.Test;
@@ -8,15 +7,7 @@ import org.junit.rules.ExpectedException;
 
 import static de.swa.clv.test.Util.doubleQuote;
 import static java.lang.Boolean.TRUE;
-import static org.junit.Assert
-
-.assertEquals;
-import static org.junit.Assert
-
-.assertFalse;
-import static org.junit.Assert
-
-.assertTrue;
+import static org.junit.Assert.*;
 
 public class RegExTest {
 
