@@ -65,7 +65,7 @@ TODO
 #### Serialize Rules
 TODO
 ```javascript
-    ValidationRules.serializeToJson(Foo.RULES /*, Bar.RULES, ... */);
+    ValidationRules.serializeToJson(Foo.RULES /*, ... */);
 ```
 
 ## TODOs
