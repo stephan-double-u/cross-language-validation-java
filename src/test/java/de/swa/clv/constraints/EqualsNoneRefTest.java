@@ -7,19 +7,26 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.Date;
+
 import static org.junit.Assert
 
 .*;
 
 public class EqualsNoneRefTest {
 
-    private static Foo foo = new Foo(new Bar("baz", Enum.ABC, (short) 1, true));
+    private static EqualsNoneRefTest.Foo foo = new EqualsNoneRefTest.Foo(new EqualsNoneRefTest.Bar("baz", EqualsNoneRefTest.Enum.ABC, (short) 1, true,
+            LocalDate.of(2000, Month.JANUARY, 1),
+            new Date(LocalDate.of(2000, Month.JANUARY, 1).toEpochDay())));
+
 
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
     @Test
-    public void exceptionIfStringIsNull() {
+    public void exceptionIfArgumentIsNull() {
         expectedEx.expect(IllegalArgumentException.class);
         expectedEx.expectMessage(StringContains.containsString("Null values are not allowed"));
         Equals.noneRef((String) null);
@@ -63,6 +70,38 @@ public class EqualsNoneRefTest {
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("bar.booleanProp", EqualsNoneRefTest.Foo.class);
         assertTrue(constraint.validate(false, foo));
+    }
+
+    @Test
+    public void validateLocalDate() {
+        EqualsNoneRef constraint = Equals.noneRef("bar.localDateProp");
+        // Validating caches the getStringProp() method!
+        Validator.instance().validateProperty("bar.localDateProp", EqualsNoneRefTest.Foo.class);
+        assertTrue(constraint.validate(LocalDate.of(1999, Month.DECEMBER, 31), foo));
+    }
+
+    @Test
+    public void validateLocalDateFail() {
+        EqualsNoneRef constraint = Equals.noneRef("bar.localDateProp");
+        // Validating caches the getStringProp() method!
+        Validator.instance().validateProperty("bar.localDateProp", EqualsNoneRefTest.Foo.class);
+        assertFalse(constraint.validate(LocalDate.of(2000, Month.JANUARY, 1), foo));
+    }
+
+    @Test
+    public void validatelDate() {
+        EqualsNoneRef constraint = Equals.noneRef("bar.dateProp");
+        // Validating caches the getStringProp() method!
+        Validator.instance().validateProperty("bar.dateProp", EqualsNoneRefTest.Foo.class);
+        assertTrue(constraint.validate(new Date(LocalDate.of(1999, Month.DECEMBER, 31).toEpochDay()), foo));
+    }
+
+    @Test
+    public void validateDateFail() {
+        EqualsNoneRef constraint = Equals.noneRef("bar.dateProp");
+        // Validating caches the getStringProp() method!
+        Validator.instance().validateProperty("bar.dateProp", EqualsNoneRefTest.Foo.class);
+        assertFalse(constraint.validate(new Date(LocalDate.of(2000, Month.JANUARY, 1).toEpochDay()), foo));
     }
 
     @Test
@@ -118,11 +157,16 @@ public class EqualsNoneRefTest {
         private Enum enumProp;
         private int intProp;
         private Boolean booleanProp;
-        public Bar(String stringProp, Enum enumProp, int intProp, Boolean booleanProp) {
+        private LocalDate localDateProp;
+        private Date dateProp;
+
+        public Bar(String stringProp, Enum enumProp, int intProp, Boolean booleanProp, LocalDate localDateProp, Date dateProp) {
             this.stringProp = stringProp;
             this.enumProp = enumProp;
             this.intProp = intProp;
             this.booleanProp = booleanProp;
+            this.localDateProp = localDateProp;
+            this.dateProp = dateProp;
         }
         public String getStringProp() {
             return stringProp;
@@ -135,6 +179,12 @@ public class EqualsNoneRefTest {
         }
         public Boolean getBooleanProp() {
             return booleanProp;
+        }
+        public LocalDate getLocalDateProp() {
+            return localDateProp;
+        }
+        public Date getDateProp() {
+            return dateProp;
         }
     }
 
