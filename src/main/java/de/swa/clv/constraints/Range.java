@@ -2,6 +2,7 @@ package de.swa.clv.constraints;
 
 import de.swa.clv.util.TypeHelper;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 
 import static de.swa.clv.json.JsonUtil.asKey;
@@ -61,6 +62,16 @@ public class Range extends ConstraintRoot {
         return constraint;
     }
 
+    public static Range max(final LocalDate maxValue) {
+        if (maxValue == null) {
+            throw new IllegalArgumentException("Null values are not allowed");
+        }
+        final Range constraint = new Range();
+        constraint.setObjectValues(Arrays.asList(null, maxValue));
+        constraint.validateValuesOrFail(null);
+        return constraint;
+    }
+
     /**
      * The value of the property that should be validated against this constraint must between {@code minValue} and
      * {@code maxValue}.
@@ -89,7 +100,8 @@ public class Range extends ConstraintRoot {
     public boolean isSupportedType(final Class<?> clazz) {
         final Class<?> wrappedClass = (clazz.isPrimitive()) ? TypeHelper.PRIMITIVE_TO_WRAPPER_TYPES.get(clazz) : clazz;
         boolean classIsComarableNumber = Number.class.isAssignableFrom(wrappedClass)
-                && Comparable.class.isAssignableFrom(wrappedClass);
+                && Comparable.class.isAssignableFrom(wrappedClass)
+                || LocalDate.class == clazz; // LocalDate is finalLocalDate;
         boolean classAndValuesHaveSameType = true;
         final Object min = getValues().get(0);
         final Object max = getValues().get(1);
@@ -137,8 +149,9 @@ public class Range extends ConstraintRoot {
     public String serializeToJson() {
         final Object min = getValues().get(0);
         final Object max = getValues().get(1);
-        final String minJson = min != null ? asKey("min") + min : "";
-        final String maxJson = max != null ? asKey("max") + max : "";
+        final String quote = (min instanceof LocalDate || max instanceof LocalDate) ? "\"" : "";
+        final String minJson = min != null ? asKey("min") + quote + min + quote : "";
+        final String maxJson = max != null ? asKey("max") + quote + max + quote : "";
         final String delimiter = ("".equals(minJson) || "".equals(maxJson)) ? "" : ",";
         return asKey("type") + quoted(TYPE) + "," + minJson + delimiter + maxJson;
     }

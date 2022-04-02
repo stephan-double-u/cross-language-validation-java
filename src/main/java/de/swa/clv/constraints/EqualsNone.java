@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 public class EqualsNone extends EqualsRoot {
 
-    private static Logger log = LoggerFactory.getLogger(EqualsNone.class);
+    private static final Logger log = LoggerFactory.getLogger(EqualsNone.class);
 
     EqualsNone(final String... values) {
         setObjectValues(Arrays.asList((Object[]) values));

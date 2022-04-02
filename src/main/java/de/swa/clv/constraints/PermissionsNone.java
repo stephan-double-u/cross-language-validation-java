@@ -5,26 +5,25 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
-public class PermissionsAny extends Permissions {
+public class PermissionsNone extends Permissions {
 
-    private static final Logger log = LoggerFactory.getLogger(PermissionsAny.class);
+    private static final Logger log = LoggerFactory.getLogger(PermissionsNone.class);
 
-    PermissionsAny(final String... values) {
+    PermissionsNone(final String... values) {
         setObjectValues(Arrays.asList((Object[]) values));
     }
 
     @Override
     public String getType() {
-        return "ANY";
+        return "NONE";
     }
 
     @Override
     public boolean validate(final List<Object> userPermissions) {
         final boolean match = getValues().stream().anyMatch(userPermissions::contains);
-        log.debug("'" + userPermissions + "' does" + (match ? "" : " NOT") + " equals any of " + getValues());
-        return match;
+        log.debug("'" + userPermissions + "' does" + (!match ? "" : " NOT") + " equals none of " + getValues());
+        return !match;
     }
 
     @Override

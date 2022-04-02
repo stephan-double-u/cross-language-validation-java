@@ -13,7 +13,7 @@ i.e. it contains:
     <dependency>
       <groupId>de.swa</groupId>
       <artifactId>cross-language-validation</artifactId>
-      <version>0.2.1</version>
+      <version>0.2.2</version>
     </dependency>
 
 ### settings.xml
@@ -21,7 +21,7 @@ i.e. it contains:
         <server>
             <id>github</id>
             <username>stephan-double-u</username>
-            <password>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</password>
+            <password>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</password>
         </server>
     </servers>
 
@@ -37,13 +37,13 @@ For an example class _Foo_ this could be done within the class itself:
 public class Foo {
     public static final ValidationRules<Foo> RULES = new ValidationRules<>(Foo.class);
     static {
-        RULES.mandatory("someProperty");
+        RULES.mandatory("fooProperty");
     }
     private String someProperty;
     // getter, setter etc. omitted
 }
 ```
-But if you prefer working with POJOs, this could be done in another class as well, e.g. in a class where you collect 
+If you prefer working with POJOs, this could be done in another class as well, e.g. in a class where you collect 
 all rules for all corresponding classes:
 ```java
 public class Rules {
@@ -57,17 +57,63 @@ public class Rules {
     }
 }
 ```
+#### Mandatory Rules
 TODO
-
-### Validating Rules
+```java
+   RULES.mandatory("name");
+```
+#### Immutable Rules
 TODO
-
-#### Serialize Rules
-TODO
-```javascript
-    ValidationRules.serializeToJson(Foo.RULES /*, ... */);
+```java
+   RULES.immutable("type");
 ```
 
+#### Content Rules
+TODO
+```java
+   RULES.content("name", Size.minMax(1,100));
+```
+
+#### Update Rules
+TODO
+```java
+   RULES.update("status", Equals.any(StatusEnum.START, StatusEnum.STOP),
+        Condition.of("status",  Equals.any(StatusEnum.START)));
+```
+
+#### Permissions based rules 
+TODO
+
+A validation rule may depend on certain user privileges, i.e. a rule should only be checked if the user (who made the
+insertion or update request) has a certain role, permission or authority (or whatever you want to call it).
+
+For mandatory and immutable rules permissions can be defined as second argument, either as enum values or as strings:
+```java
+   RULES.mandatory("email", Permissions.any(Role.NEWBIE));
+   RULES.immutable("name", Permissions.any("REVIEWER", "ReadOnly") );
+```
+For content and update rules permissions can be defined as third argument, either as enum values or as strings:
+```java
+   RULES.content("name", Size.minMax(1,10),
+        Permissions.any("NEWBIE"));
+   RULES.update("status", Equals.any(StatusEnum.values()),
+        Permissions.any("ADMIN") );
+```
+
+### Serialize Rules
+Validation rules can be serialized to JSON according to the Cross Language Validation Schema.
+
+Either by calling _serializeToJson()_ on the rules object itself:
+```java
+    ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
+    final String rulesAsJson = rules.serializeToJson();
+```
+or, for multiple rules objects, by calling the static _varargs_ method ValidationRules#serializeToJson
+```java
+    ValidationRules<ClassOne> rulesClassOne = new ValidationRules<>(ClassOne.class);
+    ValidationRules<ClassTwo> rulesClassTwo = new ValidationRules<>(ClassTwo.class);
+    ValidationRules.serializeToJson(rulesClassOne, rulesClassTwo);
+```
 ## TODOs
 - Bring to Maven Central 
 - Document

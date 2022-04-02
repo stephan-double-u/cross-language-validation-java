@@ -14,7 +14,7 @@ public class RegExTest {
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
-    private static RegEx regEx = RegEx.any("bar", "[o]{2}", "^[0-7]+$");
+    private static RegEx regEx = RegEx.any("bar", "(?i)[o]{2}", "^[0-7]+$");
 
     @Test
     public void exceptionIfRegExIsNull() {
@@ -35,7 +35,7 @@ public class RegExTest {
 
     @Test
     public void stringMatchSecondRegEx() {
-        assertTrue(regEx.validate("foozoo", null));
+        assertTrue(regEx.validate("fOOzOO", null));
     }
 
     @Test()
@@ -50,6 +50,6 @@ public class RegExTest {
 
     @Test
     public void serializeToJson() {
-        assertEquals(doubleQuote("'type':'REGEX_ANY','values':['bar','[o]{2}','^[0-7]+$']"), regEx.serializeToJson());
+        assertEquals(doubleQuote("'type':'REGEX_ANY','values':['bar','(?i)[o]{2}','^[0-7]+$']"), regEx.serializeToJson());
     }
 }

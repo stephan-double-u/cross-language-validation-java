@@ -12,6 +12,13 @@ public class UserPermissions {
         this.values = Permissions.any(values).getValues();
     }
 
+    /**
+     * Important: Enum permissions are compared by names during validation!
+     *
+     * @param values the permissions, {@code null} values are not allowed
+     * @return a {@code UserPermissions} object that holds the permissions
+     */
+
     private UserPermissions(final Enum<?>... values) {
         this.values = Permissions.any(values).getValues();
     }

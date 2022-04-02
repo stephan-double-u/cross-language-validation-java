@@ -21,12 +21,23 @@ public class ValidationRulesTest {
     public ExpectedException expectedEx = ExpectedException.none();
 
     @Test
+    public void exceptionIfUnknownProperty() {
+        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
+
+        expectedEx.expect(IllegalArgumentException.class);
+        expectedEx.expectMessage(StringContains.containsString("No no-arg getter found for property " +
+                "'unknownProperty' in de.swa.clv.ValidationRulesTest$ClassOne"));
+
+        rules.mandatory("unknownProperty");
+    }
+
+    @Test
     public void exceptionIfPropertyHasWildcardTypeWithLowerBounds() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
 
         expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString(
-                "Index definitions for generics with lower bounds wildcard type is not implemented (and quite useless(?)): supInteger[*]"));
+        expectedEx.expectMessage(StringContains.containsString("Index definitions for generics with lower " +
+                "bounds wildcard type is not implemented (and quite useless(?)): supInteger[*]"));
 
         rules.mandatory("supInteger[*]");
     }
@@ -35,7 +46,8 @@ public class ValidationRulesTest {
     public void exceptionIfPropertyWithIndexDefinitionHasWrongType() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
         expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Index definitions are only allowed for properties of type List or arrays: stringProp[0]"));
+        expectedEx.expectMessage(StringContains.containsString(
+                "Index definitions are only allowed for properties of type List or arrays: stringProp[0]"));
         rules.mandatory("stringProp[0]");
     }
 
@@ -43,8 +55,8 @@ public class ValidationRulesTest {
     public void mandatoryIndexedPropertiesEverywhere() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
         try {
-            rules.mandatory("stringArrayProp[1-3]", Condition.of("stringArrayProp[4]", Equals.anyRef("stringArrayProp" +
-                        "[5,6]")));
+            rules.mandatory("stringArrayProp[1-3]", Condition.of("stringArrayProp[4]",
+                    Equals.anyRef("stringArrayProp[5,6]")));
         } catch (Exception e) {
             fail();
         }
@@ -65,7 +77,8 @@ public class ValidationRulesTest {
     public void serializeEmptyRulesInstance() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
         final String jsonResult = rules.serializeToJson();
-        final String expected = Util.doubleQuote("{'schema-version':'0.2','mandatoryRules':{},'immutableRules':{},'contentRules':{},'updateRules':{}}");
+        final String expected = Util.doubleQuote("{'schema-version':'0.2','mandatoryRules':{},'immutableRules':{}," +
+                "'contentRules':{},'updateRules':{}}");
         assertEquals(expected, jsonResult);
     }
 
@@ -74,7 +87,8 @@ public class ValidationRulesTest {
         ValidationRules<ClassOne> cond1 = new ValidationRules<>(ClassOne.class);
         ValidationRules<ClassTwo> cond2 = new ValidationRules<>(ClassTwo.class);
         final String jsonResult = ValidationRules.serializeToJson(cond1, cond2);
-        final String expected = Util.doubleQuote("{'schema-version':'0.2','mandatoryRules':{},'immutableRules':{},'contentRules':{},'updateRules':{}}");
+        final String expected = Util.doubleQuote("{'schema-version':'0.2','mandatoryRules':{},'immutableRules':{}," +
+                "'contentRules':{},'updateRules':{}}");
         assertEquals(expected, jsonResult);
     }
 

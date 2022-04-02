@@ -12,9 +12,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.Date;
 
-import static org.junit.Assert
-
-.*;
+import static org.junit.Assert.*;
 
 public class EqualsAnyRefTest {
 

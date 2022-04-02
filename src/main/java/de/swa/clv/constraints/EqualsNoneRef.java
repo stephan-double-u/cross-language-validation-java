@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 public class EqualsNoneRef extends EqualsRoot {
 
-    private static Logger log = LoggerFactory.getLogger(EqualsNoneRef.class);
+    private static final Logger log = LoggerFactory.getLogger(EqualsNoneRef.class);
 
     EqualsNoneRef(String... properties) {
         setObjectValues(Arrays.asList((Object[]) properties));

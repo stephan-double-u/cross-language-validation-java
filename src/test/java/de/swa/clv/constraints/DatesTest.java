@@ -4,12 +4,11 @@ import de.swa.clv.test.Util;
 import org.junit.Test;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 
-import static org.junit.Assert
-
-.*;
+import static org.junit.Assert.*;
 
 public class DatesTest {
 
@@ -47,6 +46,12 @@ public class DatesTest {
     public void validateFutureLocalDateToFalse() {
         Dates dates = Dates.future(3);
         assertFalse(dates.validate(LocalDate.now().plusDays(2), null));
+    }
+
+    @Test
+    public void validateFutureLocalDatetimeToTrue() {
+        Dates dates = Dates.future(1);
+        assertTrue(dates.validate(LocalDateTime.now().plusDays(1).plusMinutes(1), null));
     }
 
     @Test

@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 public class EqualsAny extends EqualsRoot {
 
-    private static Logger log = LoggerFactory.getLogger(EqualsAny.class);
+    private static final Logger log = LoggerFactory.getLogger(EqualsAny.class);
 
     EqualsAny(final String... values) {
         setObjectValues(Arrays.asList((Object[]) values));
