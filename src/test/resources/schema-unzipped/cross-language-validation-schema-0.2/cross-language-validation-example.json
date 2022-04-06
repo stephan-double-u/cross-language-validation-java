@@ -1,0 +1,614 @@
+{
+  "schema-version": "0.2",
+  "mandatoryRules": {
+    "reservation": {
+      "customer.foo": [
+        {
+          "condition": {
+            "property": "aDate",
+            "constraint": {
+              "type": "EQUALS_ANY",
+              "values": [
+                "2022-01-01T00:00Z",
+                "2022-01-02T00:00Z"
+              ]
+            }
+          }
+        },
+        {
+          "permissions": {
+            "type": "ANY",
+            "values": [
+              "aaa"
+            ]
+          }
+        }
+      ],
+      "id": [
+        {
+          "permissions": {
+            "type": "ANY",
+            "values": [
+              "aaa"
+            ]
+          }
+        },
+        {
+          "permissions": {
+            "type": "ANY",
+            "values": [
+              "bbb"
+            ]
+          },
+          "conditionsGroup": {
+            "operator": "AND",
+            "conditions": [
+              {
+                "property": "someString",
+                "constraint": {
+                  "type": "SIZE",
+                  "min": 1,
+                  "max": 3
+                }
+              },
+              {
+                "property": "articleArray",
+                "constraint": {
+                  "type": "SIZE",
+                  "min": 2
+                }
+              },
+              {
+                "property": "someMap",
+                "constraint": {
+                  "type": "SIZE",
+                  "max": 2
+                }
+              }
+            ]
+          }
+        },
+        {
+          "conditionsTopGroup": {
+            "operator": "AND",
+            "conditionsGroups": [
+              {
+                "operator": "OR",
+                "conditions": [
+                  {
+                    "property": "id",
+                    "constraint": {
+                      "type": "EQUALS_NONE",
+                      "values": [
+                        1,
+                        2,
+                        3
+                      ]
+                    }
+                  },
+                  {
+                    "property": "id",
+                    "constraint": {
+                      "type": "EQUALS_NONE",
+                      "values": [
+                        4
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "operator": "AND",
+                "conditions": [
+                  {
+                    "property": "id",
+                    "constraint": {
+                      "type": "EQUALS_ANY",
+                      "values": [
+                        1
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "articleList[0].name": [
+        {
+          "condition": {
+            "property": "articleArray[0].name",
+            "constraint": {
+              "type": "EQUALS_NULL"
+            }
+          }
+        }
+      ],
+      "someInt": [
+        {
+          "conditionsGroup": {
+            "operator": "AND",
+            "conditions": [
+              {
+                "property": "someString",
+                "constraint": {
+                  "type": "REGEX_ANY",
+                  "values": [
+                    "nomatch",
+                    "N[A-Z]+"
+                  ]
+                }
+              },
+              {
+                "property": "status",
+                "constraint": {
+                  "type": "REGEX_ANY",
+                  "values": [
+                    "E"
+                  ]
+                }
+              },
+              {
+                "property": "startDate",
+                "constraint": {
+                  "type": "DATE_FUTURE",
+                  "days": 0
+                }
+              },
+              {
+                "property": "startLocalDate",
+                "constraint": {
+                  "type": "DATE_PAST",
+                  "days": 2
+                }
+              },
+              {
+                "property": "startCalDate",
+                "constraint": {
+                  "type": "DATE_FUTURE",
+                  "days": 100
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "status": [
+        {
+          "conditionsTopGroup": {
+            "operator": "OR",
+            "conditionsGroups": [
+              {
+                "operator": "AND",
+                "conditions": [
+                  {
+                    "property": "someInt",
+                    "constraint": {
+                      "type": "RANGE",
+                      "min": 1,
+                      "max": 999
+                    }
+                  },
+                  {
+                    "property": "someInt",
+                    "constraint": {
+                      "type": "RANGE",
+                      "max": 999
+                    }
+                  },
+                  {
+                    "property": "someLong",
+                    "constraint": {
+                      "type": "RANGE",
+                      "max": 9007199254740991
+                    }
+                  },
+                  {
+                    "property": "aBoolean",
+                    "constraint": {
+                      "type": "EQUALS_ANY",
+                      "values": [
+                        true
+                      ]
+                    }
+                  },
+                  {
+                    "property": "someInt",
+                    "constraint": {
+                      "type": "EQUALS_NOT_NULL"
+                    }
+                  },
+                  {
+                    "property": "id",
+                    "constraint": {
+                      "type": "EQUALS_NONE",
+                      "values": [
+                        -1,
+                        123456789
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "operator": "AND",
+                "conditions": [
+                  {
+                    "property": "id",
+                    "constraint": {
+                      "type": "EQUALS_NONE",
+                      "values": [
+                        666,
+                        999
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "aBoolean": [
+        {
+          "conditionsTopGroup": {
+            "operator": "AND",
+            "conditionsGroups": [
+              {
+                "operator": "OR",
+                "conditions": [
+                  {
+                    "property": "someString",
+                    "constraint": {
+                      "type": "SIZE",
+                      "min": 1,
+                      "max": 100
+                    }
+                  },
+                  {
+                    "property": "articleList",
+                    "constraint": {
+                      "type": "SIZE",
+                      "min": 1
+                    }
+                  },
+                  {
+                    "property": "articleArray",
+                    "constraint": {
+                      "type": "SIZE",
+                      "max": 100
+                    }
+                  }
+                ]
+              },
+              {
+                "operator": "OR",
+                "conditions": [
+                  {
+                    "property": "id",
+                    "constraint": {
+                      "type": "EQUALS_NONE",
+                      "values": [
+                        404
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "customer.name": [
+        {
+          "conditionsGroup": {
+            "operator": "AND",
+            "conditions": [
+              {
+                "property": "status",
+                "constraint": {
+                  "type": "EQUALS_ANY",
+                  "values": [
+                    "NEW"
+                  ]
+                }
+              },
+              {
+                "property": "status",
+                "constraint": {
+                  "type": "EQUALS_NOT_NULL"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "immutableRules": {
+    "reservation": {
+      "id": [],
+      "status": [
+        {
+          "condition": {
+            "property": "someString",
+            "constraint": {
+              "type": "SIZE",
+              "min": 1,
+              "max": 100
+            }
+          }
+        },
+        {
+          "permissions": {
+            "type": "ANY",
+            "values": [
+              "aaa"
+            ]
+          },
+          "condition": {
+            "property": "someString",
+            "constraint": {
+              "type": "SIZE",
+              "min": 1,
+              "max": 100
+            }
+          }
+        }
+      ]
+    }
+  },
+  "contentRules": {
+    "reservation": {
+      "status": [
+        {
+          "constraint": {
+            "type": "EQUALS_ANY",
+            "values": [
+              "one",
+              "two"
+            ]
+          },
+          "permissions": {
+            "type": "ANY",
+            "values": [
+              "aaa"
+            ]
+          }
+        },
+        {
+          "constraint": {
+            "type": "EQUALS_ANY",
+            "values": [
+              "NEW",
+              "four"
+            ]
+          },
+          "permissions": {
+            "type": "ANY",
+            "values": [
+              "baz",
+              "bar"
+            ]
+          }
+        },
+        {
+          "constraint": {
+            "type": "EQUALS_ANY",
+            "values": [
+              "five"
+            ]
+          },
+          "permissions": {
+            "type": "ANY",
+            "values": [
+              "..."
+            ]
+          },
+          "condition": {
+            "property": "someString",
+            "constraint": {
+              "type": "SIZE",
+              "min": 1,
+              "max": 100
+            }
+          }
+        },
+        {
+          "constraint": {
+            "type": "EQUALS_ANY",
+            "values": [
+              "five"
+            ]
+          }
+        }
+      ],
+      "stringList[0]": [
+        {
+          "constraint": {
+            "type": "EQUALS_ANY",
+            "values": [
+              "one",
+              "two"
+            ]
+          }
+        }
+      ],
+      "someString": [
+        {
+          "constraint": {
+            "type": "EQUALS_ANY_REF",
+            "values": [
+              "articleList[0].name"
+            ]
+          }
+        }
+      ],
+      "id": [
+        {
+          "constraint": {
+            "type": "EQUALS_ANY",
+            "values": [
+              101,
+              202,
+              303
+            ]
+          },
+          "conditionsGroup": {
+            "operator": "AND",
+            "conditions": [
+              {
+                "property": "someString",
+                "constraint": {
+                  "type": "SIZE",
+                  "min": 1,
+                  "max": 100
+                }
+              },
+              {
+                "property": "someString",
+                "constraint": {
+                  "type": "SIZE",
+                  "min": 1,
+                  "max": 100
+                }
+              },
+              {
+                "property": "someString",
+                "constraint": {
+                  "type": "SIZE",
+                  "min": 1,
+                  "max": 100
+                }
+              },
+              {
+                "property": "someString",
+                "constraint": {
+                  "type": "SIZE",
+                  "min": 1,
+                  "max": 100
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "updateRules": {
+    "reservation": {
+      "someEnum": [
+        {
+          "constraint": {
+            "type": "EQUALS_ANY",
+            "values": [
+              "ONE",
+              "TWO",
+              "THREE",
+              "FOUR"
+            ]
+          },
+          "permissions": {
+            "type": "ANY",
+            "values": [
+              "MANAGER"
+            ]
+          },
+          "condition": {
+            "property": "someEnum",
+            "constraint": {
+              "type": "EQUALS_ANY",
+              "values": [
+                "ONE",
+                "TWO",
+                "THREE",
+                "FOUR"
+              ]
+            }
+          }
+        },
+        {
+          "constraint": {
+            "type": "EQUALS_ANY",
+            "values": [
+              "ONE",
+              "TWO",
+              "THREE"
+            ]
+          },
+          "condition": {
+            "property": "someEnum",
+            "constraint": {
+              "type": "EQUALS_ANY",
+              "values": [
+                "ONE"
+              ]
+            }
+          }
+        },
+        {
+          "constraint": {
+            "type": "EQUALS_ANY",
+            "values": [
+              "TWO",
+              "THREE",
+              "FOUR"
+            ]
+          },
+          "condition": {
+            "property": "someEnum",
+            "constraint": {
+              "type": "EQUALS_ANY",
+              "values": [
+                "TWO",
+                "THREE"
+              ]
+            }
+          }
+        },
+        {
+          "constraint": {
+            "type": "EQUALS_ANY",
+            "values": [
+              "FOUR"
+            ]
+          },
+          "condition": {
+            "property": "someEnum",
+            "constraint": {
+              "type": "EQUALS_ANY",
+              "values": [
+                "FOUR"
+              ]
+            }
+          }
+        },
+        {
+          "constraint": {
+            "type": "EQUALS_ANY",
+            "values": [
+              "ONE",
+              "FOUR"
+            ]
+          },
+          "permissions": {
+            "type": "ANY",
+            "values": [
+              "EXPERT"
+            ]
+          },
+          "condition": {
+            "property": "someEnum",
+            "constraint": {
+              "type": "EQUALS_ANY",
+              "values": [
+                "FOUR"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

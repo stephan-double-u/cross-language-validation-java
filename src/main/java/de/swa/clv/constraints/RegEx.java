@@ -15,7 +15,7 @@ import static de.swa.clv.json.JsonUtil.quoted;
 
 public class RegEx extends ConstraintRoot {
 
-    private static Logger log = LoggerFactory.getLogger(RegEx.class);
+    private static final Logger log = LoggerFactory.getLogger(RegEx.class);
 
     private static final String TYPE = "REGEX_ANY";
 
@@ -65,7 +65,8 @@ public class RegEx extends ConstraintRoot {
             throw new IllegalArgumentException("Unsupported type: " + object.getClass());
         }
         return patterns.stream()
-                .peek(pattern -> log.debug("'" + object.toString() + (pattern.matcher(object.toString()).find() ? "' does" : "' does NOT") +" match regex '" + pattern + "'"))
+                .peek(pattern -> log.debug("'" + object.toString() + (pattern.matcher(object.toString()).find()
+                        ? "' does" : "' does NOT") +" match regex '" + pattern + "'"))
                 .map(pattern -> pattern.matcher(object.toString()).find())
                 .filter(found -> found)
                 .findFirst().orElse(false);

@@ -23,8 +23,6 @@ import static java.lang.Boolean.TRUE;
 
 public class ValidationTesting {
 
-    private static Logger log = LoggerFactory.getLogger(ValidationTesting.class);
-
     public static void main(String[] args) {
         ValidationTesting validationTesting = new ValidationTesting();
         validationTesting.test();
@@ -32,7 +30,9 @@ public class ValidationTesting {
     public void test() {
         final ValidationRules<Reservation> rules = new ValidationRules<>(Reservation.class);
         //rules.mandatory("customer", Constraint.ref("aBoolean", Equals.any("NEW")));
-        rules.mandatory("customer", Condition.of("aBoolean", Equals.any(TRUE)));
+        rules.mandatory("customer", Condition.of("aBoolean", Equals.any(TRUE))
+        // add optional 'RuleErrorCode' here?
+        );
         rules.mandatory("customer", Permissions.any("aaa"));
         rules.mandatory("id", Permissions.any("aaa"));
         rules.mandatory("id", Permissions.any("bbb"),
@@ -100,8 +100,8 @@ public class ValidationTesting {
                 a, a, a, a);
         //TODO List<ContentConstraints>!?: status == "foo" if other == 1 OR status == "bar" if other == 2
 
-        // For validation of 'state-transitions' multiple rules per property are needed
-        // ERules are evaluated in defintione sequence, first rules with matching permission, last rules w/o permissions
+        // For validation of 'state-transitions' multiple rules per property are needed.
+        // Rules are evaluated in definition sequence, first rules with matching permission, last rules w/o permissions
         // E.g. ONE -> [TWO, THREE], [TWO, THREE] -> FOUR
         // MANAGER is allowed to set any value
         rules.update("someEnum",

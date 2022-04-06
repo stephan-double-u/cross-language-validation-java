@@ -5,6 +5,9 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
 
 import static org.junit.Assert
 
@@ -89,6 +92,13 @@ public class RangeTest {
     }
 
     @Test
+    public void localDateSupported() {
+        Range range = Range.max(LocalDate.now());
+
+        assertTrue(range.isSupportedType(LocalDate.class));
+    }
+
+    @Test
     public void validateBigIntegerTrue() {
         Range range = Range.min(BigInteger.TEN);
         assertTrue(range.validate(BigInteger.valueOf(123L), null));
@@ -137,8 +147,20 @@ public class RangeTest {
     }
 
     @Test
-    public void serializeToJson() {
+    public void validateLocalDateTesting() {
+        Range range = Range.max(LocalDate.of(2000, Month.JANUARY, 1));
+        assertFalse(range.validate(LocalDate.now(), null));
+    }
+
+    @Test
+    public void serializeToJsonNumber() {
         Range range = Range.minMax(123, 1234567890);
         assertEquals(Util.doubleQuote("'type':'RANGE','min':123,'max':1234567890"), range.serializeToJson());
+    }
+
+    @Test
+    public void serializeToJsonLocalDate() {
+        Range range = Range.max(LocalDate.of(2000, Month.JANUARY, 1));
+        assertEquals(Util.doubleQuote("'type':'RANGE','max':'2000-01-01'"), range.serializeToJson());
     }
 }

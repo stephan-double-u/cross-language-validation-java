@@ -201,6 +201,8 @@ public class Validator {
         default:
             throw new IllegalArgumentException("Should not happen - unknown rules type: " + rulesType);
         }
+        log.debug("Validate #{} {} rules for {}.{}",
+                conditionsList.size(), rulesType, rules.getSimpleTypeName(), property);
 
         Optional<ConstraintRoot> propertyConstraint = getMatchingConstraint(conditionsList, object, userPermissions);
 
@@ -226,6 +228,7 @@ public class Validator {
         // find first constraint with matching permission and valid reference constraints
         Optional<ConstraintRoot> constraint = conditionsList.stream()
                 .filter(cc -> arePermissionsMatching(cc.getPermissions(), userPermissions))
+                .peek(cc -> log.debug("Checking constraint with matching permissions"))
                 .filter(cc -> allConstraintsAreMet(cc.getConditionsTopGroup(), object))
                 .map(Conditions::getConstraint)
                 .findFirst();
@@ -233,6 +236,7 @@ public class Validator {
         if (!constraint.isPresent())
             constraint = conditionsList.stream()
                     .filter(cc -> cc.getPermissions() == NO_PERMISSIONS)
+                    .peek(cc -> log.debug("Checking constraint without permissions"))
                     .filter(cc -> allConstraintsAreMet(cc.getConditionsTopGroup(), object))
                     .map(Conditions::getConstraint)
                     .findFirst();
@@ -240,11 +244,13 @@ public class Validator {
     }
 
     private boolean arePermissionsMatching(Permissions constraintPermissions, UserPermissions userPermissions) {
-        List<String> constraintPermissionsAsStrings = getPermissionsAsStrings(constraintPermissions.getValues());
-        List<String> userPermissionsAsStrings = getPermissionsAsStrings(userPermissions.getValues());
+//        List<String> constraintPermissionsAsStrings = getPermissionsAsStrings(constraintPermissions.getValues());
+//        List<String> userPermissionsAsStrings = getPermissionsAsStrings(userPermissions.getValues());
         // Note: this implements 'match any'
-        return constraintPermissionsAsStrings.stream()
-                .anyMatch(userPermissionsAsStrings::contains);
+
+        return constraintPermissions.validate(userPermissions.getValues());
+//        return constraintPermissionsAsStrings.stream()
+//                .anyMatch(userPermissionsAsStrings::contains);
     }
 
     private List<String> getPermissionsAsStrings(List<Object> permissionValues) {
@@ -604,7 +610,7 @@ public class Validator {
             getterMethod = noArgGetters.get(buildGetterName("get", propertyName));
             if (getterMethod == null) {
                 throw new IllegalArgumentException(
-                        "No no-arg getter found for property " + propertyName + " in " + clazz.getName());
+                        "No no-arg getter found for property '" + propertyName + "' in " + clazz.getName());
             }
         }
         return getterMethod;

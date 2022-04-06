@@ -1,5 +1,8 @@
 package de.swa.clv.util;
 
+import de.swa.clv.ValidationRules;
+import de.swa.clv.ValidationTesting;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
@@ -13,7 +16,7 @@ public class ConsumerTesting {
             "  \"schema-version\": \"0.2\",\n" +
             "  \"mandatoryRules\": {\n" +
             "    \"reservation\": {\n" +
-            "      \"customer.name[0]\": [\n" +
+            "      \"customer\": [\n" +
             "        {\n" +
             "          \"condition\": {\n" +
             "            \"property\": \"aBoolean\",\n" +
@@ -127,7 +130,7 @@ public class ConsumerTesting {
             "          }\n" +
             "        }\n" +
             "      ],\n" +
-            "      \"articleList_name\": [\n" +
+            "      \"articleList[*].name\": [\n" +
             "        {\n" +
             "          \"condition\": {\n" +
             "            \"property\": \"articleArray_name\",\n" +
@@ -311,7 +314,7 @@ public class ConsumerTesting {
             "          }\n" +
             "        }\n" +
             "      ],\n" +
-            "      \"customer_name\": [\n" +
+            "      \"customer.name\": [\n" +
             "        {\n" +
             "          \"conditionsGroup\": {\n" +
             "            \"operator\": \"AND\",\n" +
@@ -364,8 +367,14 @@ public class ConsumerTesting {
         long ts2 = System.nanoTime();
         System.out.println("time ms: " + (ts2 -ts1)/1000/1000);
 
+        // this map should be provided from the app ...
+        typeToRulesObjectMap.put("reservation", reservationRules);
         mapJsonObjectToEntity(jsonRules);
     }
+
+    private static ValidationRules<ValidationTesting.Reservation> reservationRules = new ValidationRules<>(
+            ValidationTesting.Reservation.class);
+    private static Map<String, ValidationRules> typeToRulesObjectMap = new HashMap<>();
 
     private static void mapJsonObjectToEntity(Object jsonRules) {
         Map<String, Object> root = getObjectAsMapOrFail(jsonRules, "root");
@@ -374,9 +383,16 @@ public class ConsumerTesting {
         System.out.println("types: " + mandatoryRules.keySet());
         mandatoryRules.keySet().stream()
                 .peek(type -> System.out.println("type: " + type))
-                .map(type -> getObjectAsMapOrFail(mandatoryRules.get(type), "mandatoryRules"))
-                .forEach(propMap -> System.out.println("properties: " + propMap.keySet()));
+                .forEach(type -> createMandatoryRulesForType(type,
+                        getObjectAsMapOrFail(mandatoryRules.get(type), "mandatoryRules")));
         // etc. pp.
+    }
+
+    private static void createMandatoryRulesForType(String type, Map<String, Object> mandatoryRules) {
+        ValidationRules rulesOfType = typeToRulesObjectMap.get(type);
+        mandatoryRules.entrySet().stream()
+                // TODO handle permissions etc...
+                .forEach(propRule -> rulesOfType.mandatory(propRule.getKey()));
     }
 
     private static Map<String, Object> getElementAsMapOrFail(String key, Map<String, Object> map) {

@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 public class EqualsAnyRef extends EqualsRoot {
 
-    private static Logger log = LoggerFactory.getLogger(EqualsAnyRef.class);
+    private static final Logger log = LoggerFactory.getLogger(EqualsAnyRef.class);
 
     EqualsAnyRef(String... properties) {
         setObjectValues(Arrays.asList((Object[]) properties));

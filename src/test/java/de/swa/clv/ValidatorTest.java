@@ -10,9 +10,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 
-import static org.junit.Assert
-
-.*;
+import static org.junit.Assert.*;
 
 public class ValidatorTest {
 
@@ -108,7 +106,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validate_permissions_string_vs_string_false() {
+    public void validate_permissions_string_vs_string() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.mandatory("stringProp", Permissions.any("ONE"));
         ClassUnderTest object = new ClassUnderTest(null, null);
@@ -117,7 +115,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validate_permissions_enum_vs_string_false() {
+    public void validate_permissions_enum_vs_string() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.mandatory("stringProp", Permissions.any(SomeEnum.ONE));
         ClassUnderTest object = new ClassUnderTest(null, null);
@@ -126,7 +124,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validate_permissions_string_vs_enum_false() {
+    public void validate_permissions_string_vs_enum() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.mandatory("stringProp", Permissions.any("ONE"));
         ClassUnderTest object = new ClassUnderTest(null, null);
@@ -135,7 +133,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validate_permissions_enum_vs_enum_false() {
+    public void validate_permissions_enum_vs_enum() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.mandatory("stringProp", Permissions.any(SomeEnum.ONE));
         ClassUnderTest object = new ClassUnderTest(null, null);
@@ -297,8 +295,8 @@ public class ValidatorTest {
     public void validateUpdateRules_complexStateTransitions() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         // everyone: ONE -> [TWO, THREE] resp. [TWO, THREE] -> FOUR
-        // MANAGER: may set any value
         // EXPERT: additionally FOUR -> ONE
+        // MANAGER: may set any value
         // Note: the rule for MANAGER could be simplified as content(!) rule w/o Condition.of
         rules.update("enumProp", Equals.any(ValidationTesting.SomeEnum.values()),
                 Permissions.any("MANAGER"),
@@ -313,18 +311,34 @@ public class ValidatorTest {
                 Permissions.any("EXPERT"),
                 Condition.of("enumProp",  Equals.any("FOUR")));
 
-        ClassUnderTest modifiedObject = new ClassUnderTest(null, SomeEnum.ONE);
-        ClassUnderTest originalObject = new ClassUnderTest(null, SomeEnum.FOUR);
+        ClassUnderTest originalONE = new ClassUnderTest(null, SomeEnum.ONE);
+        ClassUnderTest originalTWO = new ClassUnderTest(null, SomeEnum.TWO);
+        ClassUnderTest originalFOUR = new ClassUnderTest(null, SomeEnum.FOUR);
+        ClassUnderTest modifiedONE = new ClassUnderTest(null, SomeEnum.ONE);
+        ClassUnderTest modifiedTWO = new ClassUnderTest(null, SomeEnum.TWO);
+        ClassUnderTest modifiedFOUR = new ClassUnderTest(null, SomeEnum.FOUR);
 
         List<String> errors;
-        errors = Validator.instance().validateUpdateRules(originalObject, modifiedObject, UserPermissions.of("MANAGER"), rules);
+        errors = Validator.instance().validateUpdateRules(originalONE, modifiedFOUR, UserPermissions.of("MANAGER"), rules);
+        assertTrue(errors.isEmpty());
+        errors = Validator.instance().validateUpdateRules(originalFOUR, modifiedONE, UserPermissions.of("MANAGER"), rules);
+        assertTrue(errors.isEmpty());
+        errors = Validator.instance().validateUpdateRules(originalTWO, modifiedFOUR, UserPermissions.of("MANAGER"), rules);
         assertTrue(errors.isEmpty());
 
-        errors = Validator.instance().validateUpdateRules(originalObject, modifiedObject, UserPermissions.of("EXPERT"), rules);
-        assertTrue(errors.isEmpty());
-
-        errors = Validator.instance().validateUpdateRules(originalObject, modifiedObject, UserPermissions.of("TRAINEE"), rules);
+        errors = Validator.instance().validateUpdateRules(originalONE, modifiedFOUR, UserPermissions.of("EXPERT"), rules);
         assertEquals(Arrays.asList("error.validation.update.equals_any.classundertest.enumProp"), errors);
+        errors = Validator.instance().validateUpdateRules(originalFOUR, modifiedONE, UserPermissions.of("EXPERT"), rules);
+        assertTrue(errors.isEmpty());
+        errors = Validator.instance().validateUpdateRules(originalTWO, modifiedFOUR, UserPermissions.of("EXPERT"), rules);
+        assertTrue(errors.isEmpty());
+
+        errors = Validator.instance().validateUpdateRules(originalONE, modifiedFOUR, UserPermissions.of("TRAINEE"), rules);
+        assertEquals(Arrays.asList("error.validation.update.equals_any.classundertest.enumProp"), errors);
+        errors = Validator.instance().validateUpdateRules(originalFOUR, modifiedONE, UserPermissions.of("TRAINEE"), rules);
+        assertEquals(Arrays.asList("error.validation.update.equals_any.classundertest.enumProp"), errors);
+        errors = Validator.instance().validateUpdateRules(originalTWO, modifiedFOUR, UserPermissions.of("TRAINEE"), rules);
+        assertTrue(errors.isEmpty());
     }
 
 

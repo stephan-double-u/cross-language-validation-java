@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import static de.swa.clv.json.JsonUtil.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -21,7 +22,7 @@ import java.util.List;
  */
 public class Dates extends ConstraintRoot {
 
-    private static Logger log = LoggerFactory.getLogger(Dates.class);
+    private static final Logger log = LoggerFactory.getLogger(Dates.class);
 
     private static final String TYPE = "DATE";
 
@@ -66,6 +67,7 @@ public class Dates extends ConstraintRoot {
     @Override
     public boolean isSupportedType(final Class<?> clazz) {
         return  LocalDate.class.isAssignableFrom(clazz)
+                || LocalDateTime.class.isAssignableFrom(clazz)
                 || Calendar.class.isAssignableFrom(clazz)
                 || Date.class.isAssignableFrom(clazz);
     }
@@ -81,6 +83,8 @@ public class Dates extends ConstraintRoot {
         final boolean match;
         if (dateObject instanceof LocalDate) {
             match = validate((LocalDate) dateObject, token, daysOffset);
+        } else if (dateObject instanceof LocalDateTime) {
+            match = validate((LocalDateTime) dateObject, token, daysOffset);
         } else if (dateObject instanceof Calendar) {
             match = validate((Calendar) dateObject, token, millisDaysOffset);
         } else if (dateObject instanceof Date) {
@@ -98,6 +102,16 @@ public class Dates extends ConstraintRoot {
             match = LocalDate.now().plusDays(daysOffset).compareTo(localDate) < 0;
         } else {
             match = LocalDate.now().minusDays(daysOffset).compareTo(localDate) > 0;
+        }
+        return match;
+    }
+
+    private boolean validate(final LocalDateTime localDateTime, final String token, final int daysOffset) {
+        final boolean match;
+        if (FUTURE_DATE_TOKEN.equals(token)) {
+            match = LocalDateTime.now().plusDays(daysOffset).compareTo(localDateTime) < 0;
+        } else {
+            match = LocalDateTime.now().minusDays(daysOffset).compareTo(localDateTime) > 0;
         }
         return match;
     }
