@@ -1,11 +1,7 @@
 package de.swa.clv.constraints;
 
-import com.sun.tools.javac.util.List;
 import de.swa.clv.UserPermissions;
-import org.hamcrest.core.StringContains;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.*;
 
