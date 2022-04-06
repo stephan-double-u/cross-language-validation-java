@@ -3,52 +3,47 @@ package de.swa.clv;
 import de.swa.clv.constraints.Condition;
 import de.swa.clv.constraints.Equals;
 import de.swa.clv.test.Util;
-import org.hamcrest.core.StringContains;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-import static org.junit.Assert
-
-.*;
+import static org.junit.Assert.*;
 
 public class ValidationRulesTest {
-
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
 
     @Test
     public void exceptionIfUnknownProperty() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
 
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("No no-arg getter found for property " +
-                "'unknownProperty' in de.swa.clv.ValidationRulesTest$ClassOne"));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> rules.mandatory("unknownProperty"));
 
-        rules.mandatory("unknownProperty");
+        assertEquals("No no-arg getter found for property 'unknownProperty' in " +
+                "de.swa.clv.ValidationRulesTest$ClassOne", ex.getMessage());
     }
 
     @Test
     public void exceptionIfPropertyHasWildcardTypeWithLowerBounds() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
 
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Index definitions for generics with lower " +
-                "bounds wildcard type is not implemented (and quite useless(?)): supInteger[*]"));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> rules.mandatory("supInteger[*]"));
 
-        rules.mandatory("supInteger[*]");
+        assertEquals("Index definitions for generics with lower bounds wildcard type is not implemented (and " +
+                        "quite useless(?)): supInteger[*]", ex.getMessage());
     }
 
     @Test
     public void exceptionIfPropertyWithIndexDefinitionHasWrongType() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString(
-                "Index definitions are only allowed for properties of type List or arrays: stringProp[0]"));
-        rules.mandatory("stringProp[0]");
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> rules.mandatory("stringProp[0]"));
+
+        assertEquals("Index definitions are only allowed for properties of type List or arrays: stringProp[0]",
+                ex.getMessage());
     }
 
     @Test
@@ -69,6 +64,16 @@ public class ValidationRulesTest {
             rules.mandatory("extNumber[*]");
         } catch (Exception e) {
             fail();
+        }
+    }
+
+    @Test
+    public void mandatoryObjectListProperty() {
+        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
+        try {
+            rules.mandatory("uuidList[*]");
+        } catch (Exception e) {
+            fail(e.getMessage());
         }
     }
 
@@ -122,6 +127,7 @@ public class ValidationRulesTest {
         private List<String> stringListProp;
         private List<? extends Number> extNumber;
         private List<? super Integer> supInteger = new ArrayList<>();
+        private List<UUID> uuidList = new ArrayList<>();
         public String getStringProp() {
             return stringProp;
         }
@@ -136,6 +142,9 @@ public class ValidationRulesTest {
         }
         public List<? super Integer> getSupInteger() {
             return supInteger;
+        }
+        public List<UUID> getUuidList() {
+            return uuidList;
         }
     }
 
