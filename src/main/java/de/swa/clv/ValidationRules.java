@@ -286,14 +286,14 @@ public class ValidationRules<T> {
     }
 
     /**
-     * Defines the content constraint for this property if permissions match and all {@code PropConstraint}s are true.
-     * I.e. the PropConstraints are ANDed. Convenience method for content(String, Constraint, Permissions,
-     * ConditionsAndGroup).
+     * Defines the content constraint for this property if permissions match and all {@code PropConstraint}s are
+     * {@code true}. Convenience method for content(String, Constraint, Permissions, ConditionsAndGroup).
      *
-     * @param property
-     * @param constraint
-     * @param permissions
-     * @param propConstraints
+     * @param property name the property this rule is defined for. According to the schema specification it might be a
+     *                 simple, nested or indexed name.
+     * @param constraint the constraint that applies to the value of this property.
+     * @param permissions permissions that restrict the validity of the rule.
+     * @param propConstraints one or more property related conditions that restrict the validity of the rule.
      */
     public void content(final String property, final ConstraintRoot constraint, final Permissions permissions,
                         final PropConstraint... propConstraints) {
@@ -476,7 +476,7 @@ public class ValidationRules<T> {
 
     public static String serializeToJson(final ValidationRules<?>... rules) {
         final List<ValidationRules<?>> validationRulesList = Arrays.asList(rules);
-        String json = asKey("schema-version") + quoted("0.2") + ",";
+        String json = asKey("schema-version") + quoted("0.3") + ",";
         json += asKey("mandatoryRules") + asObject(validationRulesList.stream()
                 .map(ValidationRules::serializeMandatoryRules)
                 .filter(j -> !j.isEmpty())

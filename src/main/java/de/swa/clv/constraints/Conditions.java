@@ -36,8 +36,11 @@ public class Conditions {
                 asKey("constraint") + asObject(conditions.getConstraint().serializeToJson());
         final String permissionsJson = conditions.getPermissions().serializeToJson();
         final String topGroupJson = conditions.getConditionsTopGroup().serializeToJson();
-        final String sep1 = "".equals(constraintJson) || "".equals(permissionsJson) ? "" : ",";
-        final String sep2 = "".equals(topGroupJson) ? "" : ",";
+        boolean noConstraint = constraintJson.isEmpty();
+        boolean noPermissions = permissionsJson.isEmpty();
+        boolean noConditions = topGroupJson.isEmpty();
+        final String sep1 = noConstraint || noPermissions ? "" : ",";
+        final String sep2 = noConstraint && noPermissions ? "" : noConditions ? "" :",";
         String conditionsJson = asObject(constraintJson + sep1 + permissionsJson + sep2 + topGroupJson);
         return "{}".equals(conditionsJson) ? "" : conditionsJson;
     }
