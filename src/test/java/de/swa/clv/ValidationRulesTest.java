@@ -82,7 +82,7 @@ public class ValidationRulesTest {
     public void serializeEmptyRulesInstance() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
         final String jsonResult = rules.serializeToJson();
-        final String expected = Util.doubleQuote("{'schema-version':'0.2','mandatoryRules':{},'immutableRules':{}," +
+        final String expected = Util.doubleQuote("{'schema-version':'0.3','mandatoryRules':{},'immutableRules':{}," +
                 "'contentRules':{},'updateRules':{}}");
         assertEquals(expected, jsonResult);
     }
@@ -92,7 +92,7 @@ public class ValidationRulesTest {
         ValidationRules<ClassOne> cond1 = new ValidationRules<>(ClassOne.class);
         ValidationRules<ClassTwo> cond2 = new ValidationRules<>(ClassTwo.class);
         final String jsonResult = ValidationRules.serializeToJson(cond1, cond2);
-        final String expected = Util.doubleQuote("{'schema-version':'0.2','mandatoryRules':{},'immutableRules':{}," +
+        final String expected = Util.doubleQuote("{'schema-version':'0.3','mandatoryRules':{},'immutableRules':{}," +
                 "'contentRules':{},'updateRules':{}}");
         assertEquals(expected, jsonResult);
     }
@@ -106,7 +106,7 @@ public class ValidationRulesTest {
         cond2.immutable("stringProp");
         cond2.content("stringProp", Equals.any("Foo"));
         String jsonResult = ValidationRules.serializeToJson(cond1, cond2);
-        final String expected = Util.doubleQuote("{'schema-version':'0.2'," +
+        final String expected = Util.doubleQuote("{'schema-version':'0.3'," +
                 "'mandatoryRules':{'classone':{'stringArrayProp':[]}}," +
                 "'immutableRules':{'classone':{'stringProp':[]},'classtwo':{'stringProp':[]}}," +
                 "'contentRules':{'classtwo':{'stringProp':[{'constraint':{'type':'EQUALS_ANY','values':['Foo']}}]}}," +

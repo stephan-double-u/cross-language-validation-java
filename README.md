@@ -13,15 +13,19 @@ i.e. it contains:
     <dependency>
       <groupId>de.swa</groupId>
       <artifactId>cross-language-validation</artifactId>
-      <version>0.2.2</version>
+      <version>0.3.0</version>
     </dependency>
 
 ### settings.xml
+Until this artifact is available on Maven Central, it can be downloaded by addinf this `server`to `settings.xml`.
+
+Note: `<REMOVE>` must be remove from the public read access token: 
+
     <servers>
         <server>
             <id>github</id>
             <username>stephan-double-u</username>
-            <password>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</password>
+            <password>ghp_<REMOVE>ZvGsEK3vqGUCXcyCQAVNuUupkKBju4242QoU</password>
         </server>
     </servers>
 

@@ -25,11 +25,13 @@ public class SchemaValidationTest {
         JsonSchemaFactory schemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V201909);
 
         try (
-                InputStream jsonStream = inputStreamFromClasspath("schema-unzipped/cross-language-validation-schema-0.2/cross-language-validation-example.json");
-                InputStream schemaStream = inputStreamFromClasspath("schema-unzipped/cross-language-validation-schema-0.2/cross-language-validation-schema.json")
+                InputStream schemaStream = inputStreamFromClasspath(
+                        "schema/cross-language-validation-schema/cross-language-validation-schema.json");
+                InputStream jsonStream = inputStreamFromClasspath(
+                        "schema/cross-language-validation-schema/schema-example.json")
         ) {
-            JsonNode json = objectMapper.readTree(jsonStream);
             JsonSchema schema = schemaFactory.getSchema(schemaStream);
+            JsonNode json = objectMapper.readTree(jsonStream);
 
             // Validation may create validation message
             Set<ValidationMessage> validationResult = schema.validate(json);

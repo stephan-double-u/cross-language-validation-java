@@ -13,7 +13,7 @@ public class ConsumerTesting {
 
     private static final String testJson = "  {'foo':'x','bar':123,'zoo':{'one':'y'},'baz':[1,2,3]}".replace('\'', '"');
     private static final String testJson2 = "{\n" +
-            "  \"schema-version\": \"0.2\",\n" +
+            "  \"schema-version\": \"0.3\",\n" +
             "  \"mandatoryRules\": {\n" +
             "    \"reservation\": {\n" +
             "      \"customer\": [\n" +
