@@ -17,7 +17,7 @@ public class EqualsNull extends EqualsRoot {
      */
     @Override
     public boolean isSupportedType(Class<?> clazz) {
-        return clazz instanceof Serializable;
+        return super.isSupportedType(clazz) || clazz instanceof Serializable;
     }
 
     @Override

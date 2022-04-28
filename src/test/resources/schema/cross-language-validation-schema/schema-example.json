@@ -1,5 +1,5 @@
 {
-  "schema-version": "0.3",
+  "schema-version": "0.4",
   "mandatoryRules": {
     "reservation": {
       "customer.foo": [

@@ -12,6 +12,7 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.MethodDescriptor;
 import java.lang.reflect.*;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -244,26 +245,7 @@ public class Validator {
     }
 
     private boolean arePermissionsMatching(Permissions constraintPermissions, UserPermissions userPermissions) {
-//        List<String> constraintPermissionsAsStrings = getPermissionsAsStrings(constraintPermissions.getValues());
-//        List<String> userPermissionsAsStrings = getPermissionsAsStrings(userPermissions.getValues());
-        // Note: this implements 'match any'
-
         return constraintPermissions.validate(userPermissions.getValues());
-//        return constraintPermissionsAsStrings.stream()
-//                .anyMatch(userPermissionsAsStrings::contains);
-    }
-
-    private List<String> getPermissionsAsStrings(List<Object> permissionValues) {
-        if (!permissionValues.isEmpty()
-                && permissionValues.get(0) instanceof Enum<?>) {
-            return permissionValues.stream()
-                    .map(p -> ((Enum<?>) p).name())
-                    .collect(Collectors.toList());
-        } else {
-            return permissionValues.stream()
-                    .map(p -> (String) p)
-                    .collect(Collectors.toList());
-        }
     }
 
     /**
@@ -288,11 +270,13 @@ public class Validator {
      * 1st check: Article.location exist, cache ("location", Article.class) -> (getLocation(), Location.class)<br/>
      * 2nd check: Location.address exist, cache ("location.address", Article.class) -> (getAddress(), Address.class)
      * <br/>
-     * 3rd check: Address.city exist, cache ("location.address.city", Article.class) -> (getCity(), String.class)
+     * 3rd check: Address.city exist, cache ("location.address.city", Article.class) -> (getCity(), String.class)<br/>
+     * Supports also indexed properties and aggregate functions, e.g. "foo[*].bar[0/2].zoo#sum"
      */
-    private Class<?> validatePropertyAndCache(final String nestedProperty, final Class<?> propertyClass) {
-        // Split a nested property into its parts; e.g. ["location", "address", "city"]
-        final String[] propertyParts = nestedProperty.split("\\.");
+    private Class<?> validatePropertyAndCache(final String property, final Class<?> propertyClass) {
+        // Split a nested property into its parts; e.g. ["location", "address", "city"] and strip off any aggregate
+        // function for determining the class of the terminal property part
+        final String[] propertyParts = property.split("#")[0].split("\\.");
         Class<?> propertyPartClass = propertyClass;
         String propertyKey = "";
         for (final String propertyPart : propertyParts) {
@@ -309,8 +293,30 @@ public class Validator {
             propertyToGetterReturnTypeCache.put(new PropertyDescriptor(propertyKey, propertyClass),
                     getterInfo);
         }
-
         return propertyPartClass;
+    }
+
+    public Optional<AggregateFunction> validateAndGetTerminalAggregateFunctionIfExist(String property) {
+        String[] propertySplit = property.split("#");
+        if (propertySplit.length > 2) {
+            throw new IllegalArgumentException(
+                    "Property must not contain more then one aggregate function markers (#): " + property);
+        }
+        if (propertySplit.length == 2) {
+            if (!IndexedPropertyHelper.isIndexedProperty(property)) {
+                throw new IllegalArgumentException(
+                        "Aggregate functions are only allowed for indexed properties: " + property);
+            }
+            if (AggregateFunction.sum.name().equals(propertySplit[1])) {
+                return Optional.of(AggregateFunction.sum);
+            } else if(AggregateFunction.distinct.name().equals(propertySplit[1])) {
+                return Optional.of(AggregateFunction.distinct);
+            } else {
+                throw new IllegalArgumentException(
+                        "Property contains unknown aggregate function: " + property);
+            }
+        }
+        return Optional.empty();
     }
 
     private GetterInfo createGetterInfoForSimpleProperty(String propertyPart, Class<?> propertyPartClass) {
@@ -421,7 +427,7 @@ public class Validator {
         } else {
             log.error("Should not happen: indexed property is neiter a List nor an Array");
         }
-        log.debug("{}[{}]: {}", propertyToLog, index, indexedObject);
+        log.debug("Indexed object {}: {}", propertyToLog, indexedObject);
         return indexedObject;
     }
 
@@ -491,17 +497,56 @@ public class Validator {
         }
     }
 
-    private boolean constraintIsMet(final PropConstraint propConstraint, final Object object) {
-        List<String> propertiesToCheck = inflatePropertyIfIndexed(propConstraint.getProperty(), object);
-        for (String propertyToCheck : propertiesToCheck) {
-            Object value = getPropertyResultObject(propertyToCheck, object);
-            log.debug("Value of property '{}' is '{}'", propConstraint.getProperty(), value);
-            if (!propConstraint.getConstraint().validate(value, object)) {
-                return false;
+    public boolean constraintIsMet(final PropConstraint propConstraint, final Object object) {
+        AggregateFunction aggregateFunction = validateAndGetTerminalAggregateFunctionIfExist(
+                propConstraint.getProperty()).orElseGet(() -> null);
+        String pureProperty = propConstraint.getProperty().split("#")[0];
+        List<String> propertiesToCheck = inflatePropertyIfIndexed(pureProperty, object);
+        if (aggregateFunction != null) {
+            switch(aggregateFunction) {
+            case sum:
+                BigDecimal sum = sumUpPropertyValues(object, propertiesToCheck);
+                return propConstraint.getConstraint().validate(sum, object);
+            case distinct:
+                Boolean distinct = distinctCheckForPropertyValues(object, propertiesToCheck);
+                return propConstraint.getConstraint().validate(distinct, object);
+            default:
+                throw new IllegalArgumentException("Should not happen. Unsupported: " + aggregateFunction);
             }
-
+        } else {
+            for (String propertyToCheck : propertiesToCheck) {
+                Object value = getPropertyResultObject(propertyToCheck, object);
+                log.debug("Value of property '{}' is '{}'", propConstraint.getProperty(), value);
+                if (!propConstraint.getConstraint().validate(value, object)) {
+                    return false;
+                }
+            }
         }
         return true;
+    }
+
+    public BigDecimal sumUpPropertyValues(Object object, List<String> propertiesToCheck) {
+        BigDecimal sum = BigDecimal.ZERO;
+        for (String p : propertiesToCheck) {
+            Object propertyResultObject = getPropertyResultObject(p, object);
+            sum = sum.add(new BigDecimal(propertyResultObject.toString()));
+        }
+        return sum;
+    }
+
+    public Boolean distinctCheckForPropertyValues(Object object, List<String> propertiesToCheck) {
+        Boolean distinct = null;
+        Object firstElement = null;
+        for (String p : propertiesToCheck) {
+            Object propertyResultObject = getPropertyResultObject(p, object);
+            if (distinct == null) {
+                distinct = true;
+                firstElement = propertyResultObject;
+            } else {
+                distinct = !Objects.equals(firstElement, propertyResultObject);
+            }
+        }
+        return distinct;
     }
 
     public List<String> inflatePropertyIfIndexed(String property, Object object) {
@@ -533,7 +578,7 @@ public class Validator {
         return true;
     }
 
-    // Inflate property with multi-index definitions to properties with single-index definitions, e.g.
+    // Inflate single property with multi-index definitions to multiple properties with single-index definitions, e.g.
     // "foo.bar[0,1].zoo.baz[2-3]" ->
     // ["foo.bar[0].zoo.baz[2]", "foo.bar[0].zoo.baz[3]", "foo.bar[1].zoo.baz[2]", "foo.bar[1].zoo.baz[3]"]
     protected List<String> inflateIndexedProperty(String property, Object object) {

@@ -41,8 +41,7 @@ public class Conditions {
         boolean noConditions = topGroupJson.isEmpty();
         final String sep1 = noConstraint || noPermissions ? "" : ",";
         final String sep2 = noConstraint && noPermissions ? "" : noConditions ? "" :",";
-        String conditionsJson = asObject(constraintJson + sep1 + permissionsJson + sep2 + topGroupJson);
-        return "{}".equals(conditionsJson) ? "" : conditionsJson;
+        return asObject(constraintJson + sep1 + permissionsJson + sep2 + topGroupJson);
     }
 
 }

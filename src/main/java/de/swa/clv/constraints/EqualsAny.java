@@ -36,12 +36,12 @@ public class EqualsAny extends EqualsRoot {
     }
 
     @Override
-    public boolean validate(final Object object, final Object notRelevant) {
-        if (object == null) {
+    public boolean validate(final Object objectToValidate, final Object notRelevant) {
+        if (objectToValidate == null) {
             return false;
         }
-        final boolean match = getValues().stream().anyMatch(value -> EqualsRoot.equals(value, object));
-        log.debug("'{}' does{}" + " equals one of {}", object, (match ? "" : " NOT"), getValues());
+        final boolean match = getValues().stream().anyMatch(value -> EqualsRoot.equals(objectToValidate, value));
+        log.debug("'{}' does{}" + " equals one of {}", objectToValidate, (match ? "" : " NOT"), getValues());
         return match;
     }
 

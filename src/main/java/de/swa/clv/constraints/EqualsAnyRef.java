@@ -1,14 +1,18 @@
 package de.swa.clv.constraints;
 
+import de.swa.clv.AggregateFunction;
 import de.swa.clv.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-public class EqualsAnyRef extends EqualsRoot {
-
-    private static final Logger log = LoggerFactory.getLogger(EqualsAnyRef.class);
+public class EqualsAnyRef extends EqualsRef {
 
     EqualsAnyRef(String... properties) {
         setObjectValues(Arrays.asList((Object[]) properties));
@@ -20,26 +24,15 @@ public class EqualsAnyRef extends EqualsRoot {
     }
 
     @Override
-    public boolean validateValuesOrFail(final Class<?> propertyType) {
-        getValues().forEach(refPropertyName -> Validator.instance().validateProperty((String) refPropertyName, propertyType));
-        return true;
-    }
-    
-    @Override
     public boolean validate(final Object valueToValidate, final Object constraintObject) {
         if (valueToValidate == null) {
             return false;
         }
 
-        final boolean equals = getValues().stream()
-                .flatMap(property -> Validator.instance().inflatePropertyIfIndexed((String) property, constraintObject).stream())
-                .map(property -> Validator.instance().getPropertyResultObject(property, constraintObject))
-                .map(referencedValue -> EqualsRoot.equals(valueToValidate, referencedValue))
+        return getValues().stream()
+                .map(refProperty -> validateSingleRefProperty((String) refProperty, valueToValidate, constraintObject))
                 .filter(e -> e)
                 .findFirst().orElse(false);
-
-        log.debug("" + valueToValidate + (equals ? " " : " NOT ") + "equals a referenced property of " + getValues());
-        return equals;
     }
 
 }

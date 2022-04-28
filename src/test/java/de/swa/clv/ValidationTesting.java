@@ -87,8 +87,9 @@ public class ValidationTesting {
         final PropConstraint a = Condition.of("someString", Size.minMax(1, 100));
 
         rules.immutable("id");
-        rules.immutable("status", a);
         rules.immutable("status", Permissions.any(Perms.aaa), a);
+        rules.immutable("status", a);
+        rules.immutable("status");
 
         rules.content("status", Equals.any("one", "two"), Permissions.any(Perms.aaa));
         rules.content("status", Equals.any("NEW", "four"), Permissions.any("baz", "bar"));
@@ -208,7 +209,7 @@ public class ValidationTesting {
 
                 Condition.of("status", Equals.none(ReservationStatus.RETURNED)),
                 Condition.of("someString", Equals.none("OLD")),
-                Condition.of("someInt", Equals.none(1d, 2L, 3f)),
+                Condition.of("someInt", Equals.none(1, 2, 33)),
                 Condition.of("startLocalDate", Equals.none(LocalDate.now())),
                 Condition.of("aBoolean", Equals.none(FALSE)),
                 Condition.of("id", Equals.noneRef("someInt")),

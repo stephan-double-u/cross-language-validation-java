@@ -18,8 +18,7 @@ public class IndexedPropertyHelper {
     public static final String INVALID_INDEXED_PROPERTY_MESSAGE = "Not a valid indexed property: ";
 
     // Regular expression for valid index definitions
-    //private static final String IDX_REG_EXP = "^\\*$|^\\d+\\/\\d$|^\\d+(-\\d+)?(,\\d+(-\\d+)?)*$";
-    private static final String IDX_REG_EXP = "^\\d+(,\\d+)*$|^\\d+/\\d+$|^\\d+-\\d+$|^\\*$";
+    private static final String IDX_REG_EXP = "^(\\d+(,\\d+)*+|\\d+/\\d+|\\d+-\\d+$|\\*)$";
     private static final Pattern PATTERN = Pattern.compile(IDX_REG_EXP);
 
     private static final Map<String, IndexInfo> propertyToIndexInfoCache = new HashMap<>();
@@ -45,7 +44,7 @@ public class IndexedPropertyHelper {
      * {@code IndexType} is {@code INCREMENT}, list contains the start index and the increment.</li>
      * <li>[*] : convenience format for [0/1]
      * </ul>
-     * To sum it up: the content_ between the brackets must match: "\d+(,\d+)*$|^\d+\/\d$|^\d+-\d+$|^\*$"<br/>
+     * To sum it up: the content_ between the brackets must match: "\d+(,\d+)*+$|^\d+\/\d$|^\d+-\d+$|^\*$"<br/>
      * Values are NOT sorted and duplicate values are NOT removed.<br/>
      * You are right, spaces are not allowed.
      *
@@ -64,7 +63,7 @@ public class IndexedPropertyHelper {
         // Check for valid bracket positions
         final int startPos = indexedProperty.lastIndexOf('[');
         final int endPos = indexedProperty.indexOf(']', startPos);
-        if (endPos - startPos < 2) {
+        if (endPos - startPos < 2 || indexedProperty.length() -1 > endPos) {
             throw new IllegalArgumentException(INVALID_INDEXED_PROPERTY_MESSAGE + indexedProperty);
         }
         // Check for valid content within brackets

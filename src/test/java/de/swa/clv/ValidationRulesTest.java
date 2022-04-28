@@ -1,7 +1,6 @@
 package de.swa.clv;
 
-import de.swa.clv.constraints.Condition;
-import de.swa.clv.constraints.Equals;
+import de.swa.clv.constraints.*;
 import de.swa.clv.test.Util;
 import org.junit.Test;
 
@@ -9,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static de.swa.clv.ValidationRules.SCHEMA_VERSION;
 import static org.junit.Assert.*;
 
 public class ValidationRulesTest {
@@ -58,6 +58,39 @@ public class ValidationRulesTest {
     }
 
     @Test
+    public void content_sum_integer_range_max() {
+        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
+        try {
+            rules.content("integerList[*]#sum", Range.max(10));
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("" + e.getMessage());
+        }
+    }
+
+    @Test
+    public void content_sum_integer_equals_string_fails() {
+        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> rules.content("integerList[*]#sum", Equals.any("wrong type")));
+
+        assertEquals("Constraint EqualsAny does not support type of property integerList[*]#sum " +
+                        "(class java.lang.Integer)",
+                ex.getMessage());
+    }
+
+    @Test
+    public void content_distinct_integer_equals_true() {
+        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
+        try {
+            rules.content("integerList[*]#distinct", Equals.any(true));
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("" + e.getMessage());
+        }
+    }
+
+    @Test
     public void mandatoryIndexedPropertyWildcardUpperBounds() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
         try {
@@ -82,7 +115,7 @@ public class ValidationRulesTest {
     public void serializeEmptyRulesInstance() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
         final String jsonResult = rules.serializeToJson();
-        final String expected = Util.doubleQuote("{'schema-version':'0.3','mandatoryRules':{},'immutableRules':{}," +
+        final String expected = Util.doubleQuote("{'schema-version':'" + SCHEMA_VERSION + "','mandatoryRules':{},'immutableRules':{}," +
                 "'contentRules':{},'updateRules':{}}");
         assertEquals(expected, jsonResult);
     }
@@ -92,7 +125,7 @@ public class ValidationRulesTest {
         ValidationRules<ClassOne> cond1 = new ValidationRules<>(ClassOne.class);
         ValidationRules<ClassTwo> cond2 = new ValidationRules<>(ClassTwo.class);
         final String jsonResult = ValidationRules.serializeToJson(cond1, cond2);
-        final String expected = Util.doubleQuote("{'schema-version':'0.3','mandatoryRules':{},'immutableRules':{}," +
+        final String expected = Util.doubleQuote("{'schema-version':'" + SCHEMA_VERSION + "','mandatoryRules':{},'immutableRules':{}," +
                 "'contentRules':{},'updateRules':{}}");
         assertEquals(expected, jsonResult);
     }
@@ -106,13 +139,29 @@ public class ValidationRulesTest {
         cond2.immutable("stringProp");
         cond2.content("stringProp", Equals.any("Foo"));
         String jsonResult = ValidationRules.serializeToJson(cond1, cond2);
-        final String expected = Util.doubleQuote("{'schema-version':'0.3'," +
+        final String expected = Util.doubleQuote("{'schema-version':'" + SCHEMA_VERSION + "'," +
                 "'mandatoryRules':{'classone':{'stringArrayProp':[]}}," +
                 "'immutableRules':{'classone':{'stringProp':[]},'classtwo':{'stringProp':[]}}," +
                 "'contentRules':{'classtwo':{'stringProp':[{'constraint':{'type':'EQUALS_ANY','values':['Foo']}}]}}," +
                 "'updateRules':{}}");
         assertEquals(expected, jsonResult);
 
+    }
+
+    @Test
+    public void serializePropertyWithMultipleRulesOneEmpty() {
+        ValidationRules<ClassOne> cond1 = new ValidationRules<>(ClassOne.class);
+        cond1.immutable("stringProp", Permissions.any("FOO"));
+        cond1.immutable("stringProp", Permissions.any("BAR"));
+        cond1.immutable("stringProp");
+        String jsonResult = ValidationRules.serializeToJson(cond1);
+        final String expected = Util.doubleQuote("{'schema-version':'" + SCHEMA_VERSION + "'," +
+                "'mandatoryRules':{}," +
+                "'immutableRules':{'classone':{'stringProp':[{'permissions':{'type':'ANY','values':['FOO']}}," +
+                "{'permissions':{'type':'ANY','values':['BAR']}},{}]}}," +
+                "'contentRules':{}," +
+                "'updateRules':{}}");
+        assertEquals(expected, jsonResult);
     }
 
     @Test
@@ -127,6 +176,7 @@ public class ValidationRulesTest {
         private List<String> stringListProp;
         private List<? extends Number> extNumber;
         private List<? super Integer> supInteger = new ArrayList<>();
+        private List<Integer> integerList = new ArrayList<>();
         private List<UUID> uuidList = new ArrayList<>();
         public String getStringProp() {
             return stringProp;
@@ -146,6 +196,7 @@ public class ValidationRulesTest {
         public List<UUID> getUuidList() {
             return uuidList;
         }
+        public List<Integer> getIntegerList() {return integerList;}
     }
 
     class ClassTwo {

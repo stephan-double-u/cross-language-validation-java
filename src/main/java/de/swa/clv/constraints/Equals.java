@@ -8,7 +8,8 @@ import java.util.Arrays;
  */
 public class Equals {
 
-    public static final String NULL_VALUES_MESSAGE = "Null values are not allowed";
+    static final String NULL_VALUES_MESSAGE = "Null values are not allowed";
+    static final String NUMBERS_CLASS_MESSAGE = "Numbers must have same type";
 
     private Equals() {
     }
@@ -35,7 +36,15 @@ public class Equals {
         if (Arrays.asList(values).contains(null)) {
             throw new IllegalArgumentException(NULL_VALUES_MESSAGE);
         }
+        checkNumbersHaveSameTypeOfFail(values);
         return new EqualsAny(values);
+    }
+
+    private static void checkNumbersHaveSameTypeOfFail(Number[] values) {
+        Class<? extends Number> numberClass = values[0].getClass();
+        if (!Arrays.stream(values).allMatch(v -> numberClass == v.getClass())) {
+            throw new IllegalArgumentException(NUMBERS_CLASS_MESSAGE);
+        }
     }
 
     public static EqualsAny any(final Boolean... values) {
@@ -71,6 +80,14 @@ public class Equals {
     }
 
     public static EqualsNone none(final Number... values) {
+        if (Arrays.asList(values).contains(null)) {
+            throw new IllegalArgumentException(NULL_VALUES_MESSAGE);
+        }
+        checkNumbersHaveSameTypeOfFail(values);
+        return new EqualsNone(values);
+    }
+
+    public static EqualsNone none(final Long... values) {
         if (Arrays.asList(values).contains(null)) {
             throw new IllegalArgumentException(NULL_VALUES_MESSAGE);
         }

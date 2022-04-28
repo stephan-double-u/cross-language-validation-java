@@ -36,12 +36,12 @@ public class EqualsNone extends EqualsRoot {
     }
 
     @Override
-    public boolean validate(final Object object, final Object constraintObjectIgnored) {
-        if (object == null) {
+    public boolean validate(final Object objectToValidate, final Object constraintObjectIgnored) {
+        if (objectToValidate == null) {
             return true;
         }
-        final boolean match = getValues().stream().anyMatch(value -> EqualsRoot.equals(value, object));
-        log.debug("'" + object + "' does" + (match ? "" : " NOT") + " equals one of " + getValues() + " but should not");
+        final boolean match = getValues().stream().anyMatch(value -> EqualsRoot.equals(objectToValidate, value));
+        log.debug("'" + objectToValidate + "' does" + (match ? "" : " NOT") + " equals one of " + getValues() + " but should not");
         return !match;
     }
 

@@ -24,6 +24,7 @@ public class ValidationRules<T> {
     @SuppressWarnings("squid:S3878")
     public static final Permissions NO_PERMISSIONS = Permissions.any(new String[0]);
     public static final ConditionsTopGroup NO_CONDITIONS_TOP_GROUP = ConditionsTopGroup.AND();
+    public static final String SCHEMA_VERSION = "0.4";
 
     private final PropertyConditionsMap mandatoryConditionsMap = new PropertyConditionsMap();
     private final PropertyConditionsMap immutableConditionsMap = new PropertyConditionsMap();
@@ -204,7 +205,8 @@ public class ValidationRules<T> {
      * @param topGroup
      */
     public void mandatory(final String property, final Permissions permissions, final ConditionsTopGroup topGroup) {
-        addPropertyConditions(property, NO_CONSTRAINT, permissions, topGroup, mandatoryConditionsMap.getOrInit(property));
+        addPropertyConditions(property, NO_CONSTRAINT, permissions, topGroup,
+                mandatoryConditionsMap.getOrInit(property), false);
     }
 
 
@@ -248,7 +250,8 @@ public class ValidationRules<T> {
     }
 
     public void immutable(final String property, final Permissions permissions, final ConditionsTopGroup topGroup) {
-        addPropertyConditions(property, NO_CONSTRAINT, permissions, topGroup, immutableConditionsMap.getOrInit(property));
+        addPropertyConditions(property, NO_CONSTRAINT, permissions, topGroup,
+                immutableConditionsMap.getOrInit(property), false);
     }
 
 
@@ -326,7 +329,8 @@ public class ValidationRules<T> {
 
     public void content(final String property, final ConstraintRoot constraint, final Permissions permissions,
                         final ConditionsTopGroup refTopGroup) {
-        addPropertyConditions(property, constraint, permissions, refTopGroup, contentConditionsMap.getOrInit(property));
+        addPropertyConditions(property, constraint, permissions, refTopGroup, contentConditionsMap.getOrInit(property),
+                true);
     }
 
 
@@ -366,12 +370,13 @@ public class ValidationRules<T> {
 
     public void update(final String property, final ConstraintRoot constraint, final Permissions permissions,
                        final ConditionsTopGroup refTopGroup) {
-        addPropertyConditions(property, constraint, permissions, refTopGroup, updateConditionsMap.getOrInit(property));
+        addPropertyConditions(property, constraint, permissions, refTopGroup, updateConditionsMap.getOrInit(property),
+                true);
     }
 
-
-    public void addPropertyConditions(final String property, final ConstraintRoot constraint, final Permissions permissions,
-                                      final ConditionsTopGroup topGroup, List<Conditions> conditions) {
+    public void addPropertyConditions(final String property, final ConstraintRoot constraint,
+            final Permissions permissions, final ConditionsTopGroup topGroup, List<Conditions> conditions,
+            boolean isAggregateFunctionAllowed) {
         Objects.requireNonNull(property, "property must not be null");
         Objects.requireNonNull(constraint, "constraint must not be null");
         Objects.requireNonNull(permissions, "permissions must not be null");
@@ -379,6 +384,13 @@ public class ValidationRules<T> {
         if (property.isEmpty()) {
             throw new IllegalArgumentException("property must not be empty");
         }
+        Validator.instance().validateAndGetTerminalAggregateFunctionIfExist(property).ifPresent(f -> {
+            if (!isAggregateFunctionAllowed) {
+                throw new IllegalArgumentException(
+                        "Aggregate functions are not allowed for mandatory and immutable property rules: " + property);
+            }
+        });
+
         if (constraint != NO_CONSTRAINT) {
             validateConstraint(property, constraint);
         }
@@ -447,7 +459,12 @@ public class ValidationRules<T> {
         if (property == null || constraint == null) {
             throw new IllegalArgumentException("Arguments must not be null");
         }
-        final Class<?> propertyType = Validator.instance().validateProperty(property, typeClass);
+        Class<?> propertyType = Validator.instance().validateProperty(property, typeClass);
+        Optional<AggregateFunction> aggregateFunction = Validator.instance()
+                .validateAndGetTerminalAggregateFunctionIfExist(property);
+        if (aggregateFunction.isPresent() && aggregateFunction.get().equals(AggregateFunction.distinct)) {
+            propertyType = Boolean.class;
+        }
         // Check that constraint supports propertyType
         if (!constraint.isSupportedType(propertyType)) {
             throw new IllegalArgumentException(
@@ -476,7 +493,7 @@ public class ValidationRules<T> {
 
     public static String serializeToJson(final ValidationRules<?>... rules) {
         final List<ValidationRules<?>> validationRulesList = Arrays.asList(rules);
-        String json = asKey("schema-version") + quoted("0.3") + ",";
+        String json = asKey("schema-version") + quoted(SCHEMA_VERSION) + ",";
         json += asKey("mandatoryRules") + asObject(validationRulesList.stream()
                 .map(ValidationRules::serializeMandatoryRules)
                 .filter(j -> !j.isEmpty())

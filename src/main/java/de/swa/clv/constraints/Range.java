@@ -2,6 +2,7 @@ package de.swa.clv.constraints;
 
 import de.swa.clv.util.TypeHelper;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 
@@ -111,6 +112,7 @@ public class Range extends ConstraintRoot {
         if (max != null) {
             classAndValuesHaveSameType &= max.getClass().equals(wrappedClass);
         }
+
         return classIsComarableNumber && classAndValuesHaveSameType;
     }
 
@@ -133,6 +135,30 @@ public class Range extends ConstraintRoot {
         if (object == null) {
             return false;
         }
+        if (object instanceof BigDecimal) {
+            return compareAsBigDecimal(object);
+        } else {
+            return compareAsComparable(object);
+        }
+    }
+
+    private boolean compareAsBigDecimal(Object object) {
+        BigDecimal objectBD = new BigDecimal(object.toString());
+        final Object min = getValues().get(0);
+        final Object max = getValues().get(1);
+        boolean match = true;
+        if (min != null) {
+            BigDecimal minBD = new BigDecimal(min.toString());
+            match = minBD.compareTo(objectBD) <= 0;
+        }
+        if (max != null) {
+            BigDecimal maxBD = new BigDecimal(max.toString());
+            match = maxBD.compareTo(objectBD) >= 0;
+        }
+        return match;
+    }
+
+    private boolean compareAsComparable(final Object object) {
         final Object min = getValues().get(0);
         final Object max = getValues().get(1);
         boolean match = true;

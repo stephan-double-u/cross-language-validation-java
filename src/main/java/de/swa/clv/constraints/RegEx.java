@@ -59,8 +59,9 @@ public class RegEx extends ConstraintRoot {
     @Override
     public boolean validate(final Object object, final Object constraintObjectIgnored) {
         if (object == null) {
-            return true;
+            return false;
         }
+        // TODO? is resp. should be already checked in ValidationRules.validateConstraint, therefore obsolete here
         if (!isSupportedType(object.getClass())) {
             throw new IllegalArgumentException("Unsupported type: " + object.getClass());
         }

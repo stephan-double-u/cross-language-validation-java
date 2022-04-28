@@ -1,8 +1,6 @@
 package de.swa.clv;
 
-import de.swa.clv.constraints.Condition;
-import de.swa.clv.constraints.Equals;
-import de.swa.clv.constraints.Permissions;
+import de.swa.clv.constraints.*;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -103,6 +101,24 @@ public class ValidatorTest {
         classUnderTestRules = new ValidationRules<>(ClassUnderTest.class);
         classUnderTestRules.mandatory("stringProp");
         classUnderTestRules.immutable("enumProp");
+    }
+
+    @Test
+    public void validate_mandatory_functionNotAllowed() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> rules.mandatory("subClassArrayProp[*]#distinct", Permissions.any("ONE")));
+        assertEquals("Aggregate functions are not allowed for mandatory and immutable property rules: " +
+                "subClassArrayProp[*]#distinct", ex.getMessage());
+    }
+
+    @Test
+    public void validate_immmutable_functionNotAllowed() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> rules.immutable("subClassArrayProp[*]#distinct", Permissions.any("ONE")));
+        assertEquals("Aggregate functions are not allowed for mandatory and immutable property rules: " +
+                "subClassArrayProp[*]#distinct", ex.getMessage());
     }
 
     @Test
@@ -266,6 +282,76 @@ public class ValidatorTest {
         assertTrue(errors.isEmpty());
     }
 
+    @Test
+    public void validateContentRules_sum_integer_Range() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.content("subClassArrayProp[*].integerListProp[0-2]#sum", Range.minMax(1, 12));
+        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void validateContentRules_sum_float_Range() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.content("floatArray[*]#sum", Range.minMax(6.66f, 6.66f));
+        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void validateContentRules_integer_sum_RegEx() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.content("subClassArrayProp[*].integerListProp[0-2]#sum", RegEx.any("^[0-9]+$"));
+        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void validateContentRules_integer_sum_EqualsAny() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.content("subClassArrayProp[*].integerListProp[0-2]#sum", Equals.any(12));
+        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void validateContentRules_integer_distinct_EqualsAny_true() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.content("subClassArrayProp[0].integerListProp[*]#distinct", Equals.any(true));
+        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void validateContentRules_sumEverywhere() {
+        PropConstraint condition = Condition.of("subClassArrayProp[*].integerListProp[*]#sum",
+                Equals.any(12));
+        // this assures, that Equals.anyRef below is validated at all!
+        assertTrue(Validator.instance().constraintIsMet(condition, new ClassUnderTest()));
+
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.content("subClassArrayProp[0].integerListProp[*]#sum",
+                Equals.anyRef("subClassArrayProp[1].integerListProp[*]#sum"),
+                condition);
+        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void validateContentRules_distinctEverywhere() {
+        PropConstraint condition = Condition.of("subClassArrayProp[*].integerListProp[*]#distinct",
+                Equals.any(true));
+        // this assures, that Equals.anyRef below is validated at all!
+        assertTrue(Validator.instance().constraintIsMet(condition, new ClassUnderTest()));
+
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.content("subClassArrayProp[0].integerListProp[*]#distinct",
+                Equals.anyRef("subClassArrayProp[1].integerListProp[*]#distinct"),
+                condition);
+        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty());
+    }
+
 
     @Test
     public void validateUpdateRules_ok() {
@@ -342,14 +428,39 @@ public class ValidatorTest {
     }
 
 
+    @Test
+    public void aggregateFunction_propertyNotIndexed() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> Validator.instance().validateAndGetTerminalAggregateFunctionIfExist("foo.bar#sum"));
+        assertEquals("Aggregate functions are only allowed for indexed properties: foo.bar#sum",
+                ex.getMessage());
+    }
+
+    @Test
+    public void aggregateFunction_tooManyMarkers() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> Validator.instance().validateAndGetTerminalAggregateFunctionIfExist("foo[*].#bar#sum"));
+        assertEquals("Property must not contain more then one aggregate function markers (#): foo[*].#bar#sum",
+                ex.getMessage());
+    }
+
+    @Test
+    public void aggregateFunction_unknown() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> Validator.instance().validateAndGetTerminalAggregateFunctionIfExist("foo[*]#avg"));
+        assertEquals("Property contains unknown aggregate function: foo[*]#avg",
+                ex.getMessage());
+    }
+
     class ClassUnderTest extends BaseClass implements Identifiable<Integer> {
         private String stringProp;
         private SomeEnum enumProp;
         private Date utilDate = Date.from(LocalDate.of(2020, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());
-        private SubClass subClassProp = new SubClass("a1", new String[] {"b1", "c1"}, Arrays.asList("d1", "e1", "f1"));
+        private SubClass subClassProp = new SubClass("a1", new String[] {"b1", "c1"}, Arrays.asList("d1", "e1", "f1"), Arrays.asList(1, 2, 3));
         private SubClass[] subClassArrayProp = {
-                new SubClass("a2", new String[] {"b2", "c2", "d2", "e2", "f2"}, Arrays.asList("g2", "h2")),
-                new SubClass("a3", new String[] {"b3", "c3", "d3"}, Arrays.asList("e3", "f3", "g3", "h3"))};
+                new SubClass("a2", new String[] {"b2", "c2", "d2", "e2", "f2"}, Arrays.asList("g2", "h2"), Arrays.asList(1, 2, 3)),
+                new SubClass("a3", new String[] {"b3", "c3", "d3"}, Arrays.asList("e3", "f3", "g3", "h3"), Arrays.asList(1, 2, 3))};
+        private float[] floatArray = new float[] {1.11f, 2.22f, 3.33f};
 
         public ClassUnderTest() {
             super(1);
@@ -390,22 +501,8 @@ public class ValidatorTest {
             this.utilDate = utilDate;
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            ClassUnderTest that = (ClassUnderTest) o;
-            return Objects.equals(stringProp, that.stringProp) &&
-                    enumProp == that.enumProp &&
-                    Objects.equals(subClassProp, that.subClassProp) &&
-                    Arrays.equals(subClassArrayProp, that.subClassArrayProp);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = Objects.hash(stringProp, enumProp, subClassProp);
-            result = 31 * result + Arrays.hashCode(subClassArrayProp);
-            return result;
+        public float[] getFloatArray() {
+            return floatArray;
         }
     }
 
@@ -413,12 +510,14 @@ public class ValidatorTest {
         private String stringProp;
         private String[] stringArrayProp;
         private List<String> stringListProp;
+        private List<Integer> integerListProp;
 
 
-        public SubClass(String stringProp, String[] stringArrayProp, List<String> stringListProp) {
+        public SubClass(String stringProp, String[] stringArrayProp, List<String> stringListProp, List<Integer> integerListProp) {
             this.stringProp = stringProp;
             this.stringArrayProp = stringArrayProp;
             this.stringListProp = stringListProp;
+            this.integerListProp = integerListProp;
         }
 
         public String getStringProp() {
@@ -433,6 +532,10 @@ public class ValidatorTest {
             return stringListProp;
         }
 
+        public List<Integer> getIntegerListProp() {
+            return integerListProp;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
@@ -440,12 +543,13 @@ public class ValidatorTest {
             SubClass subClass = (SubClass) o;
             return Objects.equals(stringProp, subClass.stringProp) &&
                     Arrays.equals(stringArrayProp, subClass.stringArrayProp) &&
+                    Objects.equals(integerListProp, subClass.integerListProp) &&
                     Objects.equals(stringListProp, subClass.stringListProp);
         }
 
         @Override
         public int hashCode() {
-            int result = Objects.hash(stringProp, stringListProp);
+            int result = Objects.hash(stringProp, stringListProp, integerListProp);
             result = 31 * result + Arrays.hashCode(stringArrayProp);
             return result;
         }

@@ -41,7 +41,7 @@ public class EqualsNoneTest {
     public void exceptionIfNumberIsNull() {
         expectedEx.expect(IllegalArgumentException.class);
         expectedEx.expectMessage(StringContains.containsString("Null values are not allowed"));
-        Equals.none((Number) null);
+        Equals.none((Integer) null);
     }
 
     @Test
@@ -83,7 +83,7 @@ public class EqualsNoneTest {
 
     @Test
     public void validateNumber() {
-        EqualsNone none = Equals.none(1, 2L, 3d);
+        EqualsNone none = Equals.none(1L, 2L, 3L);
         assertFalse(none.validate(2L, null));
     }
 
@@ -107,8 +107,8 @@ public class EqualsNoneTest {
 
     @Test
     public void serializeNumber() {
-        EqualsNone none = Equals.none(1, 2L, 3d);
-        assertEquals(Util.doubleQuote("'type':'EQUALS_NONE','values':[1,2,3.0]"), none.serializeToJson());
+        EqualsNone none = Equals.none(1, 2, 3);
+        assertEquals(Util.doubleQuote("'type':'EQUALS_NONE','values':[1,2,3]"), none.serializeToJson());
     }
 
     @Test

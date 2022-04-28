@@ -7,7 +7,7 @@ import java.util.List;
 
 public abstract class ConstraintRoot implements JsonSerializable {
 
-    // Holds any constraint related values
+    // Holds constraint related values
     private List<Object> values;
 
     ConstraintRoot() {

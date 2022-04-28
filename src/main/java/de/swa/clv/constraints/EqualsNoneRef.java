@@ -6,9 +6,7 @@ import de.swa.clv.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EqualsNoneRef extends EqualsRoot {
-
-    private static final Logger log = LoggerFactory.getLogger(EqualsNoneRef.class);
+public class EqualsNoneRef extends EqualsRef {
 
     EqualsNoneRef(String... properties) {
         setObjectValues(Arrays.asList((Object[]) properties));
@@ -20,26 +18,15 @@ public class EqualsNoneRef extends EqualsRoot {
     }
 
     @Override
-    public boolean validateValuesOrFail(final Class<?> propertyType) {
-        getValues().forEach(refPropertyName -> Validator.instance().validateProperty((String) refPropertyName, propertyType));
-        return true;
-    }
-
-    @Override
     public boolean validate(final Object valueToValidate, final Object constraintObject) {
         if (valueToValidate == null) {
             return false;
         }
 
-        final boolean equals = getValues().stream()
-                .flatMap(property -> Validator.instance().inflatePropertyIfIndexed((String) property, constraintObject).stream())
-                .map(property -> Validator.instance().getPropertyResultObject(property, constraintObject))
-                .map(referencedValue -> EqualsRoot.equals(valueToValidate, referencedValue))
+        return !getValues().stream()
+                .map(refProperty -> validateSingleRefProperty((String) refProperty, valueToValidate, constraintObject))
                 .filter(e -> e)
                 .findFirst().orElse(false);
-
-        log.debug("" + valueToValidate + (equals ? " " : " NOT ") + "equals a referenced property of " + getValues());
-        return !equals;
     }
 
 }

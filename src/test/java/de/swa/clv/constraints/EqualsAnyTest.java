@@ -6,6 +6,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.JDBCType;
 import java.time.LocalDate;
@@ -35,7 +37,7 @@ public class EqualsAnyTest {
     public void exceptionIfNumberIsNull() {
         expectedEx.expect(IllegalArgumentException.class);
         expectedEx.expectMessage(StringContains.containsString("Null values are not allowed"));
-        EqualsAny any = Equals.any((Number) null);
+        EqualsAny any = Equals.any((Integer) null);
     }
 
     @Test
@@ -83,9 +85,21 @@ public class EqualsAnyTest {
     }
 
     @Test
-    public void validateNumber() {
-        EqualsAny any = Equals.any(1, 2L, 3d);
+    public void validateInteger() {
+        EqualsAny any = Equals.any(1L, 2L, 3L);
         assertTrue(any.validate(2L, null));
+    }
+
+    @Test
+    public void validateBigInteger() {
+        EqualsAny any = Equals.any(BigInteger.ONE, BigInteger.TEN);
+        assertTrue(any.validate(BigInteger.TEN, null));
+    }
+
+    @Test
+    public void validateBigDecimal() {
+        EqualsAny any = Equals.any(BigDecimal.valueOf(1.23), BigDecimal.valueOf(4.56));
+        assertTrue(any.validate(BigDecimal.valueOf(4.56), null));
     }
 
     @Test
@@ -124,8 +138,8 @@ public class EqualsAnyTest {
 
     @Test
     public void serializeNumber() {
-        EqualsAny any = Equals.any(1, 2L, 3d);
-        assertEquals(Util.doubleQuote("'type':'EQUALS_ANY','values':[1,2,3.0]"), any.serializeToJson());
+        EqualsAny any = Equals.any(1, 2, 3);
+        assertEquals(Util.doubleQuote("'type':'EQUALS_ANY','values':[1,2,3]"), any.serializeToJson());
     }
 
     @Test

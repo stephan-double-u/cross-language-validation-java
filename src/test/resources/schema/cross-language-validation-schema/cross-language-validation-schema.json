@@ -5,7 +5,7 @@
 
   "type": "object",
   "properties": {
-    "schema-version": { "type": "string" , "enum": ["0.3"]},
+    "schema-version": { "type": "string" , "enum": ["0.4"]},
     "mandatoryRules": { "$ref": "#/definitions/typeRules" },
     "immutableRules": { "$ref": "#/definitions/typeRules" },
     "contentRules":   { "$ref": "#/definitions/typeRulesContent" },

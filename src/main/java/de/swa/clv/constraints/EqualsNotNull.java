@@ -1,10 +1,6 @@
 package de.swa.clv.constraints;
 
-import de.swa.clv.util.TypeHelper;
-
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.Date;
 
 public class EqualsNotNull extends EqualsRoot {
 
@@ -21,7 +17,7 @@ public class EqualsNotNull extends EqualsRoot {
      */
     @Override
     public boolean isSupportedType(Class<?> clazz) {
-        return clazz instanceof Serializable;
+        return super.isSupportedType(clazz) || clazz instanceof Serializable;
     }
 
     @Override
