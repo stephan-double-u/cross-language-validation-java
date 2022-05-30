@@ -36,7 +36,7 @@ public class Size extends ConstraintRoot {
     public static Size min(final int minSize) {
         final Size constraint = new Size();
         constraint.setObjectValues(Arrays.asList(Integer.valueOf(minSize), null));
-        constraint.validateValuesOrFail(null);
+        constraint.validateValuesOrFail(null, null);
         return constraint;
     }
 
@@ -61,7 +61,7 @@ public class Size extends ConstraintRoot {
     public static Size max(final int maxSize) {
         final Size constraint = new Size();
         constraint.setObjectValues(Arrays.asList(null, Integer.valueOf(maxSize)));
-        constraint.validateValuesOrFail(null);
+        constraint.validateValuesOrFail(null, null);
         return constraint;
     }
 
@@ -88,7 +88,7 @@ public class Size extends ConstraintRoot {
     public static Size minMax(final int minSize, final int maxSize) {
         final Size constraint = new Size();
         constraint.setObjectValues(Arrays.asList(Integer.valueOf(minSize), Integer.valueOf(maxSize)));
-        constraint.validateValuesOrFail(null);
+        constraint.validateValuesOrFail(null, null);
         return constraint;
     }
 
@@ -101,7 +101,7 @@ public class Size extends ConstraintRoot {
     }
 
     @Override
-    public boolean validateValuesOrFail(final Class<?> ignore) {
+    public void validateValuesOrFail(final Class<?> ignore, final Class<?> ignoreToo) {
         if (getValues().size() != 2) {
             throw new IllegalArgumentException("Size has neither min nor max value");
         }
@@ -110,7 +110,6 @@ public class Size extends ConstraintRoot {
         if (min != null && min < 0 || max != null && max < 0 || min != null && max != null && min >= max) {
             throw new IllegalArgumentException("Size min/max values must be >= 0 and min < max");
         }
-        return true;
     }
     
     @Override

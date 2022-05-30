@@ -3,8 +3,6 @@ package de.swa.clv;
 import de.swa.clv.constraints.*;
 import de.swa.clv.groups.ConditionsGroup;
 import de.swa.clv.groups.ConditionsTopGroup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import java.net.URI;
@@ -29,60 +27,57 @@ public class ValidationTesting {
     }
     public void test() {
         final ValidationRules<Reservation> rules = new ValidationRules<>(Reservation.class);
-        //rules.mandatory("customer", Constraint.ref("aBoolean", Equals.any("NEW")));
-        rules.mandatory("customer", Condition.of("aBoolean", Equals.any(TRUE))
-        // add optional 'RuleErrorCode' here?
-        );
+
+        rules.mandatory("customer",
+                Condition.of("aBoolean", Equals.any(TRUE)));
         rules.mandatory("customer", Permissions.any("aaa"));
         rules.mandatory("id", Permissions.any("aaa"));
         rules.mandatory("id", Permissions.any("bbb"),
-                Condition.of("someString", Size.minMax(1,3)),
-                Condition.of("articleArray", Size.min(2)),
-                Condition.of("someMap", Size.max(2)));
+                ConditionsGroup.AND(
+                        Condition.of("someString", Size.minMax(1, 3)),
+                        Condition.of("articleArray", Size.min(2)),
+                        Condition.of("someMap", Size.max(2))));
         rules.mandatory("id",
                 ConditionsTopGroup.AND(
                         ConditionsGroup.OR(
                                 Condition.of("id", Equals.none(1, 2, 3)),
-                                Condition.of("id", Equals.none(4)) ),
-                        ConditionsGroup.AND(
-                                Condition.of("id", Equals.any(1)) )
-                )
-        );
+                                Condition.of("id", Equals.none(4))),
+                        ConditionsGroup.AND(Condition.of("id", Equals.any(1)))));
 
         rules.mandatory("articleList[0].name",
                 Condition.of("articleArray[0].name", Equals.null_()));
         rules.mandatory("someInt",
-                Condition.of("someString", RegEx.any("nomatch", "N[A-Z]+")),
-                Condition.of("status", RegEx.any("E")),
-                Condition.of("startDate", Dates.future()),
-                Condition.of("startLocalDate", Dates.past(2)),
-                Condition.of("startCalDate", Dates.future(100))
-                );
+                ConditionsGroup.AND(
+                        Condition.of("someString", RegEx.any("nomatch", "N[A-Z]+")),
+                        Condition.of("status", RegEx.any("E")),
+                        Condition.of("startDate", Dates.future()),
+                        Condition.of("startLocalDate", Dates.past(2)),
+                        Condition.of("startCalDate", Dates.future(100))));
 
         rules.mandatory("status",
-                ConditionsGroup.AND(
-                        Condition.of("someInt", Range.minMax(1, 999)),
-                        Condition.of("someInt", Range.min(1).max(999)),
-                        Condition.of("someLong", Range.max(Range.SAVE_INTEGER_MAX)),
-                        Condition.of("aBoolean", Equals.any(TRUE)),
-                        Condition.of("someInt", Equals.notNull()),
-                        Condition.of("id", Equals.none(-1, 123456789)) ),
-                ConditionsGroup.AND(
-                        Condition.of("id", Equals.none(666, 999)))
-                );
+                ConditionsTopGroup.OR(
+                        ConditionsGroup.AND(
+                                Condition.of("someInt", Range.minMax(1, 999)),
+                                Condition.of("someInt", Range.min(1).max(999)),
+                                Condition.of("someLong", Range.max(Range.SAVE_INTEGER_MAX)),
+                                Condition.of("aBoolean", Equals.any(TRUE)),
+                                Condition.of("someInt", Equals.notNull()),
+                                Condition.of("id", Equals.none(-1, 123456789))),
+                        ConditionsGroup.AND(
+                                Condition.of("id", Equals.none(666, 999)))));
         rules.mandatory("aBoolean",
+                ConditionsTopGroup.AND(
                 ConditionsGroup.OR(
                         Condition.of("someString", Size.minMax(1, 100)),
                         Condition.of("articleList", Size.min(1)),
                         Condition.of("articleArray", Size.max(100)) ),
                 ConditionsGroup.OR(
-                        Condition.of("id", Equals.none(404)) )
-                );
+                        Condition.of("id", Equals.none(404)))));
         rules.mandatory("customer.name",
-                //Constraint.ref("customer", EqualsAny.values(new Customer("aaa"))),
-                Condition.of("status", Equals.any(ReservationStatus.NEW)),
-                Condition.of("status", Equals.notNull())
-                );
+                ConditionsGroup.AND(
+                        Condition.of("status", Equals.any(ReservationStatus.NEW)),
+                        Condition.of("status", Equals.notNull())
+                ));
 
         final PropConstraint a = Condition.of("someString", Size.minMax(1, 100));
 
@@ -200,29 +195,30 @@ public class ValidationTesting {
 
         final ValidationRules<Reservation> condAllInOne = new ValidationRules<>(Reservation.class);
         condAllInOne.mandatory("id",
-                Condition.of("status", Equals.any(ReservationStatus.NEW)),
-                Condition.of("someString", Equals.any("NEW")),
-                Condition.of("someInt", Equals.any(123)),
-                Condition.of("startLocalDate", Equals.any(LocalDate.now().minusDays(10))),
-                Condition.of("aBoolean", Equals.any(TRUE)),
-                Condition.of("status", Equals.anyRef("someString")),
+                ConditionsGroup.AND(
+                        Condition.of("status", Equals.any(ReservationStatus.NEW)),
+                        Condition.of("someString", Equals.any("NEW")),
+                        Condition.of("someInt", Equals.any(123)),
+                        Condition.of("startLocalDate", Equals.any(LocalDate.now().minusDays(10))),
+                        Condition.of("aBoolean", Equals.any(TRUE)),
+                        Condition.of("status", Equals.anyRef("someString")),
 
-                Condition.of("status", Equals.none(ReservationStatus.RETURNED)),
-                Condition.of("someString", Equals.none("OLD")),
-                Condition.of("someInt", Equals.none(1, 2, 33)),
-                Condition.of("startLocalDate", Equals.none(LocalDate.now())),
-                Condition.of("aBoolean", Equals.none(FALSE)),
-                Condition.of("id", Equals.noneRef("someInt")),
+                        Condition.of("status", Equals.none(ReservationStatus.RETURNED)),
+                        Condition.of("someString", Equals.none("OLD")),
+                        Condition.of("someInt", Equals.none(1, 2, 33)),
+                        Condition.of("startLocalDate", Equals.none(LocalDate.now())),
+                        Condition.of("aBoolean", Equals.none(FALSE)),
+                        Condition.of("id", Equals.noneRef("someInt")),
 
-                Condition.of("nullString", Equals.null_()),
-                Condition.of("someString", Equals.notNull()),
+                        Condition.of("nullString", Equals.null_()),
+                        Condition.of("someString", Equals.notNull()),
 
-                Condition.of("someString", RegEx.any("nomatch", "N[A-Z]+")),
+                        Condition.of("someString", RegEx.any("nomatch", "N[A-Z]+")),
 
-                Condition.of("startDate", Dates.future()),
-                Condition.of("startLocalDate", Dates.past(2)),
-                Condition.of("startCalDate", Dates.future(100))
-        );
+                        Condition.of("startDate", Dates.future()),
+                        Condition.of("startLocalDate", Dates.past(2)),
+                        Condition.of("startCalDate", Dates.future(100))
+                ));
         System.out.println("serializeToJson: " + ValidationRules.serializeToJson(condAllInOne));
     }
 

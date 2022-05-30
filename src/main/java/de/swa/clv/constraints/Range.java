@@ -4,6 +4,7 @@ import de.swa.clv.util.TypeHelper;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 
 import static de.swa.clv.json.JsonUtil.asKey;
@@ -32,13 +33,8 @@ public class Range extends ConstraintRoot {
      * @param <T> T extends Number & Comparable
      */
     public static <T extends Number & Comparable<T>> Range min(final T minValue) {
-        if (minValue == null) {
-            throw new IllegalArgumentException("Null values are not allowed");
-        }
-        final Range constraint = new Range();
-        constraint.setObjectValues(Arrays.asList(minValue, null));
-        constraint.validateValuesOrFail(null);
-        return constraint;
+        validateNotNull(minValue, minValue);
+        return newRange(minValue, null);
     }
 
     /**
@@ -54,23 +50,8 @@ public class Range extends ConstraintRoot {
      * @param <T> T extends Number & Comparable
      */
     public static <T extends Number & Comparable<T>> Range max(final T maxValue) {
-        if (maxValue == null) {
-            throw new IllegalArgumentException("Null values are not allowed");
-        }
-        final Range constraint = new Range();
-        constraint.setObjectValues(Arrays.asList(null, maxValue));
-        constraint.validateValuesOrFail(null);
-        return constraint;
-    }
-
-    public static Range max(final LocalDate maxValue) {
-        if (maxValue == null) {
-            throw new IllegalArgumentException("Null values are not allowed");
-        }
-        final Range constraint = new Range();
-        constraint.setObjectValues(Arrays.asList(null, maxValue));
-        constraint.validateValuesOrFail(null);
-        return constraint;
+        validateNotNull(maxValue, maxValue);
+        return newRange(null, maxValue);
     }
 
     /**
@@ -88,36 +69,72 @@ public class Range extends ConstraintRoot {
      * @param <T> T extends Number & Comparable
      */
     public static <T extends Number & Comparable<T>> Range minMax(final T minValue, final T maxValue) {
+        validateNotNull(minValue, maxValue);
+        return newRange(minValue, maxValue);
+    }
+
+    public static Range min(final LocalDate minValue) {
+        validateNotNull(minValue, minValue);
+        return newRange(minValue, null);
+    }
+
+    public static Range max(final LocalDate maxValue) {
+        validateNotNull(maxValue, maxValue);
+        return newRange(null, maxValue);
+    }
+
+    public static Range minMax(final LocalDate minValue, final LocalDate maxValue) {
+        validateNotNull(minValue, maxValue);
+        return newRange(minValue, maxValue);
+    }
+
+    public static Range min(final LocalDateTime minValue) {
+        validateNotNull(minValue, minValue);
+        return newRange(minValue, null);
+    }
+
+    public static Range max(final LocalDateTime maxValue) {
+        validateNotNull(maxValue, maxValue);
+        return newRange(null, maxValue);
+    }
+
+    public static Range minMax(final LocalDateTime minValue, final LocalDateTime maxValue) {
+        validateNotNull(minValue, maxValue);
+        return newRange(minValue, maxValue);
+    }
+
+    private static <T extends Number & Comparable<T>> Range newRange(Object minValue, Object maxValue) {
+        final Range constraint = new Range();
+        constraint.setObjectValues(Arrays.asList(minValue, maxValue));
+        constraint.validateValuesOrFail(null, null);
+        return constraint;
+    }
+
+    private static <T extends Number & Comparable<T>> void validateNotNull(Object minValue, Object maxValue) {
         if (minValue == null || maxValue == null) {
             throw new IllegalArgumentException("Null values are not allowed");
         }
-        final Range constraint = new Range();
-        constraint.setObjectValues(Arrays.asList(minValue, maxValue));
-        constraint.validateValuesOrFail(null);
-        return constraint;
     }
 
     @Override
     public boolean isSupportedType(final Class<?> clazz) {
         final Class<?> wrappedClass = (clazz.isPrimitive()) ? TypeHelper.PRIMITIVE_TO_WRAPPER_TYPES.get(clazz) : clazz;
-        boolean classIsComarableNumber = Number.class.isAssignableFrom(wrappedClass)
-                && Comparable.class.isAssignableFrom(wrappedClass)
-                || LocalDate.class == clazz; // LocalDate is finalLocalDate;
-        boolean classAndValuesHaveSameType = true;
+        boolean classIsComparableNumber = Number.class.isAssignableFrom(wrappedClass)
+                && Comparable.class.isAssignableFrom(wrappedClass);
+        Class<?> minMaxType = null;
         final Object min = getValues().get(0);
         final Object max = getValues().get(1);
         if (min != null) {
-            classAndValuesHaveSameType = min.getClass().equals(wrappedClass);
+            minMaxType = min.getClass();
+        } else if (max != null) {
+            minMaxType = max.getClass();
         }
-        if (max != null) {
-            classAndValuesHaveSameType &= max.getClass().equals(wrappedClass);
-        }
-
-        return classIsComarableNumber && classAndValuesHaveSameType;
+        return classIsComparableNumber && Number.class.isAssignableFrom(minMaxType)
+                || (LocalDate.class == clazz || LocalDateTime.class == clazz) && clazz == minMaxType;
     }
 
     @Override
-    public boolean validateValuesOrFail(final Class<?> ignore) {
+    public void validateValuesOrFail(final Class<?> ignore, final Class<?> ignoreToo) {
         if (getValues().size() != 2) {
             throw new IllegalArgumentException("Range needs min and max values");
         }
@@ -127,7 +144,6 @@ public class Range extends ConstraintRoot {
                 && ((Comparable) min).compareTo(max) > 0) {
             throw new IllegalArgumentException("Range min/max values must be min <= max");
         }
-        return true;
     }
 
     @Override
@@ -135,7 +151,7 @@ public class Range extends ConstraintRoot {
         if (object == null) {
             return false;
         }
-        if (object instanceof BigDecimal) {
+        if (Number.class.isAssignableFrom(object.getClass())) {
             return compareAsBigDecimal(object);
         } else {
             return compareAsComparable(object);

@@ -1,5 +1,6 @@
 package de.swa.clv.constraints;
 
+import de.swa.clv.util.TypeHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,9 +52,10 @@ public class RegEx extends ConstraintRoot {
 
     @Override
     public boolean isSupportedType(final Class<?> clazz) {
+        final Class<?> wrappedClass = (clazz.isPrimitive()) ? TypeHelper.PRIMITIVE_TO_WRAPPER_TYPES.get(clazz) : clazz;
         return String.class.isAssignableFrom(clazz)
                 || Enum.class.isAssignableFrom(clazz)
-                || Number.class.isAssignableFrom(clazz);
+                || Number.class.isAssignableFrom(wrappedClass);
     }
 
     @Override

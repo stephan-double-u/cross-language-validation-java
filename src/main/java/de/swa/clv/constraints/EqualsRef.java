@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public abstract class EqualsRef extends EqualsRoot {
 
@@ -20,12 +21,27 @@ public abstract class EqualsRef extends EqualsRoot {
     }
 
     @Override
-    public boolean validateValuesOrFail(final Class<?> propertyType) {
-         boolean typesDoNotMatch  = getValues().stream()
-                 .map(refProperty -> ((String) refProperty).split("#")[0])
-                 .map(pureProperty -> Validator.instance().validateProperty(pureProperty, propertyType))
-                 .anyMatch(valueRefType -> propertyType != valueRefType);
-        return !typesDoNotMatch;
+    public void validateValuesOrFail(final Class<?> typeClass, final Class<?> propertyType) {
+         getValues().forEach(refProperty  -> validateValueOrFail(typeClass, propertyType, (String) refProperty));
+    }
+
+    private void validateValueOrFail(Class<?> typeClass, Class<?> propertyType, String refProperty) {
+        Class<?> valueRefType = getValueRefType(typeClass, refProperty);
+        if (valueRefType != propertyType) {
+           throw new IllegalArgumentException("Type of referenced property is " + valueRefType +
+                   " but must be " + propertyType);
+        }
+    }
+
+    private Class<?> getValueRefType(Class<?> typeClass, String refProperty) {
+        String pureProperty = refProperty.split("#")[0];
+        Class<?> valueRefType = Validator.instance().validateProperty(pureProperty, typeClass);
+        Optional<AggregateFunction> aggregateFunction = Validator.instance()
+                .validateAndGetTerminalAggregateFunctionIfExist(refProperty);
+        if (aggregateFunction.isPresent() && aggregateFunction.get().equals(AggregateFunction.distinct)) {
+            valueRefType = Boolean.class;
+        }
+        return valueRefType;
     }
 
     boolean validateSingleRefProperty(String refProperty, Object valueToValidate, Object constraintObject) {
@@ -33,7 +49,7 @@ public abstract class EqualsRef extends EqualsRoot {
                 refProperty).orElseGet(() -> null);
         String pureProperty = refProperty.split("#")[0];
         List<String> propertiesToCheck = Validator.instance().inflatePropertyIfIndexed(pureProperty, constraintObject);
-        boolean equals = false;
+        boolean equals;
         if (aggregateFunction != null) {
             switch(aggregateFunction) {
             case sum:

@@ -32,10 +32,10 @@ public class Validator {
     private static final UserPermissions NO_USER_PERMISSIONS = UserPermissions.of(new String[0]);
     private final Map<PropertyDescriptor, GetterInfo> propertyToGetterReturnTypeCache = new HashMap<>();
 
-    private String defaultMandatoryMessage = "error.validation.mandatory";
-    private String defaultImmutableMessage = "error.validation.immutable";
-    private String defaultContentMessage = "error.validation.content";
-    private String defaultUpdateMessage = "error.validation.update";
+    private String defaultMandatoryMessagePrefix = "error.validation.mandatory.";
+    private String defaultImmutableMessagePrefix = "error.validation.immutable.";
+    private String defaultContentMessagePrefix = "error.validation.content.";
+    private String defaultUpdateMessagePrefix = "error.validation.update.";
 
     private Validator() {
     }
@@ -45,6 +45,7 @@ public class Validator {
     public static Validator instance() {
         return INSTANCE;
     }
+
 
     public List<String> validateMandatoryRules(final Object object, final ValidationRules<?> rules) {
         return validateMandatoryRules(object, NO_USER_PERMISSIONS, rules);
@@ -62,19 +63,15 @@ public class Validator {
 
     private Optional<String> validateMandatoryPropertyRules(final String property, final Object object,
             final UserPermissions userPermissions, final ValidationRules<?> rules) {
-        if (isPropertyMandatory(property, object, userPermissions, rules)
+        final Optional<Conditions> conditionsOpt = getMatchingConditions(property, object, userPermissions, rules,
+                RulesType.MANDATORY);
+        log.debug("{}.{} IS{} mandatory", rules.getSimpleTypeName(), property, (conditionsOpt.isPresent() ? "" : "NOT"));
+        if (conditionsOpt.isPresent()
                 && !constraintIsMet(Condition.of(property, Equals.notNull()), object)) {
-            return Optional.of(defaultMandatoryMessage + "." + rules.getTypeJsonKey() + "." + property);
+            return Optional.of(buildErrorMessage(defaultMandatoryMessagePrefix, null, rules.getTypeJsonKey(),
+                    conditionsOpt.get().getErrorCodeControl(), property));
         }
         return Optional.empty();
-    }
-
-    private boolean isPropertyMandatory(final String property, final Object object,
-            final UserPermissions userPermissions, final ValidationRules<?> rules) {
-        final Optional<ConstraintRoot> match = getMatchingPropertyConstraint(
-                property, object, userPermissions, rules, RulesType.MANDATORY);
-        log.debug("{}.{} IS{} mandatory", rules.getSimpleTypeName(), property, (match.isPresent() ? "" : "NOT"));
-        return match.isPresent();
     }
 
 
@@ -99,19 +96,15 @@ public class Validator {
 
     private Optional<String> validateImmutablePropertyRules(final String property, final Object originalObject,
             final Object modifiedObject, final UserPermissions userPermissions, final ValidationRules<?> rules) {
-        if (isPropertyImmutable(property, originalObject, userPermissions, rules)
+        final Optional<Conditions> conditionsOpt = getMatchingConditions(property, originalObject, userPermissions,
+                rules, RulesType.IMMUTABLE);
+        log.debug("{}.{} IS{} immutable", rules.getSimpleTypeName(), property, (conditionsOpt.isPresent() ? "" : "NOT"));
+        if (conditionsOpt.isPresent()
                 && !propertyValuesEquals(property, originalObject, modifiedObject)) {
-            return Optional.of(defaultImmutableMessage + "." + rules.getTypeJsonKey() + "." + property);
+            return Optional.of(buildErrorMessage(defaultImmutableMessagePrefix, null, rules.getTypeJsonKey(),
+                    conditionsOpt.get().getErrorCodeControl(), property));
         }
         return Optional.empty();
-    }
-
-    private boolean isPropertyImmutable(final String property, final Object object,
-            final UserPermissions userPermissions, final ValidationRules<?> rules) {
-        final Optional<ConstraintRoot> match = getMatchingPropertyConstraint(
-                property, object, userPermissions, rules, RulesType.IMMUTABLE);
-        log.debug("{}.{} IS{} immutable", rules.getSimpleTypeName(), property, (match.isPresent() ? "" : "NOT"));
-        return match.isPresent();
     }
 
 
@@ -132,16 +125,11 @@ public class Validator {
 
     private Optional<String> validateContentPropertyRules(final String property, final Object object,
             final UserPermissions userPermissions, final ValidationRules<?> rules) {
-        Optional<ConstraintRoot> contentConstraint = getMatchingPropertyConstraint(property, object,
-                userPermissions, rules, RulesType.CONTENT);
-        if (contentConstraint.isPresent()
-                && !constraintIsMet(Condition.of(property, contentConstraint.get()), object)) {
-            return Optional.of(defaultContentMessage + "." + contentConstraint.get().getType().toLowerCase() + "." +
-                    rules.getTypeJsonKey() + "." + property);
-        }
-        return Optional.empty();
+        Optional<Conditions> conditionsOpt = getMatchingConditions(property, object, userPermissions, rules,
+                RulesType.CONTENT);
+        return validatePropertyRule(property, object, rules.getTypeJsonKey(), conditionsOpt,
+                defaultContentMessagePrefix);
     }
-
 
     public List<String> validateUpdateRules(final Object originalObject, final Object modifiedObject,
             final ValidationRules<?> rules) {
@@ -164,18 +152,45 @@ public class Validator {
 
     private Optional<String> validateUpdatePropertyRules(final String property, final Object originalObject,
             final Object modifiedObject, final UserPermissions userPermissions, final ValidationRules<?> rules) {
-        Optional<ConstraintRoot> updateConstraint = getMatchingPropertyConstraint(
-                property, originalObject, userPermissions, rules, RulesType.UPDATE);
-        if (updateConstraint.isPresent()
-                && !constraintIsMet(Condition.of(property, updateConstraint.get()), modifiedObject)) {
-            return Optional.of(defaultUpdateMessage + "." + updateConstraint.get().getType().toLowerCase() + "." +
-                    rules.getTypeJsonKey() + "." + property);
+        Optional<Conditions> conditionsOpt = getMatchingConditions(property, originalObject, userPermissions, rules,
+                RulesType.UPDATE);
+        return validatePropertyRule(property, modifiedObject, rules.getTypeJsonKey(), conditionsOpt,
+                defaultUpdateMessagePrefix);
+    }
+
+    private Optional<String> validatePropertyRule(String property, Object object, String typeJsonKey,
+            Optional<Conditions> conditionsOpt, String defaultMessagePrefix) {
+        if (conditionsOpt.isPresent()) {
+            Conditions propConditions = conditionsOpt.get();
+            ConstraintRoot constraint = propConditions.getConstraint();
+            if (!constraintIsMet(Condition.of(property, constraint), object)) {
+                return Optional.of(buildErrorMessage(defaultMessagePrefix, constraint, typeJsonKey,
+                        propConditions.getErrorCodeControl(), property));
+            }
         }
         return Optional.empty();
     }
 
+    private String buildErrorMessage(String defaultMessagePrefix, ConstraintRoot constraint, String typeJsonKey,
+            ErrorCodeControl errorCodeControl, String property) {
+        String constraintTypePart = constraint != null ? constraint.getType().toLowerCase() + "." : "";
+        String defaultErrorMessage = defaultMessagePrefix + constraintTypePart + typeJsonKey + "." + property;
+        return applyErrorCodeControl(errorCodeControl, defaultErrorMessage);
+    }
 
-    private Optional<ConstraintRoot> getMatchingPropertyConstraint(final String property, final Object object,
+    private String applyErrorCodeControl(ErrorCodeControl errorCodeControl, String defaultErrorMessage) {
+        if (errorCodeControl == null) {
+            return defaultErrorMessage;
+        }
+        String code = errorCodeControl.getCode();
+        if (errorCodeControl.getType() == UseType.AS_SUFFIX) {
+            return defaultErrorMessage + code;
+        }
+        return code;
+    }
+
+
+    private Optional<Conditions> getMatchingConditions(final String property, final Object object,
             final UserPermissions userPermissions,
             final ValidationRules<?> rules,
             RulesType rulesType) {
@@ -205,11 +220,11 @@ public class Validator {
         log.debug("Validate #{} {} rules for {}.{}",
                 conditionsList.size(), rulesType, rules.getSimpleTypeName(), property);
 
-        Optional<ConstraintRoot> propertyConstraint = getMatchingConstraint(conditionsList, object, userPermissions);
+        Optional<Conditions> conditions = getMatchingConditions(conditionsList, object, userPermissions);
 
         log.debug("{}.{} has{} matching {} rule", rules.getSimpleTypeName(), property,
-                (propertyConstraint.isPresent() ? "" : " NO"), rulesType);
-        return propertyConstraint;
+                (conditions.isPresent() ? "" : " NO"), rulesType);
+        return conditions;
     }
 
     private void validateArguments(final String property, final Object object, final ValidationRules<?> rules) {
@@ -224,24 +239,22 @@ public class Validator {
         INSTANCE.validateProperty(property, typeClass); // TODO? optional here
     }
 
-    private Optional<ConstraintRoot> getMatchingConstraint(List<Conditions> conditionsList, Object object,
+    private Optional<Conditions> getMatchingConditions(List<Conditions> conditionsList, Object object,
             UserPermissions userPermissions) {
-        // find first constraint with matching permission and valid reference constraints
-        Optional<ConstraintRoot> constraint = conditionsList.stream()
+        // find first conditions with matching permission and valid reference constraints
+        Optional<Conditions> conditions = conditionsList.stream()
                 .filter(cc -> arePermissionsMatching(cc.getPermissions(), userPermissions))
-                .peek(cc -> log.debug("Checking constraint with matching permissions"))
+                .peek(cc -> log.debug("Checking conditions with matching permissions"))
                 .filter(cc -> allConstraintsAreMet(cc.getConditionsTopGroup(), object))
-                .map(Conditions::getConstraint)
                 .findFirst();
-        // find first default constraint (w/o any permission) and valid reference constraints
-        if (!constraint.isPresent())
-            constraint = conditionsList.stream()
+        // find first default conditions (w/o any permission) and valid reference constraints
+        if (!conditions.isPresent())
+            conditions = conditionsList.stream()
                     .filter(cc -> cc.getPermissions() == NO_PERMISSIONS)
-                    .peek(cc -> log.debug("Checking constraint without permissions"))
+                    .peek(cc -> log.debug("Checking conditions without permissions"))
                     .filter(cc -> allConstraintsAreMet(cc.getConditionsTopGroup(), object))
-                    .map(Conditions::getConstraint)
                     .findFirst();
-        return constraint;
+        return conditions;
     }
 
     private boolean arePermissionsMatching(Permissions constraintPermissions, UserPermissions userPermissions) {
@@ -693,36 +706,36 @@ public class Validator {
         return prefix + firstCharUpperOrLower + propertyName.substring(1);
     }
 
-    public String getDefaultMandatoryMessage() {
-        return defaultMandatoryMessage;
+    public String getDefaultMandatoryMessagePrefix() {
+        return defaultMandatoryMessagePrefix;
     }
 
-    public void setDefaultMandatoryMessage(final String message) {
-        defaultMandatoryMessage = message;
+    public void setDefaultMandatoryMessagePrefix(final String prefix) {
+        defaultMandatoryMessagePrefix = prefix;
     }
 
-    public String getDefaultImmutableMessage() {
-        return defaultImmutableMessage;
+    public String getDefaultImmutableMessagePrefix() {
+        return defaultImmutableMessagePrefix;
     }
 
-    public void setDefaultImmutableMessage(final String message) {
-        defaultImmutableMessage = message;
+    public void setDefaultImmutableMessagePrefix(final String prefix) {
+        defaultImmutableMessagePrefix = prefix;
     }
 
-    public String getDefaultContentMessage() {
-        return defaultContentMessage;
+    public String getDefaultContentMessagePrefix() {
+        return defaultContentMessagePrefix;
     }
 
-    public void setDefaultContentMessage(final String message) {
-        defaultContentMessage = message;
+    public void setDefaultContentMessagePrefix(final String prefix) {
+        defaultContentMessagePrefix = prefix;
     }
 
-    public String getDefaultUpdateMessage() {
-        return defaultUpdateMessage;
+    public String getDefaultUpdateMessagePrefix() {
+        return defaultUpdateMessagePrefix;
     }
 
-    public void setDefaultUpdateMessage(String defaultUpdateMessage) {
-        this.defaultUpdateMessage = defaultUpdateMessage;
+    public void setDefaultUpdateMessagePrefix(String prefix) {
+        this.defaultUpdateMessagePrefix = prefix;
     }
 
     private class PropertyDescriptor {

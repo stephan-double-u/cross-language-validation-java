@@ -28,10 +28,10 @@ public abstract class EqualsRoot extends ConstraintRoot {
             return false;
         }
         if (Enum.class.isAssignableFrom(objectToValidate.getClass())) {
-            objectToValidate = ((Enum) objectToValidate).name();
+            objectToValidate = ((Enum<?>) objectToValidate).name();
         }
         if (Enum.class.isAssignableFrom(value.getClass())) {
-            value = ((Enum) value).name();
+            value = ((Enum<?>) value).name();
         }
         if (objectToValidate instanceof BigDecimal) {
             return new BigDecimal(objectToValidate.toString()).equals(new BigDecimal(value.toString()));

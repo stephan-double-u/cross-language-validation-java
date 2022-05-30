@@ -20,11 +20,12 @@ import static de.swa.clv.json.JsonUtil.*;
  */
 public class ValidationRules<T> {
 
+    public static final String SCHEMA_VERSION = "0.4";
     public static final ConstraintRoot NO_CONSTRAINT = Equals.none("");
     @SuppressWarnings("squid:S3878")
     public static final Permissions NO_PERMISSIONS = Permissions.any(new String[0]);
     public static final ConditionsTopGroup NO_CONDITIONS_TOP_GROUP = ConditionsTopGroup.AND();
-    public static final String SCHEMA_VERSION = "0.4";
+    static final ErrorCodeControl NULL_ERROR_CODE_CONTROL = null;
 
     private final PropertyConditionsMap mandatoryConditionsMap = new PropertyConditionsMap();
     private final PropertyConditionsMap immutableConditionsMap = new PropertyConditionsMap();
@@ -87,7 +88,7 @@ public class ValidationRules<T> {
      * @param property the property name
      */
     public void mandatory(final String property) {
-        mandatory(property, NO_PERMISSIONS);
+        mandatory(property, NO_PERMISSIONS, NO_CONDITIONS_TOP_GROUP, NULL_ERROR_CODE_CONTROL);
     }
 
     /**
@@ -97,101 +98,208 @@ public class ValidationRules<T> {
      * @param permissions the permissions
      */
     public void mandatory(final String property, final Permissions permissions) {
-        mandatory(property, permissions, NO_CONDITIONS_TOP_GROUP);
+        mandatory(property, permissions, NO_CONDITIONS_TOP_GROUP, NULL_ERROR_CODE_CONTROL);
     }
 
     /**
-     * Defines the property as mandatory if all {@code PropConstraint}s are true.
-     * I.e. the PropConstraints are ANDed. Convenience method for mandatory(String, ConditionsAndGroup).
+     * Defines the property as mandatory if the {@code PropConstraint} is true.
      *
      * @param property       the property name
-     * @param propConstraints
+     * @param propConstraint
      */
-    public void mandatory(final String property, final PropConstraint... propConstraints) {
-        mandatory(property, NO_PERMISSIONS, propConstraints);
+    public void mandatory(final String property, final PropConstraint propConstraint) {
+        mandatory(property, NO_PERMISSIONS, ConditionsGroup.AND(propConstraint));
     }
 
     /**
-     * Defines the property as mandatory if permissions match and all {@code PropConstraint}s are true.
-     * I.e. the PropConstraint are ANDed. Convenience method for mandatory(String, Permissions, ConditionsAndGroup).
-     *
-     * @param property       the property name
-     * @param permissions    the permissions
-     * @param propConstraints
-     */
-    public void mandatory(final String property, final Permissions permissions,
-                          final PropConstraint... propConstraints) {
-        mandatory(property, permissions, ConditionsTopGroup.AND(ConditionsGroup.AND(propConstraints)));
-    }
-
-    /**
-     * Defines the property as mandatory if at least one of the {@code ConditionsAndGroup}s is true.<p/>
-     * I.e. the ConditionsAndGroup are ORed where the PropConstraints within each ConditionsAndGroup are ANDed.<p/>
-     * E.g. [ConditionsGroup.AND(a, b), ConditionsGroup.AND(c, d)] is evaluated as: a && b || c && d
+     * Defines the property as mandatory if the {@code ConditionsAndGroup} is true.<p/>
+     * I.e. the PropConstraints within each ConditionsAndGroup are ANDed.<p/>
+     * E.g. ConditionsGroup.AND(a, b) is evaluated as: a && b
      *
      * @param property
-     * @param conditionsAndGroups
+     * @param conditionsAndGroup
      */
-    public void mandatory(final String property, final ConditionsAndGroup... conditionsAndGroups) {
-        mandatory(property, NO_PERMISSIONS, conditionsAndGroups);
+    public void mandatory(final String property, final ConditionsAndGroup conditionsAndGroup) {
+        mandatory(property, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup), NULL_ERROR_CODE_CONTROL);
     }
 
     /**
-     * Defines the property as mandatory if permissions match and at least one of the {@code ConditionsAndGroups}s is
-     * true.<p/>
-     * I.e. the ConditionsAndGroup are ORed where the PropConstraints within each ConditionsAndGroup are ANDed.<p/>
-     * E.g. [ConditionsGroup.AND(a, b), ConditionsGroup.AND(c, d)] is evaluated as: a && b || c && d
+     * Defines the property as mandatory if the {@code ConditionsOrGroup} is true.<p/>
+     * I.e. the PropConstraints within each ConditionsAndGroup are ORed.<p/>
+     * E.g. ConditionsGroup.OR(a, b) is evaluated as: a || b
      *
-     * @param property            the property name
-     * @param permissions         the permissions
-     * @param conditionsAndGroups
+     * @param property
+     * @param conditionsOrGroup
      */
-    public void mandatory(final String property, final Permissions permissions,
-                          final ConditionsAndGroup... conditionsAndGroups) {
-        mandatory(property, permissions, ConditionsTopGroup.OR(conditionsAndGroups));
+    public void mandatory(final String property, final ConditionsOrGroup conditionsOrGroup) {
+        mandatory(property, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup), NULL_ERROR_CODE_CONTROL);
     }
 
     /**
-     * Defines the property as mandatory if all of the {@code ConditionsOrGroup}s are true.<p/>
-     * I.e. the ConditionsOrGroup are ANDed where the PropConstraints within each ConditionsOrGroup are ORed.<p/>
-     * E.g. [ConditionsGroup.OR(e, f), ConditionsGroup.OR(g, h)] is evaluated as: (e || f) && (g || h)
-     *
-     * @param property    the property name
-     * @param constraintsOrGroups
-     */
-    public void mandatory(final String property, final ConditionsOrGroup... constraintsOrGroups) {
-        mandatory(property, NO_PERMISSIONS, constraintsOrGroups);
-    }
-
-    /**
-     * Defines the property as mandatory if permissions match and all of the {@code ConditionsOrGroup}s are true.<p/>
-     * I.e. the ConditionsOrGroup are ANDed where the PropConstraints within each ConditionsOrGroup are ORed.<p/>
-     * E.g. [ConditionsGroup.OR(e, f), ConditionsGroup.OR(g, h)] is evaluated as: (e || f) && (g || h)
-     *
-     * @param property    the property name
-     * @param permissions the permissions
-     * @param constraintsOrGroups
-     */
-    public void mandatory(final String property, final Permissions permissions,
-                          final ConditionsOrGroup... constraintsOrGroups) {
-        mandatory(property, permissions, ConditionsTopGroup.AND(constraintsOrGroups));
-    }
-
-    /**
-     * If the logical relation between the conditions are really complicated, this method may be your last resort.<p/>
+     * If the logical relation between the conditions are really complex, this method may be your last resort.<p/>
      * This version defines the property as mandatory if the {@code ConditionsTopGroup} object evaluates to true.<p/>
-     * According to the logical operation the ConditionsAndGroups resp. ConditionsOrGroups are either ANDed or ORed. <p/>
-     * E.g. ConditionsTopGroup.AND(ConditionsGroup.OR(a, b), ConditionsGroup.OR(c, d), ConditionsGroup.OR(e, f)] is evaluated as: ...
+     * According to the logical operation the ConditionsAndGroups resp. ConditionsOrGroups are either ANDed or ORed.
+     * <p/> E.g. ConditionsTopGroup.AND(ConditionsGroup.OR(a, b), ConditionsGroup.OR(c, d), ConditionsGroup.OR(e, f)]
+     * is evaluated as: TODO
      *
      * @param property
      * @param topGroup
      */
     public void mandatory(final String property, final ConditionsTopGroup topGroup) {
-        mandatory(property, NO_PERMISSIONS, topGroup);
+        mandatory(property, NO_PERMISSIONS, topGroup, NULL_ERROR_CODE_CONTROL);
+    }
+
+    public void mandatory(final String property, ErrorCodeControl errorCodeControl) {
+        mandatory(property, NO_PERMISSIONS, NO_CONDITIONS_TOP_GROUP, errorCodeControl);
+    }
+
+
+    /**
+     * Defines the property as mandatory if permissions match and the {@code PropConstraint} is true.
+     *
+     * @param property       the property name
+     * @param propConstraint
+     */
+    public void mandatory(final String property, final Permissions permissions, final PropConstraint propConstraint) {
+        mandatory(property, permissions, ConditionsGroup.AND(propConstraint));
     }
 
     /**
-     * If the logical relation between the conditions are really complicated, this method may be your last resort.<p/>
+     * Defines the property as mandatory if permissions match and the {@code ConditionsAndGroup} is true.<p/>
+     * I.e. the PropConstraints within each ConditionsAndGroup are ANDed.<p/>
+     * E.g. ConditionsGroup.AND(a, b) is evaluated as: a && b
+     *
+     * @param property
+     * @param conditionsAndGroup
+     */
+    public void mandatory(final String property, final Permissions permissions,
+            final ConditionsAndGroup conditionsAndGroup) {
+        mandatory(property, permissions, ConditionsTopGroup.OR(conditionsAndGroup), NULL_ERROR_CODE_CONTROL);
+    }
+
+    /**
+     * Defines the property as mandatory if permissions match and the {@code ConditionsOrGroup} is true.<p/>
+     * I.e. the PropConstraints within each ConditionsAndGroup are ORed.<p/>
+     * E.g. ConditionsGroup.OR(a, b) is evaluated as: a || b
+     *
+     * @param property
+     * @param conditionsOrGroup
+     */
+    public void mandatory(final String property, final Permissions permissions,
+            final ConditionsOrGroup conditionsOrGroup) {
+        mandatory(property, permissions, ConditionsTopGroup.AND(conditionsOrGroup), NULL_ERROR_CODE_CONTROL);
+    }
+
+    /**
+     * If the logical relation between the conditions are really complex, this method may be your last resort.<p/>
+     * This version defines the property as mandatory if permissions match and the {@code ConditionsTopGroup} object
+     * evaluates to true.<p/> According to the logical operation the ConditionsAndGroups resp. ConditionsOrGroups are
+     * either ANDed or ORed. <p/> E.g. ConditionsTopGroup.AND(ConditionsGroup.OR(a, b), ConditionsGroup.OR(c, d),
+     * ConditionsGroup.OR(e, f)] is evaluated as: TODO
+     *
+     * @param property
+     * @param topGroup
+     */
+    public void mandatory(final String property, final Permissions permissions, final ConditionsTopGroup topGroup) {
+        mandatory(property, permissions, topGroup, NULL_ERROR_CODE_CONTROL);
+    }
+
+    public void mandatory(final String property, final Permissions permissions, ErrorCodeControl errorCodeControl) {
+        mandatory(property, permissions, NO_CONDITIONS_TOP_GROUP, errorCodeControl);
+    }
+
+
+    /**
+     * Defines the property as mandatory if the {@code PropConstraint} is true.
+     *
+     * @param property       the property name
+     * @param propConstraint
+     */
+    public void mandatory(final String property, final PropConstraint propConstraint,
+            ErrorCodeControl errorCodeControl) {
+        mandatory(property, NO_PERMISSIONS, ConditionsTopGroup.AND(ConditionsGroup.AND(propConstraint)),
+                errorCodeControl);
+    }
+
+    /**
+     * Defines the property as mandatory if the {@code ConditionsAndGroup} is true.<p/>
+     * I.e. the PropConstraints within each ConditionsAndGroup are ANDed.<p/>
+     * E.g. ConditionsGroup.AND(a, b) is evaluated as: a && b
+     *
+     * @param property
+     * @param conditionsAndGroup
+     */
+    public void mandatory(final String property, final ConditionsAndGroup conditionsAndGroup,
+            ErrorCodeControl errorCodeControl) {
+        mandatory(property, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup), errorCodeControl);
+    }
+
+    /**
+     * Defines the property as mandatory if the {@code ConditionsOrGroup} is true.<p/>
+     * I.e. the PropConstraints within each ConditionsOrGroup are ORed.<p/>
+     * E.g. ConditionsGroup.OR(a, b) is evaluated as: a || b
+     *
+     * @param property
+     * @param conditionsOrGroup
+     */
+    public void mandatory(final String property, final ConditionsOrGroup conditionsOrGroup,
+            ErrorCodeControl errorCodeControl) {
+        mandatory(property, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup), errorCodeControl);
+    }
+
+    /**
+     * If the logical relation between the conditions are really complex, this method may be your last resort.<p/>
+     * This version defines the property as mandatory if the {@code ConditionsTopGroup} object evaluates to true.<p/>
+     * According to the logical operation the ConditionsAndGroups resp. ConditionsOrGroups are either ANDed or ORed.
+     * <p/> E.g. ConditionsTopGroup.AND(ConditionsGroup.OR(a, b), ConditionsGroup.OR(c, d), ConditionsGroup.OR(e, f)]
+     * is evaluated as: TODO
+     *
+     * @param property
+     * @param topGroup
+     */
+    public void mandatory(final String property, final ConditionsTopGroup topGroup, ErrorCodeControl errorCodeControl) {
+        mandatory(property, NO_PERMISSIONS, topGroup, errorCodeControl);
+    }
+
+    /**
+     * Defines the property as mandatory if permissions match and the {@code PropConstraint} is true.
+     *
+     * @param property       the property name
+     * @param propConstraint
+     */
+    public void mandatory(final String property, final Permissions permissions, final PropConstraint propConstraint,
+            ErrorCodeControl errorCodeControl) {
+        mandatory(property, permissions, ConditionsGroup.AND(propConstraint), errorCodeControl);
+    }
+
+    /**
+     * Defines the property as mandatory if permissions match and the {@code ConditionsAndGroup} is true.<p/>
+     * I.e. the PropConstraints within each ConditionsAndGroup are ANDed.<p/>
+     * E.g. ConditionsGroup.AND(a, b) is evaluated as: a && b
+     *
+     * @param property
+     * @param conditionsAndGroup
+     */
+    public void mandatory(final String property, final Permissions permissions,
+            final ConditionsAndGroup conditionsAndGroup, ErrorCodeControl errorCodeControl) {
+        mandatory(property, permissions, ConditionsTopGroup.OR(conditionsAndGroup), errorCodeControl);
+    }
+
+    /**
+     * Defines the property as mandatory if permissions match and the {@code ConditionsOrGroup} is true.<p/>
+     * I.e. the PropConstraints within each ConditionsAndGroup are ORed.<p/>
+     * E.g. ConditionsGroup.OR(a, b) is evaluated as: a || b
+     *
+     * @param property
+     * @param conditionsOrGroup
+     */
+    public void mandatory(final String property, final Permissions permissions,
+            final ConditionsOrGroup conditionsOrGroup, ErrorCodeControl errorCodeControl) {
+        mandatory(property, permissions, ConditionsTopGroup.AND(conditionsOrGroup), errorCodeControl);
+    }
+
+    /**
+     * If the logical relation between the conditions are really complex, this method may be your last resort.<p/>
      * This version defines the property as mandatory if permissions match and the {@code ConditionsTopGroup} object
      * evaluates to true.<p/>
      * According to the logical operation the ConditionsAndGroups resp. ConditionsOrGroups are either ANDed or ORed.
@@ -204,10 +312,13 @@ public class ValidationRules<T> {
      * @param permissions
      * @param topGroup
      */
-    public void mandatory(final String property, final Permissions permissions, final ConditionsTopGroup topGroup) {
-        addPropertyConditions(property, NO_CONSTRAINT, permissions, topGroup,
+    public void mandatory(final String property, final Permissions permissions, final ConditionsTopGroup topGroup,
+            ErrorCodeControl errorCodeControl) {
+        addPropertyConditions(property, NO_CONSTRAINT, permissions, topGroup, errorCodeControl,
                 mandatoryConditionsMap.getOrInit(property), false);
     }
+
+
 
 
     public void immutable(final String property) {
@@ -251,7 +362,7 @@ public class ValidationRules<T> {
 
     public void immutable(final String property, final Permissions permissions, final ConditionsTopGroup topGroup) {
         addPropertyConditions(property, NO_CONSTRAINT, permissions, topGroup,
-                immutableConditionsMap.getOrInit(property), false);
+                null, immutableConditionsMap.getOrInit(property), false);
     }
 
 
@@ -329,7 +440,7 @@ public class ValidationRules<T> {
 
     public void content(final String property, final ConstraintRoot constraint, final Permissions permissions,
                         final ConditionsTopGroup refTopGroup) {
-        addPropertyConditions(property, constraint, permissions, refTopGroup, contentConditionsMap.getOrInit(property),
+        addPropertyConditions(property, constraint, permissions, refTopGroup, null, contentConditionsMap.getOrInit(property),
                 true);
     }
 
@@ -370,12 +481,13 @@ public class ValidationRules<T> {
 
     public void update(final String property, final ConstraintRoot constraint, final Permissions permissions,
                        final ConditionsTopGroup refTopGroup) {
-        addPropertyConditions(property, constraint, permissions, refTopGroup, updateConditionsMap.getOrInit(property),
+        addPropertyConditions(property, constraint, permissions, refTopGroup, null, updateConditionsMap.getOrInit(property),
                 true);
     }
 
     public void addPropertyConditions(final String property, final ConstraintRoot constraint,
-            final Permissions permissions, final ConditionsTopGroup topGroup, List<Conditions> conditions,
+            final Permissions permissions, final ConditionsTopGroup topGroup,
+            ErrorCodeControl errorCodeControl, List<Conditions> conditions,
             boolean isAggregateFunctionAllowed) {
         Objects.requireNonNull(property, "property must not be null");
         Objects.requireNonNull(constraint, "constraint must not be null");
@@ -395,13 +507,13 @@ public class ValidationRules<T> {
             validateConstraint(property, constraint);
         }
         validatePropertyAndConditions(property, topGroup);
-        conditions.add(new Conditions(constraint, permissions, topGroup));
+        conditions.add(new Conditions(constraint, permissions, topGroup, errorCodeControl));
     }
 
 
     //TODO remove if permission validation makes no sense
     private void validatePermissions(Set<Permissions> permissionsMap, Permissions permissions, String propertyToLog) {
-        permissions.validateValuesOrFail(null);
+        permissions.validateValuesOrFail(null, null);
         // Check if any permissions are 'not unique'; e.g. Perm.any(A,B), followed by Perm.any(C,B) -> constraints for B
         // is not unique
         if (permissions == NO_PERMISSIONS) {
@@ -473,7 +585,7 @@ public class ValidationRules<T> {
         }
         // Do further constraint specific validations
         //TODO have property and refProperty same type?
-        constraint.validateValuesOrFail(typeClass);
+        constraint.validateValuesOrFail(typeClass, propertyType);
     }
 
 

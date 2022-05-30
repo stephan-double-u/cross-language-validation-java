@@ -44,8 +44,7 @@ public abstract class ConstraintRoot implements JsonSerializable {
      */
     @SuppressWarnings("squid:S1172")
 
-    public boolean validateValuesOrFail(final Class<?> propertyType) {
-        return true;
+    public void validateValuesOrFail(final Class<?> typeClass, final Class<?> propertyType) {
     }
 
     /**

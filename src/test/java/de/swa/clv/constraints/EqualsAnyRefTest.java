@@ -20,14 +20,11 @@ public class EqualsAnyRefTest {
             LocalDate.of(2000, Month.JANUARY, 1),
             new Date(LocalDate.of(2000, Month.JANUARY, 1).toEpochDay())));
 
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
-
     @Test
     public void exceptionIfArgumentIsNull() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Null values are not allowed"));
-        Equals.anyRef((String) null);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> Equals.anyRef((String) null));
+        assertEquals("Null values are not allowed", ex.getMessage());
     }
 
     @Test
