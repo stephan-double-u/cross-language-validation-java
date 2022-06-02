@@ -12,15 +12,14 @@ import java.util.stream.Collectors;
 import static de.swa.clv.json.JsonUtil.*;
 
 /**
- * A class to combine property validation rules for (possibly nested) properties of type {@code T},
- * providing some comfortable put methods, e.g. when more than one rule is needed. For each property a no-arg
- * getter method must exist.
+ * A class to define property validation rules for (possibly nested) properties of type {@code T}.
+ * For each property a no-arg getter method must exist.
  *
  * @param <T> the type for which the rules are defined
  */
 public class ValidationRules<T> {
 
-    public static final String SCHEMA_VERSION = "0.4";
+    public static final String SCHEMA_VERSION = "0.5";
     public static final ConstraintRoot NO_CONSTRAINT = Equals.none("");
     @SuppressWarnings("squid:S3878")
     public static final Permissions NO_PERMISSIONS = Permissions.any(new String[0]);
