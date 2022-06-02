@@ -93,7 +93,7 @@ public class ValidationTesting {
         rules.content("stringList[0]", Equals.any("one", "two"));
         rules.content("someString", Equals.anyRef("articleList[0].name"));
         rules.content("id", Equals.any(101, 202, 303),
-                a, a, a, a);
+                ConditionsGroup.AND(a, a, a, a));
         //TODO List<ContentConstraints>!?: status == "foo" if other == 1 OR status == "bar" if other == 2
 
         // For validation of 'state-transitions' multiple rules per property are needed.
