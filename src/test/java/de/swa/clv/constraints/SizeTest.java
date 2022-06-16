@@ -66,6 +66,11 @@ public class SizeTest {
     }
 
     @Test
+    public void minMaxSame() {
+        Size.minMax(1, 1);
+    }
+
+    @Test
     public void validateTrueString() {
         assertTrue(size_min_max.validate("abc", null));
     }

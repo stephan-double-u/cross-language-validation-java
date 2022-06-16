@@ -107,7 +107,7 @@ public class Size extends ConstraintRoot {
         }
         final Integer min = (Integer) getValues().get(0);
         final Integer max = (Integer) getValues().get(1);
-        if (min != null && min < 0 || max != null && max < 0 || min != null && max != null && min >= max) {
+        if (min != null && min < 0 || max != null && max < 0 || min != null && max != null && min > max) {
             throw new IllegalArgumentException("Size min/max values must be >= 0 and min < max");
         }
     }
