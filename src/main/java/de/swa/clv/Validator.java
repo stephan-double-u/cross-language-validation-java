@@ -548,7 +548,7 @@ public class Validator {
     }
 
     public Boolean distinctCheckForPropertyValues(Object object, List<String> propertiesToCheck) {
-        Boolean distinct = null;
+        Boolean distinct = !propertiesToCheck.isEmpty() ? null : true;
         Object firstElement = null;
         for (String p : propertiesToCheck) {
             Object propertyResultObject = getPropertyResultObject(p, object);
@@ -645,6 +645,9 @@ public class Validator {
             Integer increment) {
         validateProperty(property, object.getClass());
         final Object propertyResultObject = getPropertyResultObject(property, object);
+        if (propertyResultObject == null) {
+            return List.of();
+        }
         int numberOfElements = 0;
         if (List.class.isAssignableFrom(propertyResultObject.getClass())) {
             numberOfElements = ((List<?>) propertyResultObject).size();

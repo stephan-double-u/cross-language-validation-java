@@ -47,21 +47,21 @@ public class SizeTest {
     @Test
     public void exceptionIfMinNagative() {
         expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Size min/max values must be >= 0 and min < max"));
+        expectedEx.expectMessage(StringContains.containsString("Size min/max values must be >= 0 and min <= max"));
         Size.min(-1);
     }
 
     @Test
     public void exceptionIfMaxNagative() {
         expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Size min/max values must be >= 0 and min < max"));
+        expectedEx.expectMessage(StringContains.containsString("Size min/max values must be >= 0 and min <= max"));
         Size.max(-1);
     }
 
     @Test
     public void exceptionIfMinGreaterMax() {
         expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Size min/max values must be >= 0 and min < max"));
+        expectedEx.expectMessage(StringContains.containsString("Size min/max values must be >= 0 and min <= max"));
         Size.minMax(2, 1);
     }
 

@@ -341,6 +341,22 @@ public class ValidatorTest {
     }
 
     @Test
+    public void validateContentRules_emptyArray_distinct_EqualsAny_true() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.content("emptyStringArray[*]#distinct", Equals.any(true));
+        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void validateContentRules_nullArray_distinct_EqualsAny_true() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.content("nullStringArray[*]#distinct", Equals.any(true));
+        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
     public void validateContentRules_sumEverywhere() {
         PropConstraint condition = Condition.of("subClassArrayProp[*].integerListProp[*]#sum",
                 Equals.any(12));
@@ -484,6 +500,8 @@ public class ValidatorTest {
                 new SubClass("a3", new String[] { "b3", "c3", "d3" }, Arrays.asList("e3", "f3", "g3", "h3"),
                         Arrays.asList(1, 2, 3)) };
         private final float[] floatArray = new float[] {1.11f, 2.22f, 3.33f};
+        private String[] emptyStringArray = new String[] {};
+        private String[] nullStringArray = null;
 
         public ClassUnderTest() {
             super(1);
@@ -526,6 +544,14 @@ public class ValidatorTest {
 
         public float[] getFloatArray() {
             return floatArray;
+        }
+
+        public String[] getEmptyStringArray() {
+            return emptyStringArray;
+        }
+
+        public String[] getNullStringArray() {
+            return nullStringArray;
         }
     }
 
