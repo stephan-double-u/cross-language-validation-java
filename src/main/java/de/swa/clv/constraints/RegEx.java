@@ -63,7 +63,7 @@ public class RegEx extends ConstraintRoot {
         if (object == null) {
             return false;
         }
-        // TODO? is resp. should be already checked in ValidationRules.validateConstraint, therefore obsolete here
+        // TODO? This is resp. should be already checked in ValidationRules.validateConstraint, therefore obsolete here
         if (!isSupportedType(object.getClass())) {
             throw new IllegalArgumentException("Unsupported type: " + object.getClass());
         }
@@ -77,7 +77,10 @@ public class RegEx extends ConstraintRoot {
 
     @Override
     public String serializeToJson() {
-        return asKey("type") + quoted(TYPE) + "," + asKey("values") + asArray(getValues());
+        List<String> regExWithDoubledBackslashes = getValues().stream()
+                .map(regEx -> ((String) regEx).replaceAll("\\\\", "\\\\\\\\"))
+                .toList();
+        return asKey("type") + quoted(TYPE) + "," + asKey("values") + asArray((List) regExWithDoubledBackslashes);
     }
 
     @Override

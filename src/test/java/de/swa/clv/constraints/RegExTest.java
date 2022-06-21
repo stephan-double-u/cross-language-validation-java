@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 
 public class RegExTest {
 
-    private static RegEx regEx = RegEx.any("bar", "(?i)[o]{2}", "^[0-7]+$");
+    private static RegEx regEx = RegEx.any("bar", "(?i)[o]{2}", "^[0-7]+$", "\\p{N}");
 
     @Test
     public void exceptionIfRegExIsNull() {
@@ -49,7 +49,8 @@ public class RegExTest {
 
     @Test
     public void serializeToJson() {
-        assertEquals(doubleQuote("'type':'REGEX_ANY','values':['bar','(?i)[o]{2}','^[0-7]+$']"), regEx.serializeToJson());
+        assertEquals(doubleQuote("'type':'REGEX_ANY','values':['bar','(?i)[o]{2}','^[0-7]+$','\\\\p{N}']"),
+                regEx.serializeToJson());
     }
 
     enum FooBarZoo {
