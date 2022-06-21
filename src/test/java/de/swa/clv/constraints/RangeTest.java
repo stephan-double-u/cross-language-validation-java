@@ -135,6 +135,18 @@ public class RangeTest {
     }
 
     @Test
+    public void validateToFalseIfvalueIsSmallerThanMin() {
+        Range range = Range.minMax(1, 2);
+        assertFalse(range.validate(0, null));
+    }
+
+    @Test
+    public void validateToFalseIfvalueIsBiggerThanMax() {
+        Range range = Range.minMax(1, 2);
+        assertFalse(range.validate(3, null));
+    }
+
+    @Test
     public void validateDoubleTrue() {
         Range range = Range.min(0.1d);
         assertTrue(range.validate(123.1d, null));

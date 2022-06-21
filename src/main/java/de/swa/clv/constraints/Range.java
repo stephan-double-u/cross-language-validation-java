@@ -169,7 +169,7 @@ public class Range extends ConstraintRoot {
         }
         if (max != null) {
             BigDecimal maxBD = new BigDecimal(max.toString());
-            match = maxBD.compareTo(objectBD) >= 0;
+            match &= maxBD.compareTo(objectBD) >= 0;
         }
         return match;
     }
