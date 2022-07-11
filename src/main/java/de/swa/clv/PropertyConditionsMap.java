@@ -37,10 +37,11 @@ public class PropertyConditionsMap implements JsonSerializable {
     }
 
     private String serialize(List<Conditions> conditionsList) {
-        String json = conditionsList.stream()
+        String joinedJson = conditionsList.stream()
                 .map(Conditions::serializeToJson)
+                .filter(json -> !json.isEmpty())
                 .collect(Collectors.joining(","));
-        return "{}".equals(json) ? "" : json;
+        return "{}".equals(joinedJson) ? "" : joinedJson;
     }
 
 }

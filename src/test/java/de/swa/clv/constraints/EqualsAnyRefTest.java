@@ -21,10 +21,9 @@ public class EqualsAnyRefTest {
             new Date(LocalDate.of(2000, Month.JANUARY, 1).toEpochDay())));
 
     @Test
-    public void exceptionIfArgumentIsNull() {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
-                () -> Equals.anyRef((String) null));
-        assertEquals("Null values are not allowed", ex.getMessage());
+    public void validateNullVsNull() {
+        EqualsAnyRef constraint = Equals.anyRef(null);
+        assertTrue(constraint.validate(null, foo));
     }
 
     @Test
@@ -132,6 +131,7 @@ public class EqualsAnyRefTest {
     protected static class Foo {
         private Bar bar;
         private Enum2 enum2Prop;
+        private Object nullProp = null;
 
         public Foo(Bar bar) {
             this.bar = bar;
@@ -144,6 +144,9 @@ public class EqualsAnyRefTest {
         }
         public Enum2 getEnum2Prop() {
             return enum2Prop;
+        }
+        public Object getNullProp() {
+            return nullProp;
         }
     }
 

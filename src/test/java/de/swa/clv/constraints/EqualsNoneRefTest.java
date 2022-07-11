@@ -26,10 +26,9 @@ public class EqualsNoneRefTest {
     public ExpectedException expectedEx = ExpectedException.none();
 
     @Test
-    public void exceptionIfArgumentIsNull() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Null values are not allowed"));
-        Equals.noneRef((String) null);
+    public void validateNullVsNull() {
+        EqualsNoneRef constraint = Equals.noneRef(null);
+        assertFalse(constraint.validate(null, foo));
     }
 
     @Test

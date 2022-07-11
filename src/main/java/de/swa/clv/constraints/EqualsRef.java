@@ -5,9 +5,7 @@ import de.swa.clv.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,7 +42,11 @@ public abstract class EqualsRef extends EqualsRoot {
         return valueRefType;
     }
 
-    boolean validateSingleRefProperty(String refProperty, Object valueToValidate, Object constraintObject) {
+    boolean validateRefProperty(String refProperty, Object valueToValidate, Object constraintObject) {
+        if (refProperty == null && valueToValidate == null) {
+            log.debug("A null refProperty validated against a null value is considered as 'true'");
+            return true;
+        }
         AggregateFunction aggregateFunction = Validator.instance().validateAndGetTerminalAggregateFunctionIfExist(
                 refProperty).orElseGet(() -> null);
         String pureProperty = refProperty.split("#")[0];

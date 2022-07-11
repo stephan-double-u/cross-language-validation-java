@@ -106,7 +106,8 @@ public class ValidatorTest {
     @Test
     public void validate_mandatory_errorCode_suffix() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
-        rules.mandatory("stringProp", ErrorCodeControl.of(UseType.AS_SUFFIX, "#suffix"));
+        rules.mandatory("stringProp")
+                .errorCodeControl(UseType.AS_SUFFIX, "#suffix");
         ClassUnderTest object = new ClassUnderTest(null, null);
         List<String> errors = Validator.instance().validateMandatoryRules(object, rules);
         assertEquals(List.of("error.validation.mandatory.classundertest.stringProp#suffix"), errors);
@@ -115,7 +116,8 @@ public class ValidatorTest {
     @Test
     public void validate_mandatory_errorCode_replacement() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
-        rules.mandatory("stringProp", ErrorCodeControl.of(UseType.AS_REPLACEMENT, "errorCode123"));
+        rules.mandatory("stringProp")
+                .errorCodeControl(UseType.AS_REPLACEMENT, "errorCode123");
         ClassUnderTest object = new ClassUnderTest(null, null);
         List<String> errors = Validator.instance().validateMandatoryRules(object, rules);
         assertEquals(List.of("errorCode123"), errors);

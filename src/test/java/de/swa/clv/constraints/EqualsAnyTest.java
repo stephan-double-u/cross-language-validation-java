@@ -11,6 +11,7 @@ import java.math.BigInteger;
 import java.sql.Date;
 import java.sql.JDBCType;
 import java.time.LocalDate;
+import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
@@ -20,50 +21,15 @@ public class EqualsAnyTest {
     public ExpectedException expectedEx = ExpectedException.none();
 
     @Test
-    public void exceptionIfStringIsNull() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Null values are not allowed"));
-        Equals.any((String) null);
-    }
-
-    @Test
-    public void exceptionIfEnumIsNull() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Null values are not allowed"));
-        EqualsAny any = Equals.any((Enum) null);
-    }
-
-    @Test
-    public void exceptionIfNumberIsNull() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Null values are not allowed"));
-        EqualsAny any = Equals.any((Integer) null);
-    }
-
-    @Test
-    public void exceptionIfBooleanIsNull() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Null values are not allowed"));
-        EqualsAny any = Equals.any( (Boolean) null);
-    }
-
-    @Test
-    public void exceptionIfLocalDateIsNull() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Null values are not allowed"));
-        EqualsAny any = Equals.any( (LocalDate) null);
-    }
-
-    @Test
     public void validateStringVsString() {
         EqualsAny any = Equals.any("foo", "bar");
         assertTrue(any.validate("bar", null));
     }
 
     @Test
-    public void validateNullVsNull() {
-        EqualsAny any = Equals.any("foo", "bar");
-        assertFalse(any.validate(null, null));
+    public void validateNullStringVsNu__() {
+        EqualsAny any = Equals.any((String) null);
+        assertTrue(any.validate(null, null));
     }
 
     @Test

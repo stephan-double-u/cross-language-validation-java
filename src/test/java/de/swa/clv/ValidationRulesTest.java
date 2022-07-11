@@ -110,6 +110,20 @@ public class ValidationRulesTest {
         }
     }
 
+    @Test
+    public void doNotSerializeForAllRuleTypes() {
+        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
+        try {
+            rules.mandatory("stringProp").doNotSerialize();
+            rules.immutable("stringProp").doNotSerialize();
+            rules.content("stringProp", Equals.notNull()).doNotSerialize();
+            rules.update("stringProp", Equals.notNull(),
+                    Condition.of("stringProp", Equals.notNull())).doNotSerialize();
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
 
     @Test
     public void serializeEmptyRulesInstance() {

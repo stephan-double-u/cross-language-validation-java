@@ -1,6 +1,7 @@
 package de.swa.clv.constraints;
 
 import de.swa.clv.ErrorCodeControl;
+import de.swa.clv.UseType;
 import de.swa.clv.ValidationRules;
 import de.swa.clv.groups.ConditionsTopGroup;
 
@@ -12,14 +13,13 @@ public class Conditions {
     private final ConstraintRoot constraint;
     private final Permissions permissions;
     private final ConditionsTopGroup conditionsTopGroup;
-    private final ErrorCodeControl errorCodeControl;
+    private ErrorCodeControl errorCodeControl;
+    private boolean doNotSerialize = false;
 
-    public Conditions(ConstraintRoot constraint, Permissions permissions, ConditionsTopGroup conditionsTopGroup,
-            ErrorCodeControl errorCodeControl) {
+    public Conditions(ConstraintRoot constraint, Permissions permissions, ConditionsTopGroup conditionsTopGroup) {
         this.constraint = constraint;
         this.permissions = permissions;
         this.conditionsTopGroup = conditionsTopGroup;
-        this.errorCodeControl = errorCodeControl;
     }
 
     public ConstraintRoot getConstraint() {
@@ -38,12 +38,24 @@ public class Conditions {
         return errorCodeControl;
     }
 
-    public static String serializeToJson(Conditions conditions) {
-        final String constraintJson = ValidationRules.NO_CONSTRAINT == conditions.getConstraint() ? "" :
-                asKey("constraint") + asObject(conditions.getConstraint().serializeToJson());
-        final String permissionsJson = conditions.getPermissions().serializeToJson();
-        final String topGroupJson = conditions.getConditionsTopGroup().serializeToJson();
-        ErrorCodeControl errorCodeControl = conditions.getErrorCodeControl();
+    public Conditions errorCodeControl(UseType type, String code) {
+        errorCodeControl = ErrorCodeControl.of(type, code);
+        return this;
+    }
+
+    public Conditions doNotSerialize() {
+        doNotSerialize = true;
+        return this;
+    }
+
+    public String serializeToJson() {
+        if (doNotSerialize) {
+            return "";
+        }
+        final String constraintJson = ValidationRules.NO_CONSTRAINT == getConstraint() ? "" :
+                asKey("constraint") + asObject(getConstraint().serializeToJson());
+        final String permissionsJson = getPermissions().serializeToJson();
+        final String topGroupJson = getConditionsTopGroup().serializeToJson();
         final String errorCodeJson = errorCodeControl != null ? errorCodeControl.serializeToJson() : "";
         boolean noConstraint = constraintJson.isEmpty();
         boolean noPermissions = permissionsJson.isEmpty();

@@ -25,9 +25,10 @@ public class ConditionsTest {
 
     @Test
     public void serializeToJson_constraintAndPermissionsAndConditionsAndErrorCodeControl() {
-        Conditions conditions = new Conditions(someConstraint, somePermissions, someTopGroup, errorCodeControl);
+        Conditions conditions = new Conditions(someConstraint, somePermissions, someTopGroup)
+                .errorCodeControl(UseType.AS_SUFFIX, "#suffix");
 
-        String json = Conditions.serializeToJson(conditions);
+        String json = conditions.serializeToJson();
 
         String expected = Util.doubleQuote("{" + someConstraintJson + "," + somePermissionsJson + "," +
                 someTopGroupJson + "," + errorCodeControlJson + "}");
@@ -36,9 +37,9 @@ public class ConditionsTest {
 
     @Test
     public void serializeToJson_NoConstraint() {
-        Conditions conditions = new Conditions(ValidationRules.NO_CONSTRAINT, somePermissions, someTopGroup, null);
+        Conditions conditions = new Conditions(ValidationRules.NO_CONSTRAINT, somePermissions, someTopGroup);
 
-        String json = Conditions.serializeToJson(conditions);
+        String json = conditions.serializeToJson();
 
         String expected = Util.doubleQuote("{" + somePermissionsJson + "," + someTopGroupJson + "}");
         assertEquals(expected, json);
@@ -46,9 +47,9 @@ public class ConditionsTest {
 
     @Test
     public void serializeToJson_NoPermissions() {
-        Conditions conditions = new Conditions(someConstraint, ValidationRules.NO_PERMISSIONS, someTopGroup, null);
+        Conditions conditions = new Conditions(someConstraint, ValidationRules.NO_PERMISSIONS, someTopGroup);
 
-        String json = Conditions.serializeToJson(conditions);
+        String json = conditions.serializeToJson();
 
         String expected = Util.doubleQuote("{" + someConstraintJson + "," + someTopGroupJson + "}");
         assertEquals(expected, json);
@@ -57,9 +58,9 @@ public class ConditionsTest {
     @Test
     public void serializeToJson_NoConditions() {
         Conditions conditions = new Conditions(someConstraint, somePermissions,
-                ValidationRules.NO_CONDITIONS_TOP_GROUP, null);
+                ValidationRules.NO_CONDITIONS_TOP_GROUP);
 
-        String json = Conditions.serializeToJson(conditions);
+        String json = conditions.serializeToJson();
 
         String expected = Util.doubleQuote("{" + someConstraintJson + "," + somePermissionsJson + "}");
         assertEquals(expected, json);
@@ -68,9 +69,9 @@ public class ConditionsTest {
     @Test
     public void serializeToJson_constraintOnly() {
         Conditions conditions = new Conditions(someConstraint, ValidationRules.NO_PERMISSIONS,
-                ValidationRules.NO_CONDITIONS_TOP_GROUP, null);
+                ValidationRules.NO_CONDITIONS_TOP_GROUP);
 
-        String json = Conditions.serializeToJson(conditions);
+        String json = conditions.serializeToJson();
 
         String expected = Util.doubleQuote("{" + someConstraintJson + "}");
         assertEquals(expected, json);
@@ -79,9 +80,9 @@ public class ConditionsTest {
     @Test
     public void serializeToJson_permissionsOnly() {
         Conditions conditions = new Conditions(ValidationRules.NO_CONSTRAINT, somePermissions,
-                ValidationRules.NO_CONDITIONS_TOP_GROUP, null);
+                ValidationRules.NO_CONDITIONS_TOP_GROUP);
 
-        String json = Conditions.serializeToJson(conditions);
+        String json = conditions.serializeToJson();
 
         String expected = Util.doubleQuote("{" + somePermissionsJson + "}");
         assertEquals(expected, json);
@@ -90,11 +91,23 @@ public class ConditionsTest {
     @Test
     public void serializeToJson_conditionsOnly() {
         Conditions conditions = new Conditions(ValidationRules.NO_CONSTRAINT, ValidationRules.NO_PERMISSIONS,
-                someTopGroup, null);
+                someTopGroup);
 
-        String json = Conditions.serializeToJson(conditions);
+        String json = conditions.serializeToJson();
 
         String expected = Util.doubleQuote("{" + someTopGroupJson + "}");
         assertEquals(expected, json);
     }
+
+    @Test
+    public void serializeToJson_doNotSerialize() {
+        Conditions conditions = new Conditions(someConstraint, somePermissions, someTopGroup)
+                .errorCodeControl(UseType.AS_SUFFIX, "#suffix")
+                .doNotSerialize();
+        String json = conditions.serializeToJson();
+
+        assertEquals("", json);
+    }
+
+
 }

@@ -24,34 +24,6 @@ public class EqualsNoneTest {
     public ExpectedException expectedEx = ExpectedException.none();
 
     @Test
-    public void exceptionIfStringIsNull() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Null values are not allowed"));
-        Equals.none((String) null);
-    }
-
-    @Test
-    public void exceptionIfEnumIsNull() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Null values are not allowed"));
-        Equals.none((Enum) null);
-    }
-
-    @Test
-    public void exceptionIfNumberIsNull() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Null values are not allowed"));
-        Equals.none((Integer) null);
-    }
-
-    @Test
-    public void exceptionIfBooleanIsNull() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Null values are not allowed"));
-        Equals.none( (Boolean) null);
-    }
-
-    @Test
     public void validateStringVsString() {
         EqualsNone none = Equals.none("foo", "bar");
         assertFalse(none.validate("bar", null));

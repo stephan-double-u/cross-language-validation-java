@@ -24,7 +24,6 @@ public class ValidationRules<T> {
     @SuppressWarnings("squid:S3878")
     public static final Permissions NO_PERMISSIONS = Permissions.any(new String[0]);
     public static final ConditionsTopGroup NO_CONDITIONS_TOP_GROUP = ConditionsTopGroup.AND();
-    static final ErrorCodeControl NULL_ERROR_CODE_CONTROL = null;
 
     private final PropertyConditionsMap mandatoryConditionsMap = new PropertyConditionsMap();
     private final PropertyConditionsMap immutableConditionsMap = new PropertyConditionsMap();
@@ -86,8 +85,56 @@ public class ValidationRules<T> {
      *
      * @param property the property name
      */
-    public void mandatory(final String property) {
-        mandatory(property, NO_PERMISSIONS, NO_CONDITIONS_TOP_GROUP, NULL_ERROR_CODE_CONTROL);
+    public Conditions mandatory(final String property) {
+        return mandatory(property, NO_PERMISSIONS, NO_CONDITIONS_TOP_GROUP);
+    }
+
+    /**
+     * Defines the property as mandatory if the {@code PropConstraint} is true.
+     *
+     * @param property the property name
+     * @param propConstraint the property constraint
+     */
+    public Conditions mandatory(final String property, final PropConstraint propConstraint) {
+        return mandatory(property, NO_PERMISSIONS, ConditionsGroup.AND(propConstraint));
+    }
+
+    /**
+     * Defines the property as mandatory if the {@code ConditionsAndGroup} is true.<p/>
+     * I.e. the PropConstraints within each ConditionsAndGroup are ANDed.<p/>
+     * E.g. ConditionsGroup.AND(a, b) is evaluated as: a && b
+     *
+     * @param property           the property name
+     * @param conditionsAndGroup the ConditionsAndGroup
+     */
+    public Conditions mandatory(final String property, final ConditionsAndGroup conditionsAndGroup) {
+        return mandatory(property, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup));
+    }
+
+    /**
+     * Defines the property as mandatory if the {@code ConditionsOrGroup} is true.<p/>
+     * I.e. the PropConstraints within each ConditionsAndGroup are ORed.<p/>
+     * E.g. ConditionsGroup.OR(a, b) is evaluated as: a || b
+     *
+     * @param property       the property name
+     * @param conditionsOrGroup the ConditionsOrGroup
+     */
+    public Conditions mandatory(final String property, final ConditionsOrGroup conditionsOrGroup) {
+        return mandatory(property, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup));
+    }
+
+    /**
+     * If the logical relation between the conditions are really complex, this method may be your last resort.<p/>
+     * This version defines the property as mandatory if the {@code ConditionsTopGroup} object evaluates to true.<p/>
+     * According to the logical operation the ConditionsAndGroups resp. ConditionsOrGroups are either ANDed or ORed.
+     * <p/> E.g. ConditionsTopGroup.AND(ConditionsGroup.OR(a, b), ConditionsGroup.OR(c, d), ConditionsGroup.OR(e, f)]
+     * is evaluated as: TODO
+     *
+     * @param property       the property name
+     * @param topGroup the ConditionsTopGroup
+     */
+    public Conditions mandatory(final String property, final ConditionsTopGroup topGroup) {
+        return mandatory(property, NO_PERMISSIONS, topGroup);
     }
 
     /**
@@ -96,71 +143,19 @@ public class ValidationRules<T> {
      * @param property    the property name
      * @param permissions the permissions
      */
-    public void mandatory(final String property, final Permissions permissions) {
-        mandatory(property, permissions, NO_CONDITIONS_TOP_GROUP, NULL_ERROR_CODE_CONTROL);
+    public Conditions mandatory(final String property, final Permissions permissions) {
+        return mandatory(property, permissions, NO_CONDITIONS_TOP_GROUP);
     }
-
-    /**
-     * Defines the property as mandatory if the {@code PropConstraint} is true.
-     *
-     * @param property       the property name
-     * @param propConstraint
-     */
-    public void mandatory(final String property, final PropConstraint propConstraint) {
-        mandatory(property, NO_PERMISSIONS, ConditionsGroup.AND(propConstraint));
-    }
-
-    /**
-     * Defines the property as mandatory if the {@code ConditionsAndGroup} is true.<p/>
-     * I.e. the PropConstraints within each ConditionsAndGroup are ANDed.<p/>
-     * E.g. ConditionsGroup.AND(a, b) is evaluated as: a && b
-     *
-     * @param property
-     * @param conditionsAndGroup
-     */
-    public void mandatory(final String property, final ConditionsAndGroup conditionsAndGroup) {
-        mandatory(property, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup), NULL_ERROR_CODE_CONTROL);
-    }
-
-    /**
-     * Defines the property as mandatory if the {@code ConditionsOrGroup} is true.<p/>
-     * I.e. the PropConstraints within each ConditionsAndGroup are ORed.<p/>
-     * E.g. ConditionsGroup.OR(a, b) is evaluated as: a || b
-     *
-     * @param property
-     * @param conditionsOrGroup
-     */
-    public void mandatory(final String property, final ConditionsOrGroup conditionsOrGroup) {
-        mandatory(property, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup), NULL_ERROR_CODE_CONTROL);
-    }
-
-    /**
-     * If the logical relation between the conditions are really complex, this method may be your last resort.<p/>
-     * This version defines the property as mandatory if the {@code ConditionsTopGroup} object evaluates to true.<p/>
-     * According to the logical operation the ConditionsAndGroups resp. ConditionsOrGroups are either ANDed or ORed.
-     * <p/> E.g. ConditionsTopGroup.AND(ConditionsGroup.OR(a, b), ConditionsGroup.OR(c, d), ConditionsGroup.OR(e, f)]
-     * is evaluated as: TODO
-     *
-     * @param property
-     * @param topGroup
-     */
-    public void mandatory(final String property, final ConditionsTopGroup topGroup) {
-        mandatory(property, NO_PERMISSIONS, topGroup, NULL_ERROR_CODE_CONTROL);
-    }
-
-    public void mandatory(final String property, ErrorCodeControl errorCodeControl) {
-        mandatory(property, NO_PERMISSIONS, NO_CONDITIONS_TOP_GROUP, errorCodeControl);
-    }
-
 
     /**
      * Defines the property as mandatory if permissions match and the {@code PropConstraint} is true.
      *
      * @param property       the property name
-     * @param propConstraint
+     * @param propConstraint the property constraint
      */
-    public void mandatory(final String property, final Permissions permissions, final PropConstraint propConstraint) {
-        mandatory(property, permissions, ConditionsGroup.AND(propConstraint));
+    public Conditions mandatory(final String property, final Permissions permissions,
+            final PropConstraint propConstraint) {
+        return mandatory(property, permissions, ConditionsGroup.AND(propConstraint));
     }
 
     /**
@@ -168,12 +163,12 @@ public class ValidationRules<T> {
      * I.e. the PropConstraints within each ConditionsAndGroup are ANDed.<p/>
      * E.g. ConditionsGroup.AND(a, b) is evaluated as: a && b
      *
-     * @param property
-     * @param conditionsAndGroup
+     * @param property       the property name
+     * @param conditionsAndGroup the ConditionsAndGroup
      */
-    public void mandatory(final String property, final Permissions permissions,
+    public Conditions mandatory(final String property, final Permissions permissions,
             final ConditionsAndGroup conditionsAndGroup) {
-        mandatory(property, permissions, ConditionsTopGroup.OR(conditionsAndGroup), NULL_ERROR_CODE_CONTROL);
+        return mandatory(property, permissions, ConditionsTopGroup.OR(conditionsAndGroup));
     }
 
     /**
@@ -181,119 +176,12 @@ public class ValidationRules<T> {
      * I.e. the PropConstraints within each ConditionsAndGroup are ORed.<p/>
      * E.g. ConditionsGroup.OR(a, b) is evaluated as: a || b
      *
-     * @param property
-     * @param conditionsOrGroup
+     * @param property       the property name
+     * @param conditionsOrGroup the ConditionsOrGroup
      */
-    public void mandatory(final String property, final Permissions permissions,
+    public Conditions mandatory(final String property, final Permissions permissions,
             final ConditionsOrGroup conditionsOrGroup) {
-        mandatory(property, permissions, ConditionsTopGroup.AND(conditionsOrGroup), NULL_ERROR_CODE_CONTROL);
-    }
-
-    /**
-     * If the logical relation between the conditions are really complex, this method may be your last resort.<p/>
-     * This version defines the property as mandatory if permissions match and the {@code ConditionsTopGroup} object
-     * evaluates to true.<p/> According to the logical operation the ConditionsAndGroups resp. ConditionsOrGroups are
-     * either ANDed or ORed. <p/> E.g. ConditionsTopGroup.AND(ConditionsGroup.OR(a, b), ConditionsGroup.OR(c, d),
-     * ConditionsGroup.OR(e, f)] is evaluated as: TODO
-     *
-     * @param property
-     * @param topGroup
-     */
-    public void mandatory(final String property, final Permissions permissions, final ConditionsTopGroup topGroup) {
-        mandatory(property, permissions, topGroup, NULL_ERROR_CODE_CONTROL);
-    }
-
-    public void mandatory(final String property, final Permissions permissions, ErrorCodeControl errorCodeControl) {
-        mandatory(property, permissions, NO_CONDITIONS_TOP_GROUP, errorCodeControl);
-    }
-
-
-    /**
-     * Defines the property as mandatory if the {@code PropConstraint} is true.
-     *
-     * @param property       the property name
-     * @param propConstraint
-     */
-    public void mandatory(final String property, final PropConstraint propConstraint,
-            ErrorCodeControl errorCodeControl) {
-        mandatory(property, NO_PERMISSIONS, ConditionsGroup.AND(propConstraint), errorCodeControl);
-    }
-
-    /**
-     * Defines the property as mandatory if the {@code ConditionsAndGroup} is true.<p/>
-     * I.e. the PropConstraints within each ConditionsAndGroup are ANDed.<p/>
-     * E.g. ConditionsGroup.AND(a, b) is evaluated as: a && b
-     *
-     * @param property
-     * @param conditionsAndGroup
-     */
-    public void mandatory(final String property, final ConditionsAndGroup conditionsAndGroup,
-            ErrorCodeControl errorCodeControl) {
-        mandatory(property, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup), errorCodeControl);
-    }
-
-    /**
-     * Defines the property as mandatory if the {@code ConditionsOrGroup} is true.<p/>
-     * I.e. the PropConstraints within each ConditionsOrGroup are ORed.<p/>
-     * E.g. ConditionsGroup.OR(a, b) is evaluated as: a || b
-     *
-     * @param property
-     * @param conditionsOrGroup
-     */
-    public void mandatory(final String property, final ConditionsOrGroup conditionsOrGroup,
-            ErrorCodeControl errorCodeControl) {
-        mandatory(property, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup), errorCodeControl);
-    }
-
-    /**
-     * If the logical relation between the conditions are really complex, this method may be your last resort.<p/>
-     * This version defines the property as mandatory if the {@code ConditionsTopGroup} object evaluates to true.<p/>
-     * According to the logical operation the ConditionsAndGroups resp. ConditionsOrGroups are either ANDed or ORed.
-     * <p/> E.g. ConditionsTopGroup.AND(ConditionsGroup.OR(a, b), ConditionsGroup.OR(c, d), ConditionsGroup.OR(e, f)]
-     * is evaluated as: TODO
-     *
-     * @param property
-     * @param topGroup
-     */
-    public void mandatory(final String property, final ConditionsTopGroup topGroup, ErrorCodeControl errorCodeControl) {
-        mandatory(property, NO_PERMISSIONS, topGroup, errorCodeControl);
-    }
-
-    /**
-     * Defines the property as mandatory if permissions match and the {@code PropConstraint} is true.
-     *
-     * @param property       the property name
-     * @param propConstraint
-     */
-    public void mandatory(final String property, final Permissions permissions, final PropConstraint propConstraint,
-            ErrorCodeControl errorCodeControl) {
-        mandatory(property, permissions, ConditionsGroup.AND(propConstraint), errorCodeControl);
-    }
-
-    /**
-     * Defines the property as mandatory if permissions match and the {@code ConditionsAndGroup} is true.<p/>
-     * I.e. the PropConstraints within each ConditionsAndGroup are ANDed.<p/>
-     * E.g. ConditionsGroup.AND(a, b) is evaluated as: a && b
-     *
-     * @param property
-     * @param conditionsAndGroup
-     */
-    public void mandatory(final String property, final Permissions permissions,
-            final ConditionsAndGroup conditionsAndGroup, ErrorCodeControl errorCodeControl) {
-        mandatory(property, permissions, ConditionsTopGroup.OR(conditionsAndGroup), errorCodeControl);
-    }
-
-    /**
-     * Defines the property as mandatory if permissions match and the {@code ConditionsOrGroup} is true.<p/>
-     * I.e. the PropConstraints within each ConditionsAndGroup are ORed.<p/>
-     * E.g. ConditionsGroup.OR(a, b) is evaluated as: a || b
-     *
-     * @param property
-     * @param conditionsOrGroup
-     */
-    public void mandatory(final String property, final Permissions permissions,
-            final ConditionsOrGroup conditionsOrGroup, ErrorCodeControl errorCodeControl) {
-        mandatory(property, permissions, ConditionsTopGroup.AND(conditionsOrGroup), errorCodeControl);
+        return mandatory(property, permissions, ConditionsTopGroup.AND(conditionsOrGroup));
     }
 
     /**
@@ -302,162 +190,111 @@ public class ValidationRules<T> {
      * evaluates to true.<p/>
      * According to the logical operation the ConditionsAndGroups resp. ConditionsOrGroups are either ANDed or ORed.
      * <p/>
-     * E.g. ConditionsTopGroup.AND(ConditionsGroup.OR(a, b), ConditionsGroup.OR(c, d), ConditionsGroup.OR(e, f)] is
+     * E.g. ConditionsTopGroup.AND(ConditionsGroup.OR(a, b), ConditionsGroup.OR(c, d), ConditionsGroup.OR(e, f)) is
      * evaluated as: ...
      * If the logical relation between the constraints are really complicated, this method may be your last resort.
      *
-     * @param property
-     * @param permissions
-     * @param topGroup
+     * @param property       the property name
+     * @param permissions the permissions
+     * @param topGroup the ConditionsTopGroup
      */
-    public void mandatory(final String property, final Permissions permissions, final ConditionsTopGroup topGroup,
-            ErrorCodeControl errorCodeControl) {
-        addPropertyConditions(property, NO_CONSTRAINT, permissions, topGroup, errorCodeControl,
+    public Conditions mandatory(final String property, final Permissions permissions, final ConditionsTopGroup topGroup) {
+        return addPropertyConditions(property, NO_CONSTRAINT, permissions, topGroup,
                 mandatoryConditionsMap.getOrInit(property), false);
     }
 
 
-    public void immutable(final String property) {
-        immutable(property, NO_PERMISSIONS, NO_CONDITIONS_TOP_GROUP, NULL_ERROR_CODE_CONTROL);
+    public Conditions immutable(final String property) {
+        return immutable(property, NO_PERMISSIONS, NO_CONDITIONS_TOP_GROUP);
     }
 
-    public void immutable(final String property, final Permissions permissions) {
-        immutable(property, permissions, NO_CONDITIONS_TOP_GROUP, NULL_ERROR_CODE_CONTROL);
+    public Conditions immutable(final String property, final PropConstraint propConstraint) {
+        return immutable(property, NO_PERMISSIONS, ConditionsGroup.AND(propConstraint));
     }
 
-    public void immutable(final String property, final PropConstraint propConstraint) {
-        immutable(property, NO_PERMISSIONS, ConditionsGroup.AND(propConstraint));
+    public Conditions immutable(final String property, final ConditionsAndGroup conditionsAndGroup) {
+        return immutable(property, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup));
     }
 
-    public void immutable(final String property, final ConditionsAndGroup conditionsAndGroup) {
-        immutable(property, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup), NULL_ERROR_CODE_CONTROL);
+    public Conditions immutable(final String property, final ConditionsOrGroup conditionsOrGroup) {
+        return immutable(property, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup));
     }
 
-    public void immutable(final String property, final ConditionsOrGroup conditionsOrGroup) {
-        immutable(property, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup), NULL_ERROR_CODE_CONTROL);
+    public Conditions immutable(final String property, final ConditionsTopGroup topGroup) {
+        return immutable(property, NO_PERMISSIONS, topGroup);
     }
 
-    public void immutable(final String property, final ConditionsTopGroup topGroup) {
-        immutable(property, NO_PERMISSIONS, topGroup, NULL_ERROR_CODE_CONTROL);
+    public Conditions immutable(final String property, final Permissions permissions) {
+        return immutable(property, permissions, NO_CONDITIONS_TOP_GROUP);
     }
 
-    public void immutable(final String property, ErrorCodeControl errorCodeControl) {
-        immutable(property, NO_PERMISSIONS, NO_CONDITIONS_TOP_GROUP, errorCodeControl);
+    public Conditions immutable(final String property, final Permissions permissions,
+            final PropConstraint propConstraint) {
+        return immutable(property, permissions, ConditionsGroup.AND(propConstraint));
     }
 
-    public void immutable(final String property, final Permissions permissions, final PropConstraint propConstraint) {
-        immutable(property, permissions, ConditionsGroup.AND(propConstraint));
-    }
-
-    public void immutable(final String property, final Permissions permissions,
+    public Conditions immutable(final String property, final Permissions permissions,
             final ConditionsAndGroup conditionsAndGroup) {
-        immutable(property, permissions, ConditionsTopGroup.OR(conditionsAndGroup), NULL_ERROR_CODE_CONTROL);
+        return immutable(property, permissions, ConditionsTopGroup.OR(conditionsAndGroup));
     }
 
-    public void immutable(final String property, final Permissions permissions,
+    public Conditions immutable(final String property, final Permissions permissions,
             final ConditionsOrGroup conditionsOrGroup) {
-        immutable(property, permissions, ConditionsTopGroup.AND(conditionsOrGroup), NULL_ERROR_CODE_CONTROL);
+        return immutable(property, permissions, ConditionsTopGroup.AND(conditionsOrGroup));
     }
 
-    public void immutable(final String property, final Permissions permissions, final ConditionsTopGroup topGroup) {
-        immutable(property, permissions, topGroup, NULL_ERROR_CODE_CONTROL);
-    }
-
-    public void immutable(final String property, final Permissions permissions, ErrorCodeControl errorCodeControl) {
-        immutable(property, permissions, NO_CONDITIONS_TOP_GROUP, errorCodeControl);
-    }
-
-    public void immutable(final String property, final PropConstraint propConstraint,
-            ErrorCodeControl errorCodeControl) {
-        immutable(property, NO_PERMISSIONS, ConditionsGroup.AND(propConstraint), errorCodeControl);
-    }
-
-    public void immutable(final String property, final ConditionsAndGroup conditionsAndGroup,
-            ErrorCodeControl errorCodeControl) {
-        immutable(property, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup), errorCodeControl);
-    }
-
-    public void immutable(final String property, final ConditionsOrGroup conditionsOrGroup,
-            ErrorCodeControl errorCodeControl) {
-        immutable(property, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup), errorCodeControl);
-    }
-
-    public void immutable(final String property, final ConditionsTopGroup topGroup, ErrorCodeControl errorCodeControl) {
-        immutable(property, NO_PERMISSIONS, topGroup, errorCodeControl);
-    }
-
-    public void immutable(final String property, final Permissions permissions, final PropConstraint propConstraint,
-            ErrorCodeControl errorCodeControl) {
-        immutable(property, permissions, ConditionsGroup.AND(propConstraint), errorCodeControl);
-    }
-
-    public void immutable(final String property, final Permissions permissions,
-            final ConditionsAndGroup conditionsAndGroup, ErrorCodeControl errorCodeControl) {
-        immutable(property, permissions, ConditionsTopGroup.OR(conditionsAndGroup), errorCodeControl);
-    }
-
-    public void immutable(final String property, final Permissions permissions,
-            final ConditionsOrGroup conditionsOrGroup, ErrorCodeControl errorCodeControl) {
-        immutable(property, permissions, ConditionsTopGroup.AND(conditionsOrGroup), errorCodeControl);
-    }
-
-    public void immutable(final String property, final Permissions permissions, final ConditionsTopGroup topGroup,
-            ErrorCodeControl errorCodeControl) {
-        addPropertyConditions(property, NO_CONSTRAINT, permissions, topGroup,
-                errorCodeControl, immutableConditionsMap.getOrInit(property), false);
+    public Conditions immutable(final String property, final Permissions permissions,
+            final ConditionsTopGroup topGroup) {
+        return addPropertyConditions(property, NO_CONSTRAINT, permissions, topGroup,
+                immutableConditionsMap.getOrInit(property), false);
     }
 
 
     /**
      * Defines the content constraint for this property.
      *
-     * @param property
-     * @param constraint
+     * @param property       the property name
+     * @param constraint the constraint
      */
-    public void content(final String property, final ConstraintRoot constraint) {
-        content(property, constraint, NO_PERMISSIONS, NO_CONDITIONS_TOP_GROUP, NULL_ERROR_CODE_CONTROL);
-    }
-
-    /**
-     * Defines the content constraint for this property if permissions match.
-     * @param property
-     * @param constraint
-     * @param permissions
-     */
-    public void content(final String property, final ConstraintRoot constraint, final Permissions permissions) {
-        content(property, constraint, permissions, NO_CONDITIONS_TOP_GROUP, NULL_ERROR_CODE_CONTROL);
+    public Conditions content(final String property, final ConstraintRoot constraint) {
+        return content(property, constraint, NO_PERMISSIONS, NO_CONDITIONS_TOP_GROUP);
     }
 
     /**
      * Defines the content constraint for this property if the {@code PropConstraint} is true.
      *
-     * @param property
-     * @param constraint
-     * @param propConstraint
+     * @param property       the property name
+     * @param constraint the constraint
+     * @param propConstraint the property constraint
      */
-    public void content(final String property, final ConstraintRoot constraint, final PropConstraint propConstraint) {
-        content(property, constraint, NO_PERMISSIONS, ConditionsGroup.AND(propConstraint));
+    public Conditions content(final String property, final ConstraintRoot constraint,
+            final PropConstraint propConstraint) {
+        return content(property, constraint, NO_PERMISSIONS, ConditionsGroup.AND(propConstraint));
     }
 
-    public void content(final String property, final ConstraintRoot constraint,
+    public Conditions content(final String property, final ConstraintRoot constraint,
             final ConditionsAndGroup conditionsAndGroup) {
-        content(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup),
-                NULL_ERROR_CODE_CONTROL);
+        return content(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup));
     }
 
-    public void content(final String property, final ConstraintRoot constraint,
+    public Conditions content(final String property, final ConstraintRoot constraint,
             final ConditionsOrGroup conditionsOrGroup) {
-        content(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup),
-                NULL_ERROR_CODE_CONTROL);
+        return content(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup));
     }
 
-    public void content(final String property, final ConstraintRoot constraint, final ConditionsTopGroup topGroup) {
-        content(property, constraint, NO_PERMISSIONS, topGroup, NULL_ERROR_CODE_CONTROL);
+    public Conditions content(final String property, final ConstraintRoot constraint,
+            final ConditionsTopGroup topGroup) {
+        return content(property, constraint, NO_PERMISSIONS, topGroup);
     }
 
-    public void content(final String property, final ConstraintRoot constraint,
-            final ErrorCodeControl errorCodeControl) {
-        content(property, constraint, NO_PERMISSIONS, NO_CONDITIONS_TOP_GROUP, errorCodeControl);
+    /**
+     * Defines the content constraint for this property if permissions match.
+     * @param property       the property name
+     * @param constraint the constraint
+     * @param permissions the permissions
+     */
+    public Conditions content(final String property, final ConstraintRoot constraint, final Permissions permissions) {
+        return content(property, constraint, permissions, NO_CONDITIONS_TOP_GROUP);
     }
 
     /**
@@ -470,163 +307,71 @@ public class ValidationRules<T> {
      * @param permissions permissions that restrict the validity of the rule.
      * @param propConstraint one or more property related conditions that restrict the validity of the rule.
      */
-    public void content(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public Conditions content(final String property, final ConstraintRoot constraint, final Permissions permissions,
                         final PropConstraint propConstraint) {
-        content(property, constraint, permissions, ConditionsGroup.AND(propConstraint));
+        return content(property, constraint, permissions, ConditionsGroup.AND(propConstraint));
     }
 
-    public void content(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public Conditions content(final String property, final ConstraintRoot constraint, final Permissions permissions,
                         final ConditionsAndGroup constraintsAndGroup) {
-        content(property, constraint, permissions, ConditionsTopGroup.OR(constraintsAndGroup), NULL_ERROR_CODE_CONTROL);
+        return content(property, constraint, permissions, ConditionsTopGroup.OR(constraintsAndGroup));
     }
 
-    public void content(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public Conditions content(final String property, final ConstraintRoot constraint, final Permissions permissions,
                         final ConditionsOrGroup constraintsOrGroups) {
-        content(property, constraint, permissions, ConditionsTopGroup.AND(constraintsOrGroups),
-                NULL_ERROR_CODE_CONTROL);
+        return content(property, constraint, permissions, ConditionsTopGroup.AND(constraintsOrGroups));
     }
 
-    public void content(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public Conditions content(final String property, final ConstraintRoot constraint, final Permissions permissions,
                         final ConditionsTopGroup topGroup) {
-        content(property, constraint, permissions, topGroup, NULL_ERROR_CODE_CONTROL);
-    }
-
-    public void content(final String property, final ConstraintRoot constraint, final Permissions permissions,
-            final ErrorCodeControl errorCodeControl) {
-        content(property, constraint, permissions, NO_CONDITIONS_TOP_GROUP, errorCodeControl);
-    }
-
-    public void content(final String property, final ConstraintRoot constraint, final PropConstraint propConstraint,
-            ErrorCodeControl errorCodeControl) {
-        content(property, constraint, NO_PERMISSIONS, ConditionsGroup.AND(propConstraint), errorCodeControl);
-    }
-
-    public void content(final String property, final ConstraintRoot constraint,
-            final ConditionsAndGroup conditionsAndGroup, ErrorCodeControl errorCodeControl) {
-        content(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup), errorCodeControl);
-    }
-
-    public void content(final String property, final ConstraintRoot constraint,
-            final ConditionsOrGroup conditionsOrGroup, ErrorCodeControl errorCodeControl) {
-        content(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup), errorCodeControl);
-    }
-
-    public void content(final String property, final ConstraintRoot constraint,
-            final ConditionsTopGroup topGroup, ErrorCodeControl errorCodeControl) {
-        content(property, constraint, NO_PERMISSIONS, topGroup, errorCodeControl);
-    }
-
-    public void content(final String property, final ConstraintRoot constraint, final Permissions permissions,
-            final PropConstraint propConstraint,
-            ErrorCodeControl errorCodeControl) {
-        content(property, constraint, permissions, ConditionsGroup.AND(propConstraint), errorCodeControl);
-    }
-
-    public void content(final String property, final ConstraintRoot constraint, final Permissions permissions,
-            final ConditionsAndGroup conditionsAndGroup, ErrorCodeControl errorCodeControl) {
-        content(property, constraint, permissions, ConditionsTopGroup.OR(conditionsAndGroup), errorCodeControl);
-    }
-
-    public void content(final String property, final ConstraintRoot constraint, final Permissions permissions,
-            final ConditionsOrGroup conditionsOrGroup, ErrorCodeControl errorCodeControl) {
-        content(property, constraint, permissions, ConditionsTopGroup.AND(conditionsOrGroup), errorCodeControl);
-    }
-
-    public void content(final String property, final ConstraintRoot constraint, final Permissions permissions,
-                        final ConditionsTopGroup topGroup, ErrorCodeControl errorCodeControl) {
-        addPropertyConditions(property, constraint, permissions, topGroup, errorCodeControl,
+        return addPropertyConditions(property, constraint, permissions, topGroup,
                 contentConditionsMap.getOrInit(property), true);
     }
 
 
-    public void update(final String property, final ConstraintRoot constraint, final PropConstraint propConstraint) {
-        update(property, constraint, NO_PERMISSIONS, ConditionsGroup.AND(propConstraint));
-    }
-
-    public void update(final String property, final ConstraintRoot constraint,
-                       final ConditionsAndGroup conditionsAndGroup) {
-        update(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup),
-                NULL_ERROR_CODE_CONTROL);
-    }
-
-    public void update(final String property, final ConstraintRoot constraint,
-                       final ConditionsOrGroup conditionsOrGroup) {
-        update(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup),
-                NULL_ERROR_CODE_CONTROL);
-    }
-
-    public void update(final String property, final ConstraintRoot constraint, final ConditionsTopGroup topGroup) {
-        update(property, constraint, NO_PERMISSIONS, topGroup, NULL_ERROR_CODE_CONTROL);
-    }
-
-    public void update(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public Conditions update(final String property, final ConstraintRoot constraint,
             final PropConstraint propConstraint) {
-        update(property, constraint, permissions, ConditionsGroup.AND(propConstraint));
+        return update(property, constraint, NO_PERMISSIONS, ConditionsGroup.AND(propConstraint));
     }
 
-    public void update(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public Conditions update(final String property, final ConstraintRoot constraint,
                        final ConditionsAndGroup conditionsAndGroup) {
-        update(property, constraint, permissions, ConditionsTopGroup.OR(conditionsAndGroup),
-                NULL_ERROR_CODE_CONTROL);
+        return update(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup));
     }
 
-    public void update(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public Conditions update(final String property, final ConstraintRoot constraint,
                        final ConditionsOrGroup conditionsOrGroup) {
-        update(property, constraint, permissions, ConditionsTopGroup.AND(conditionsOrGroup),
-                NULL_ERROR_CODE_CONTROL);
+        return update(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup));
     }
 
-    public void update(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public Conditions update(final String property, final ConstraintRoot constraint, final ConditionsTopGroup topGroup) {
+        return update(property, constraint, NO_PERMISSIONS, topGroup);
+    }
+
+    public Conditions update(final String property, final ConstraintRoot constraint, final Permissions permissions,
+            final PropConstraint propConstraint) {
+        return update(property, constraint, permissions, ConditionsGroup.AND(propConstraint));
+    }
+
+    public Conditions update(final String property, final ConstraintRoot constraint, final Permissions permissions,
+                       final ConditionsAndGroup conditionsAndGroup) {
+        return update(property, constraint, permissions, ConditionsTopGroup.OR(conditionsAndGroup));
+    }
+
+    public Conditions update(final String property, final ConstraintRoot constraint, final Permissions permissions,
+                       final ConditionsOrGroup conditionsOrGroup) {
+        return update(property, constraint, permissions, ConditionsTopGroup.AND(conditionsOrGroup));
+    }
+
+    public Conditions update(final String property, final ConstraintRoot constraint, final Permissions permissions,
             final ConditionsTopGroup topGroup) {
-        update(property, constraint, permissions, topGroup, NULL_ERROR_CODE_CONTROL);
-    }
-
-    public void update(final String property, final ConstraintRoot constraint, final PropConstraint propConstraint,
-            ErrorCodeControl errorCodeControl) {
-        update(property, constraint, NO_PERMISSIONS, ConditionsGroup.AND(propConstraint), errorCodeControl);
-    }
-
-    public void update(final String property, final ConstraintRoot constraint,
-            final ConditionsAndGroup conditionsAndGroup, ErrorCodeControl errorCodeControl) {
-        update(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup),
-                errorCodeControl);
-    }
-
-    public void update(final String property, final ConstraintRoot constraint,
-            final ConditionsOrGroup conditionsOrGroup, ErrorCodeControl errorCodeControl) {
-        update(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup),
-                errorCodeControl);
-    }
-
-    public void update(final String property, final ConstraintRoot constraint, final ConditionsTopGroup topGroup,
-            ErrorCodeControl errorCodeControl) {
-        update(property, constraint, NO_PERMISSIONS, topGroup, errorCodeControl);
-    }
-
-    public void update(final String property, final ConstraintRoot constraint, final Permissions permissions,
-            final PropConstraint propConstraint, ErrorCodeControl errorCodeControl) {
-        update(property, constraint, permissions, ConditionsGroup.AND(propConstraint), errorCodeControl);
-    }
-
-    public void update(final String property, final ConstraintRoot constraint, final Permissions permissions,
-            final ConditionsAndGroup conditionsAndGroup, ErrorCodeControl errorCodeControl) {
-        update(property, constraint, permissions, ConditionsTopGroup.OR(conditionsAndGroup), errorCodeControl);
-    }
-
-    public void update(final String property, final ConstraintRoot constraint, final Permissions permissions,
-            final ConditionsOrGroup conditionsOrGroup, ErrorCodeControl errorCodeControl) {
-        update(property, constraint, permissions, ConditionsTopGroup.AND(conditionsOrGroup), errorCodeControl);
-    }
-
-    public void update(final String property, final ConstraintRoot constraint, final Permissions permissions,
-                       final ConditionsTopGroup topGroup, ErrorCodeControl errorCodeControl) {
-        addPropertyConditions(property, constraint, permissions, topGroup, errorCodeControl,
+        return addPropertyConditions(property, constraint, permissions, topGroup,
                 updateConditionsMap.getOrInit(property), true);
     }
 
-    public void addPropertyConditions(final String property, final ConstraintRoot constraint,
+    public Conditions addPropertyConditions(final String property, final ConstraintRoot constraint,
             final Permissions permissions, final ConditionsTopGroup topGroup,
-            ErrorCodeControl errorCodeControl, List<Conditions> conditions,
+            List<Conditions> conditionsList,
             boolean isAggregateFunctionAllowed) {
         Objects.requireNonNull(property, "property must not be null");
         Objects.requireNonNull(constraint, "constraint must not be null");
@@ -646,7 +391,9 @@ public class ValidationRules<T> {
             validateConstraint(property, constraint);
         }
         validatePropertyAndConditions(property, topGroup);
-        conditions.add(new Conditions(constraint, permissions, topGroup, errorCodeControl));
+        Conditions newConditions = new Conditions(constraint, permissions, topGroup);
+        conditionsList.add(newConditions);
+        return newConditions;
     }
 
     //TODO remove permanently if decision is made that permission validation makes no sense
@@ -692,8 +439,8 @@ public class ValidationRules<T> {
     private void validatePropertyAndConditions(String property, ConditionsTopGroup topGroup) {
         Validator.instance().validateProperty(property, typeClass);
         for (final ConditionsGroup group : topGroup.getConstraintsSubGroups()) {
-            for (final PropConstraint propContraint : group.getPropConstraints()) {
-                validatePropConstraint(propContraint);
+            for (final PropConstraint propConstraint : group.getPropConstraints()) {
+                validatePropConstraint(propConstraint);
             }
         }
     }
@@ -729,7 +476,7 @@ public class ValidationRules<T> {
      * Overwrites the default key that is used as an identifier for the generic type {@code T} when the validation
      * rules are serialized to JSON. The default key is the lowercase simple name of the class {@code T}.
      *
-     * @param typeJsonKey
+     * @param typeJsonKey the json key for the type that should be use for serialization
      */
     public void setTypeJsonKey(final String typeJsonKey) {
         this.typeJsonKey = typeJsonKey;
