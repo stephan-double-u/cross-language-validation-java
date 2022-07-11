@@ -29,7 +29,7 @@
             <scope>compile</scope>
         </dependency>
 
-        <!-- Logback implements SLF4J natively -->
+        <!-- Logback implements SLF4J natively  -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
