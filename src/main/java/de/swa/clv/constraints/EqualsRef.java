@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public abstract class EqualsRef extends EqualsRoot {
@@ -20,7 +21,9 @@ public abstract class EqualsRef extends EqualsRoot {
 
     @Override
     public void validateValuesOrFail(final Class<?> typeClass, final Class<?> propertyType) {
-         getValues().forEach(refProperty  -> validateValueOrFail(typeClass, propertyType, (String) refProperty));
+         getValues().stream()
+                 .filter(Objects::nonNull)
+                 .forEach(refProperty  -> validateValueOrFail(typeClass, propertyType, (String) refProperty));
     }
 
     private void validateValueOrFail(Class<?> typeClass, Class<?> propertyType, String refProperty) {
