@@ -22,13 +22,13 @@ public class EqualsAnyRefTest {
 
     @Test
     public void validateNullVsNull() {
-        EqualsAnyRef constraint = Equals.anyRef(null);
+        EqualsAnyRef constraint = Equals.anyRef(null, "bar.stringProp");
         assertTrue(constraint.validate(null, foo));
     }
 
     @Test
     public void validateString() {
-        EqualsAnyRef constraint = Equals.anyRef("bar.stringProp");
+        EqualsAnyRef constraint = Equals.anyRef(null, "bar.stringProp");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("bar.stringProp", Foo.class);
         assertTrue(constraint.validate("baz", foo));

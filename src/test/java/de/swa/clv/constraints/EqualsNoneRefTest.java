@@ -27,13 +27,13 @@ public class EqualsNoneRefTest {
 
     @Test
     public void validateNullVsNull() {
-        EqualsNoneRef constraint = Equals.noneRef(null);
+        EqualsNoneRef constraint = Equals.noneRef(null, "bar.stringProp");
         assertFalse(constraint.validate(null, foo));
     }
 
     @Test
     public void validateString() {
-        EqualsNoneRef constraint = Equals.noneRef("bar.stringProp");
+        EqualsNoneRef constraint = Equals.noneRef(null, "bar.stringProp");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("bar.stringProp", Foo.class);
         assertTrue(constraint.validate("invalid", foo));
@@ -41,7 +41,7 @@ public class EqualsNoneRefTest {
 
     @Test
     public void validateStringVsEnum() {
-        EqualsNoneRef constraint = Equals.noneRef("bar.enumProp");
+        EqualsNoneRef constraint = Equals.noneRef(null, "bar.enumProp");
         // Validating caches the getEnumProp() method!
         Validator.instance().validateProperty("bar.enumProp", Foo.class);
         assertTrue(constraint.validate("INVALID", foo));

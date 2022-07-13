@@ -46,9 +46,11 @@ public abstract class EqualsRef extends EqualsRoot {
     }
 
     boolean validateRefProperty(String refProperty, Object valueToValidate, Object constraintObject) {
-        if (refProperty == null && valueToValidate == null) {
-            log.debug("A null refProperty validated against a null value is considered as 'true'");
-            return true;
+        if (refProperty == null) {
+            boolean valueIsNull = valueToValidate == null;
+            log.debug("A null refProperty validated against a {}null value is considered as '{}'",
+                    valueIsNull ? "" : "NOT ", valueIsNull);
+            return valueIsNull;
         }
         AggregateFunction aggregateFunction = Validator.instance().validateAndGetTerminalAggregateFunctionIfExist(
                 refProperty).orElseGet(() -> null);
