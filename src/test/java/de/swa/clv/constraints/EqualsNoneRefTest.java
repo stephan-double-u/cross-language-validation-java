@@ -2,18 +2,13 @@ package de.swa.clv.constraints;
 
 import de.swa.clv.Validator;
 import de.swa.clv.test.Util;
-import org.hamcrest.core.StringContains;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Date;
 
-import static org.junit.Assert
-
-.*;
+import static org.junit.Assert.*;
 
 public class EqualsNoneRefTest {
 
@@ -21,9 +16,6 @@ public class EqualsNoneRefTest {
             LocalDate.of(2000, Month.JANUARY, 1),
             new Date(LocalDate.of(2000, Month.JANUARY, 1).toEpochDay())));
 
-
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
 
     @Test
     public void validateNullVsNull() {

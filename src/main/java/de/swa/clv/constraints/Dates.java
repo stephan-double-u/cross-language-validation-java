@@ -46,14 +46,6 @@ public class Dates extends ConstraintRoot {
      * </ul>
      * <p/>
      */
-    public static Dates future() {
-        return new Dates(Arrays.asList(FUTURE_DATE_TOKEN, 0));
-    }
-
-    public static Dates past() {
-        return new Dates(Arrays.asList(PAST_DATE_TOKEN, 0));
-    }
-
     // Extension compared to javax.validation.constraints.Future
     public static Dates future(int days) {
         return new Dates(Arrays.asList(FUTURE_DATE_TOKEN, days));
@@ -99,9 +91,9 @@ public class Dates extends ConstraintRoot {
     private boolean validate(final LocalDate localDate, final String token, final int daysOffset) {
         final boolean match;
         if (FUTURE_DATE_TOKEN.equals(token)) {
-            match = LocalDate.now().plusDays(daysOffset).compareTo(localDate) < 0;
+            match = LocalDate.now().plusDays(daysOffset).compareTo(localDate) <= 0;
         } else {
-            match = LocalDate.now().minusDays(daysOffset).compareTo(localDate) > 0;
+            match = LocalDate.now().minusDays(daysOffset).compareTo(localDate) >= 0;
         }
         return match;
     }
@@ -109,9 +101,9 @@ public class Dates extends ConstraintRoot {
     private boolean validate(final LocalDateTime localDateTime, final String token, final int daysOffset) {
         final boolean match;
         if (FUTURE_DATE_TOKEN.equals(token)) {
-            match = LocalDateTime.now().plusDays(daysOffset).compareTo(localDateTime) < 0;
+            match = LocalDateTime.now().plusDays(daysOffset).compareTo(localDateTime) <= 0;
         } else {
-            match = LocalDateTime.now().minusDays(daysOffset).compareTo(localDateTime) > 0;
+            match = LocalDateTime.now().minusDays(daysOffset).compareTo(localDateTime) >= 0;
         }
         return match;
     }
@@ -120,9 +112,9 @@ public class Dates extends ConstraintRoot {
         final boolean match;
         final long millisDiff = Calendar.getInstance().getTime().getTime() - calendar.getTime().getTime();
         if (FUTURE_DATE_TOKEN.equals(token)) {
-            match = millisDiff + millisDaysOffset < 0;
+            match = millisDiff + millisDaysOffset <= 0;
         } else {
-            match = millisDiff - millisDaysOffset > 0;
+            match = millisDiff - millisDaysOffset >= 0;
         }
         return match;
     }
@@ -132,9 +124,9 @@ public class Dates extends ConstraintRoot {
         final Date now = new Date();
         final long millisDiff = now.getTime() - date.getTime();
         if (FUTURE_DATE_TOKEN.equals(token)) {
-            match = millisDiff + millisDaysOffset < 0;
+            match = millisDiff + millisDaysOffset <= 0;
         } else {
-            match = millisDiff - millisDaysOffset > 0;
+            match = millisDiff - millisDaysOffset >= 0;
         }
         return match;
     }

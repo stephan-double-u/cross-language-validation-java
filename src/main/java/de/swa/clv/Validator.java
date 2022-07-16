@@ -58,7 +58,7 @@ public class Validator {
                 .map(property -> validateMandatoryPropertyRules(property, object, userPermissions, rules))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private Optional<String> validateMandatoryPropertyRules(final String property, final Object object,
@@ -91,7 +91,7 @@ public class Validator {
                         userPermissions, rules))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private Optional<String> validateImmutablePropertyRules(final String property, final Object originalObject,
@@ -120,7 +120,7 @@ public class Validator {
                 .map(property -> validateContentPropertyRules(property, object, userPermissions, rules))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private Optional<String> validateContentPropertyRules(final String property, final Object object,
@@ -147,7 +147,7 @@ public class Validator {
                         rules))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private Optional<String> validateUpdatePropertyRules(final String property, final Object originalObject,
@@ -516,15 +516,16 @@ public class Validator {
         String pureProperty = propConstraint.getProperty().split("#")[0];
         List<String> propertiesToCheck = inflatePropertyIfIndexed(pureProperty, object);
         if (aggregateFunction != null) {
-            switch(aggregateFunction) {
-            case sum:
+            switch (aggregateFunction) {
+            case sum -> {
                 BigDecimal sum = sumUpPropertyValues(object, propertiesToCheck);
                 return propConstraint.getConstraint().validate(sum, object);
-            case distinct:
+            }
+            case distinct -> {
                 Boolean distinct = distinctCheckForPropertyValues(object, propertiesToCheck);
                 return propConstraint.getConstraint().validate(distinct, object);
-            default:
-                throw new IllegalArgumentException("Should not happen. Unsupported: " + aggregateFunction);
+            }
+            default -> throw new IllegalArgumentException("Should not happen. Unsupported: " + aggregateFunction);
             }
         } else {
             for (String propertyToCheck : propertiesToCheck) {
@@ -634,8 +635,8 @@ public class Validator {
     // ("foo", List.of(2,4,6)) -> List.of("foo[2]","foo[4]","foo[6]")
     private List<String> inflateListProperty(String p, List<Integer> indexes) {
         return indexes.stream()
-                .map(i -> p + "[" + i + "]").
-                        collect(Collectors.toList());
+                .map(i -> p + "[" + i + "]")
+                .toList();
     }
 
     // ("foo", {"foo":["a","b","c","d","e","f",]}, 1, 2) -> List.of("foo[1]","foo[3]","foo[5]")
@@ -659,8 +660,7 @@ public class Validator {
         return IntStream.range(0, numberOfElements).boxed()
                 .filter(i -> i >= startIndex)
                 .filter(i -> (i - startIndex) % increment == 0)
-                .map(i -> property + "[" + i + "]")
-                .collect(Collectors.toList());
+                .map(i -> property + "[" + i + "]").toList();
     }
 
     // try isFoo for booleans, then getFoo for all
@@ -741,55 +741,7 @@ public class Validator {
         this.defaultUpdateMessagePrefix = prefix;
     }
 
-    private class PropertyDescriptor {
-        private final String propertyName;
-        private final Class<?> clazz;
-
-        public PropertyDescriptor(final String propertyName, final Class<?> clazz) {
-            super();
-            this.propertyName = propertyName;
-            this.clazz = clazz;
-        }
-
-        @Override
-        public String toString() {
-            return "PropertyDescriptor [propertyName=" + propertyName + ", clazz=" + clazz + "]";
-        }
-
-        // java.lang.Class does not implement hashCode() and equals(), but identity hash code is o.k. here?!
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((clazz == null) ? 0 : clazz.hashCode());
-            result = prime * result + ((propertyName == null) ? 0 : propertyName.hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(final Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final PropertyDescriptor other = (PropertyDescriptor) obj;
-            if (clazz == null) {
-                if (other.clazz != null) {
-                    return false;
-                }
-            } else if (!clazz.equals(other.clazz)) {
-                return false;
-            }
-            if (propertyName == null) {
-                return other.propertyName == null;
-            } else
-                return propertyName.equals(other.propertyName);
-        }
+    private record PropertyDescriptor(String propertyName, Class<?> clazz) {
     }
 
     static class GetterInfo {

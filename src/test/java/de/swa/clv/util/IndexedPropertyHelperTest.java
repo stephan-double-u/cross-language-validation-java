@@ -1,40 +1,33 @@
 package de.swa.clv.util;
 
 import org.hamcrest.core.StringContains;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.util.Arrays;
 
-import static org.junit.Assert
-
-.*;
+import static org.junit.Assert.*;
 
 public class IndexedPropertyHelperTest {
 
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
-
     @Test
     public void exceptionIfInvalidIndexDefinition() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Not a valid indexed property"));
-        IndexedPropertyHelper.getIndexInfo("[3-1,xxx]");
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> IndexedPropertyHelper.getIndexInfo("[3-1,xxx]"));
+        assertEquals("Not a valid indexed property: [3-1,xxx]", ex.getMessage());
     }
 
     @Test
     public void exceptionIfListToValueIsLessThanFromValue() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Not a valid indexed property"));
-        IndexedPropertyHelper.getIndexInfo("[3-1]");
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> IndexedPropertyHelper.getIndexInfo("[3-1]"));
+        assertEquals("Not a valid indexed property: [3-1]", ex.getMessage());
     }
 
     @Test
     public void exceptionIfListAndRange() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Not a valid indexed property"));
-        IndexedPropertyHelper.getIndexInfo("[1,2-3]");
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> IndexedPropertyHelper.getIndexInfo("[1,2-3]"));
+        assertEquals("Not a valid indexed property: [1,2-3]", ex.getMessage());
     }
 
     @Test

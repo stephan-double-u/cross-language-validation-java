@@ -13,24 +13,24 @@ i.e. it contains:
     <dependency>
       <groupId>de.swa</groupId>
       <artifactId>cross-language-validation</artifactId>
-      <version>0.5.4</version>
+      <version>0.5.8</version>
     </dependency>
 
 ### settings.xml
 Until this artifact is available on Maven Central, it can be downloaded by addinf this `server`to `settings.xml`.
 
-Note: `<REMOVE>` must be remove from the public read access token: 
+Note: `<REMOVE>` must be removed from the public read access token: 
 
     <servers>
         <server>
             <id>github</id>
             <username>stephan-double-u</username>
-            <password>ghp_<REMOVE>ZvGsEK3vqGUCXcyCQAVNuUupkKBju4242QoU</password>
+            <password>ghp_<REMOVE>OakGskz7Fv8r328l92rjTJAWKKiQOa2p80sA</password>
         </server>
     </servers>
 
 ## Documentation
-### Defining Validation Rules
+### Defining validation rules
 Validation rules for a class of type _T_ are defined by creating a static object of type _ValidationRules_ where the
 _Class_ object of type _T_ is the constructor argument. The different kinds of rules are then defined in a _static 
 initializer block_.
@@ -61,24 +61,24 @@ public class Rules {
     }
 }
 ```
-#### Mandatory Rules
+#### Mandatory rules
 TODO
 ```java
    RULES.mandatory("name");
 ```
-#### Immutable Rules
+#### Immutable rules
 TODO
 ```java
    RULES.immutable("type");
 ```
 
-#### Content Rules
+#### Content rules
 TODO
 ```java
    RULES.content("name", Size.minMax(1,100));
 ```
 
-#### Update Rules
+#### Update rules
 TODO
 ```java
    RULES.update("status", Equals.any(StatusEnum.START, StatusEnum.STOP),
@@ -104,7 +104,7 @@ For content and update rules permissions can be defined as third argument, eithe
         Permissions.any("ADMIN") );
 ```
 
-### Serialize Rules
+### Serialize rules
 Validation rules can be serialized to JSON according to the Cross Language Validation Schema.
 
 Either by calling _serializeToJson()_ on the rules object itself:
@@ -118,9 +118,21 @@ or, for multiple rules objects, by calling the static _varargs_ method Validatio
     ValidationRules<ClassTwo> rulesClassTwo = new ValidationRules<>(ClassTwo.class);
     ValidationRules.serializeToJson(rulesClassOne, rulesClassTwo);
 ```
+### Disable serialization for single rules
+TODO
+
+Sometimes it is either not possible, nor not necessary, nor not desired to serialize a rule.
+
+The CLV Demp App contains an example with explanation for the first two cases.
+
+If a rule should not be serialized, the method _doNotSerialize()_ can be called for any rule.
+```java
+   RULES.mandatory("name").doNotSerialize();
+```
+
 ## TODOs
 - Bring to Maven Central 
-- Document
+- Documentation
 - Write more tests
-- Release
-- ...
+- Release Notes
+

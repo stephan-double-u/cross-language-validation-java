@@ -14,26 +14,26 @@ public class DatesTest {
 
     @Test
     public void validateNullObjectToTrue() {
-        Dates dates = Dates.future();
+        Dates dates = Dates.future(0);
         assertTrue(dates.validate(null, null));
     }
 
     @Test
     public void validateFutureLocalDateToNowIsFalse() {
-        Dates dates = Dates.future();
-        assertFalse(dates.validate(LocalDate.now(), null));
+        Dates dates = Dates.future(0);
+        assertTrue(dates.validate(LocalDate.now(), null));
     }
 
     @Test
     public void validatePastLocalDateToNowIsFalse() {
-        Dates dates = Dates.past();
-        assertFalse(dates.validate(LocalDate.now(), null));
+        Dates dates = Dates.past(0);
+        assertTrue(dates.validate(LocalDate.now(), null));
     }
 
     @Test
     public void validateFutureLocalDateIsTrue() {
         Dates dates = Dates.future(1);
-        assertTrue(dates.validate(LocalDate.now().plusDays(2), null));
+        assertTrue(dates.validate(LocalDate.now().plusDays(1), null));
     }
 
     @Test
@@ -77,14 +77,14 @@ public class DatesTest {
 
     @Test
     public void validateDateToFalse() {
-        Dates dates = Dates.future();
+        Dates dates = Dates.future(0);
         final Date now = new Date();
-        assertFalse(dates.validate(now, null));
+        assertTrue(dates.validate(now, null));
     }
 
     @Test
     public void validateUnsupportedType() {
-        Dates dates = Dates.future();
+        Dates dates = Dates.future(0);
         assertThrows(IllegalArgumentException.class, () -> dates.validate("string is unsupported", null));
     }
 

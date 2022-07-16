@@ -50,7 +50,7 @@ public class ValidationTesting {
                 ConditionsGroup.AND(
                         Condition.of("someString", RegEx.any("nomatch", "N[A-Z]+")),
                         Condition.of("status", RegEx.any("E")),
-                        Condition.of("startDate", Dates.future()),
+                        Condition.of("startDate", Dates.future(0)),
                         Condition.of("startLocalDate", Dates.past(2)),
                         Condition.of("startCalDate", Dates.future(100))));
 
@@ -215,7 +215,7 @@ public class ValidationTesting {
 
                         Condition.of("someString", RegEx.any("nomatch", "N[A-Z]+")),
 
-                        Condition.of("startDate", Dates.future()),
+                        Condition.of("startDate", Dates.future(0)),
                         Condition.of("startLocalDate", Dates.past(2)),
                         Condition.of("startCalDate", Dates.future(100))
                 ));

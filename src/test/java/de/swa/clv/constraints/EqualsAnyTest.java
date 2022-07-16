@@ -1,24 +1,16 @@
 package de.swa.clv.constraints;
 
 import de.swa.clv.test.Util;
-import org.hamcrest.core.StringContains;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.Date;
 import java.sql.JDBCType;
 import java.time.LocalDate;
-import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
 public class EqualsAnyTest {
-
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
 
     @Test
     public void validateStringVsString() {

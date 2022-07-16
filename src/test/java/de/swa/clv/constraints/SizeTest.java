@@ -1,9 +1,6 @@
 package de.swa.clv.constraints;
 
-import org.hamcrest.core.StringContains;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -11,18 +8,13 @@ import java.util.List;
 import java.util.Map;
 
 import static de.swa.clv.test.Util.doubleQuote;
-import static org.junit.Assert
-
-.*;
+import static org.junit.Assert.*;
 
 public class SizeTest {
 
-    @Rule
-    public ExpectedException expectedEx = ExpectedException.none();
-
-    private static Size size_min_max = Size.minMax(1, 3);
-    private static Size size_min = Size.min(1);
-    private static Size size_max = Size.max(3);
+    private static final Size size_min_max = Size.minMax(1, 3);
+    private static final Size size_min = Size.min(1);
+    private static final Size size_max = Size.max(3);
 
     @Test
     public void isSupportedString() {
@@ -31,7 +23,7 @@ public class SizeTest {
 
     @Test
     public void isSupportedArray() {
-        assertTrue(size_min_max.isSupportedType(new String[]{}.getClass()));
+        assertTrue(size_min_max.isSupportedType(String[].class));
     }
 
     @Test
@@ -45,29 +37,33 @@ public class SizeTest {
     }
 
     @Test
-    public void exceptionIfMinNagative() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Size min/max values must be >= 0 and min <= max"));
-        Size.min(-1);
+    public void exceptionIfMinNegative() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> Size.min(-1));
+        assertEquals("Size min/max values must be >= 0 and min <= max", ex.getMessage());
     }
 
     @Test
     public void exceptionIfMaxNagative() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Size min/max values must be >= 0 and min <= max"));
-        Size.max(-1);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> Size.max(-1));
+        assertEquals("Size min/max values must be >= 0 and min <= max", ex.getMessage());
     }
 
     @Test
     public void exceptionIfMinGreaterMax() {
-        expectedEx.expect(IllegalArgumentException.class);
-        expectedEx.expectMessage(StringContains.containsString("Size min/max values must be >= 0 and min <= max"));
-        Size.minMax(2, 1);
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> Size.minMax(2, 1));
+        assertEquals("Size min/max values must be >= 0 and min <= max", ex.getMessage());
     }
 
     @Test
     public void minMaxSame() {
-        Size.minMax(1, 1);
+        try {
+            Size.minMax(1, 1);
+        } catch (Exception ex) {
+            fail();
+        }
     }
 
     @Test
@@ -99,7 +95,7 @@ public class SizeTest {
 
     @Test
     public void validateFalseList() {
-        assertFalse(size_min_max.validate(Arrays.asList(), null));
+        assertFalse(size_min_max.validate(List.of(), null));
     }
 
     @Test
