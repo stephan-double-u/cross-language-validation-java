@@ -19,6 +19,7 @@ import java.util.stream.IntStream;
 
 import static de.swa.clv.ValidationRules.NO_PERMISSIONS;
 
+@SuppressWarnings("squid:S6204")
 public class Validator {
 
     public static final String ERR_MSG_RULES_NULL = "rules must not be null";
@@ -58,7 +59,7 @@ public class Validator {
                 .map(property -> validateMandatoryPropertyRules(property, object, userPermissions, rules))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private Optional<String> validateMandatoryPropertyRules(final String property, final Object object,
@@ -91,7 +92,7 @@ public class Validator {
                         userPermissions, rules))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private Optional<String> validateImmutablePropertyRules(final String property, final Object originalObject,
@@ -120,7 +121,7 @@ public class Validator {
                 .map(property -> validateContentPropertyRules(property, object, userPermissions, rules))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private Optional<String> validateContentPropertyRules(final String property, final Object object,
@@ -147,7 +148,7 @@ public class Validator {
                         rules))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     private Optional<String> validateUpdatePropertyRules(final String property, final Object originalObject,
