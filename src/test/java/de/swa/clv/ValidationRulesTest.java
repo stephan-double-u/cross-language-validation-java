@@ -13,6 +13,8 @@ import static org.junit.Assert.*;
 
 public class ValidationRulesTest {
 
+    private static final String SCHEMA_VERSION_JSON = Util.doubleQuote("{'schema-version':'" + SCHEMA_VERSION + "',");
+
     @Test
     public void exceptionIfUnknownProperty() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
@@ -112,17 +114,21 @@ public class ValidationRulesTest {
     }
 
     @Test
-    public void doNotSerializeForAllRuleTypes() {
+    public void doNotSerializeForAllRuleTypesForAllButOneRule() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
-        try {
             rules.mandatory("stringProp").doNotSerialize();
-            rules.immutable("stringProp").doNotSerialize();
+            rules.immutable("stringProp", Permissions.all("A", "B")).doNotSerialize();
             rules.content("stringProp", Equals.notNull()).doNotSerialize();
-            rules.update("stringProp", Equals.notNull(),
-                    Condition.of("stringProp", Equals.notNull())).doNotSerialize();
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
+            rules.content("stringProp", Size.min(123));
+            rules.update("stringProp", Equals.notNull(), Condition.of("stringProp", Equals.notNull())).doNotSerialize();
+        final String jsonResult = rules.serializeToJson();
+        final String expected = SCHEMA_VERSION_JSON + """
+                "mandatoryRules":{},
+                "immutableRules":{},
+                "contentRules":{"classone":{"stringProp":[{"constraint":{"type":"SIZE","min":123}}]}},
+                "updateRules":{}}
+                """.replace("\n", "");
+        assertEquals(expected, jsonResult);
     }
 
 
@@ -130,8 +136,12 @@ public class ValidationRulesTest {
     public void serializeEmptyRulesInstance() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
         final String jsonResult = rules.serializeToJson();
-        final String expected = Util.doubleQuote("{'schema-version':'" + SCHEMA_VERSION + "','mandatoryRules':{},'immutableRules':{}," +
-                "'contentRules':{},'updateRules':{}}");
+        final String expected = SCHEMA_VERSION_JSON + """
+                "mandatoryRules":{},
+                "immutableRules":{},
+                "contentRules":{},
+                "updateRules":{}}
+                """.replace("\n", "");
         assertEquals(expected, jsonResult);
     }
 
@@ -140,8 +150,12 @@ public class ValidationRulesTest {
         ValidationRules<ClassOne> cond1 = new ValidationRules<>(ClassOne.class);
         ValidationRules<ClassTwo> cond2 = new ValidationRules<>(ClassTwo.class);
         final String jsonResult = ValidationRules.serializeToJson(cond1, cond2);
-        final String expected = Util.doubleQuote("{'schema-version':'" + SCHEMA_VERSION + "','mandatoryRules':{},'immutableRules':{}," +
-                "'contentRules':{},'updateRules':{}}");
+        final String expected = SCHEMA_VERSION_JSON + """
+                "mandatoryRules":{},
+                "immutableRules":{},
+                "contentRules":{},
+                "updateRules":{}}
+                """.replace("\n", "");
         assertEquals(expected, jsonResult);
     }
 
@@ -154,11 +168,12 @@ public class ValidationRulesTest {
         cond2.immutable("stringProp");
         cond2.content("stringProp", Equals.any("Foo"));
         String jsonResult = ValidationRules.serializeToJson(cond1, cond2);
-        final String expected = Util.doubleQuote("{'schema-version':'" + SCHEMA_VERSION + "'," +
-                "'mandatoryRules':{'classone':{'stringArrayProp':[]}}," +
-                "'immutableRules':{'classone':{'stringProp':[]},'classtwo':{'stringProp':[]}}," +
-                "'contentRules':{'classtwo':{'stringProp':[{'constraint':{'type':'EQUALS_ANY','values':['Foo']}}]}}," +
-                "'updateRules':{}}");
+        final String expected = SCHEMA_VERSION_JSON + """
+                "mandatoryRules":{"classone":{"stringArrayProp":[]}},
+                "immutableRules":{"classone":{"stringProp":[]},"classtwo":{"stringProp":[]}},
+                "contentRules":{"classtwo":{"stringProp":[{"constraint":{"type":"EQUALS_ANY","values":["Foo"]}}]}},
+                "updateRules":{}}
+                """.replace("\n", "");
         assertEquals(expected, jsonResult);
 
     }
@@ -170,12 +185,13 @@ public class ValidationRulesTest {
         cond1.immutable("stringProp", Permissions.any("BAR"));
         cond1.immutable("stringProp");
         String jsonResult = ValidationRules.serializeToJson(cond1);
-        final String expected = Util.doubleQuote("{'schema-version':'" + SCHEMA_VERSION + "'," +
-                "'mandatoryRules':{}," +
-                "'immutableRules':{'classone':{'stringProp':[{'permissions':{'type':'ANY','values':['FOO']}}," +
-                "{'permissions':{'type':'ANY','values':['BAR']}},{}]}}," +
-                "'contentRules':{}," +
-                "'updateRules':{}}");
+        final String expected = SCHEMA_VERSION_JSON + """
+                "mandatoryRules":{},
+                "immutableRules":{"classone":{"stringProp":[{"permissions":{"type":"ANY","values":["FOO"]}},
+                {"permissions":{"type":"ANY","values":["BAR"]}},{}]}},
+                "contentRules":{},
+                "updateRules":{}}
+                """.replace("\n", "");
         assertEquals(expected, jsonResult);
     }
 
@@ -184,15 +200,14 @@ public class ValidationRulesTest {
         assertTrue(true);
     }
 
-
-    class ClassOne {
+    static class ClassOne {
         private String stringProp;
         private String[] stringArrayProp;
         private List<String> stringListProp;
         private List<? extends Number> extNumber;
-        private List<? super Integer> supInteger = new ArrayList<>();
-        private List<Integer> integerList = new ArrayList<>();
-        private List<UUID> uuidList = new ArrayList<>();
+        private final List<? super Integer> supInteger = new ArrayList<>();
+        private final List<Integer> integerList = new ArrayList<>();
+        private final List<UUID> uuidList = new ArrayList<>();
         public String getStringProp() {
             return stringProp;
         }

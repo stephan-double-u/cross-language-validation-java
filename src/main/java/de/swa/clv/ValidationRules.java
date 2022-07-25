@@ -25,10 +25,10 @@ public class ValidationRules<T> {
     public static final Permissions NO_PERMISSIONS = Permissions.any(new String[0]);
     public static final ConditionsTopGroup NO_CONDITIONS_TOP_GROUP = ConditionsTopGroup.AND();
 
-    private final PropertyConditionsMap mandatoryConditionsMap = new PropertyConditionsMap();
-    private final PropertyConditionsMap immutableConditionsMap = new PropertyConditionsMap();
-    private final PropertyConditionsMap contentConditionsMap = new PropertyConditionsMap();
-    private final PropertyConditionsMap updateConditionsMap = new PropertyConditionsMap();
+    private final PropertyRulesMap mandatoryRulesMap = new PropertyRulesMap();
+    private final PropertyRulesMap immutableRulesMap = new PropertyRulesMap();
+    private final PropertyRulesMap contentRulesMap = new PropertyRulesMap();
+    private final PropertyRulesMap updateRulesMap = new PropertyRulesMap();
 
     private final Class<T> typeClass;
     private String typeJsonKey;
@@ -40,35 +40,35 @@ public class ValidationRules<T> {
     }
 
     public Set<String> getMandatoryConditionsKeys() {
-        return mandatoryConditionsMap.keySet();
+        return mandatoryRulesMap.keySet();
     }
 
-    public List<Conditions> getMandatoryConditionsList(final String property) {
-        return mandatoryConditionsMap.get(property);
+    public List<ValidationRule> getMandatoryValidationRules(final String property) {
+        return mandatoryRulesMap.get(property);
     }
 
     public Set<String> getImmutableConditionsKeys() {
-        return immutableConditionsMap.keySet();
+        return immutableRulesMap.keySet();
     }
 
-    public List<Conditions> getImmutableConditionsList(final String property) {
-        return immutableConditionsMap.get(property);
+    public List<ValidationRule> getImmutableValidationRules(final String property) {
+        return immutableRulesMap.get(property);
     }
 
     public Set<String> getContentConditionsKeys() {
-        return contentConditionsMap.keySet();
+        return contentRulesMap.keySet();
     }
 
-    public List<Conditions> getContentConditionsList(final String property) {
-        return contentConditionsMap.get(property);
+    public List<ValidationRule> getContentValidationRules(final String property) {
+        return contentRulesMap.get(property);
     }
 
     public Set<String> getUpdateConditionsKeys() {
-        return updateConditionsMap.keySet();
+        return updateRulesMap.keySet();
     }
 
-    public List<Conditions> getUpdateConditionsList(final String property) {
-        return updateConditionsMap.get(property);
+    public List<ValidationRule> getUpdateValidationRules(final String property) {
+        return updateRulesMap.get(property);
     }
 
     public Class<T> getTypeClass() {
@@ -85,7 +85,7 @@ public class ValidationRules<T> {
      *
      * @param property the property name
      */
-    public Conditions mandatory(final String property) {
+    public ValidationRule mandatory(final String property) {
         return mandatory(property, NO_PERMISSIONS, NO_CONDITIONS_TOP_GROUP);
     }
 
@@ -95,7 +95,7 @@ public class ValidationRules<T> {
      * @param property the property name
      * @param propConstraint the property constraint
      */
-    public Conditions mandatory(final String property, final PropConstraint propConstraint) {
+    public ValidationRule mandatory(final String property, final PropConstraint propConstraint) {
         return mandatory(property, NO_PERMISSIONS, ConditionsGroup.AND(propConstraint));
     }
 
@@ -107,7 +107,7 @@ public class ValidationRules<T> {
      * @param property           the property name
      * @param conditionsAndGroup the ConditionsAndGroup
      */
-    public Conditions mandatory(final String property, final ConditionsAndGroup conditionsAndGroup) {
+    public ValidationRule mandatory(final String property, final ConditionsAndGroup conditionsAndGroup) {
         return mandatory(property, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup));
     }
 
@@ -119,7 +119,7 @@ public class ValidationRules<T> {
      * @param property       the property name
      * @param conditionsOrGroup the ConditionsOrGroup
      */
-    public Conditions mandatory(final String property, final ConditionsOrGroup conditionsOrGroup) {
+    public ValidationRule mandatory(final String property, final ConditionsOrGroup conditionsOrGroup) {
         return mandatory(property, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup));
     }
 
@@ -133,7 +133,7 @@ public class ValidationRules<T> {
      * @param property       the property name
      * @param topGroup the ConditionsTopGroup
      */
-    public Conditions mandatory(final String property, final ConditionsTopGroup topGroup) {
+    public ValidationRule mandatory(final String property, final ConditionsTopGroup topGroup) {
         return mandatory(property, NO_PERMISSIONS, topGroup);
     }
 
@@ -143,7 +143,7 @@ public class ValidationRules<T> {
      * @param property    the property name
      * @param permissions the permissions
      */
-    public Conditions mandatory(final String property, final Permissions permissions) {
+    public ValidationRule mandatory(final String property, final Permissions permissions) {
         return mandatory(property, permissions, NO_CONDITIONS_TOP_GROUP);
     }
 
@@ -153,7 +153,7 @@ public class ValidationRules<T> {
      * @param property       the property name
      * @param propConstraint the property constraint
      */
-    public Conditions mandatory(final String property, final Permissions permissions,
+    public ValidationRule mandatory(final String property, final Permissions permissions,
             final PropConstraint propConstraint) {
         return mandatory(property, permissions, ConditionsGroup.AND(propConstraint));
     }
@@ -166,7 +166,7 @@ public class ValidationRules<T> {
      * @param property       the property name
      * @param conditionsAndGroup the ConditionsAndGroup
      */
-    public Conditions mandatory(final String property, final Permissions permissions,
+    public ValidationRule mandatory(final String property, final Permissions permissions,
             final ConditionsAndGroup conditionsAndGroup) {
         return mandatory(property, permissions, ConditionsTopGroup.OR(conditionsAndGroup));
     }
@@ -179,7 +179,7 @@ public class ValidationRules<T> {
      * @param property       the property name
      * @param conditionsOrGroup the ConditionsOrGroup
      */
-    public Conditions mandatory(final String property, final Permissions permissions,
+    public ValidationRule mandatory(final String property, final Permissions permissions,
             final ConditionsOrGroup conditionsOrGroup) {
         return mandatory(property, permissions, ConditionsTopGroup.AND(conditionsOrGroup));
     }
@@ -198,55 +198,55 @@ public class ValidationRules<T> {
      * @param permissions the permissions
      * @param topGroup the ConditionsTopGroup
      */
-    public Conditions mandatory(final String property, final Permissions permissions, final ConditionsTopGroup topGroup) {
+    public ValidationRule mandatory(final String property, final Permissions permissions, final ConditionsTopGroup topGroup) {
         return addPropertyConditions(property, NO_CONSTRAINT, permissions, topGroup,
-                mandatoryConditionsMap.getOrInit(property), false);
+                mandatoryRulesMap.getOrInit(property), false);
     }
 
 
-    public Conditions immutable(final String property) {
+    public ValidationRule immutable(final String property) {
         return immutable(property, NO_PERMISSIONS, NO_CONDITIONS_TOP_GROUP);
     }
 
-    public Conditions immutable(final String property, final PropConstraint propConstraint) {
+    public ValidationRule immutable(final String property, final PropConstraint propConstraint) {
         return immutable(property, NO_PERMISSIONS, ConditionsGroup.AND(propConstraint));
     }
 
-    public Conditions immutable(final String property, final ConditionsAndGroup conditionsAndGroup) {
+    public ValidationRule immutable(final String property, final ConditionsAndGroup conditionsAndGroup) {
         return immutable(property, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup));
     }
 
-    public Conditions immutable(final String property, final ConditionsOrGroup conditionsOrGroup) {
+    public ValidationRule immutable(final String property, final ConditionsOrGroup conditionsOrGroup) {
         return immutable(property, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup));
     }
 
-    public Conditions immutable(final String property, final ConditionsTopGroup topGroup) {
+    public ValidationRule immutable(final String property, final ConditionsTopGroup topGroup) {
         return immutable(property, NO_PERMISSIONS, topGroup);
     }
 
-    public Conditions immutable(final String property, final Permissions permissions) {
+    public ValidationRule immutable(final String property, final Permissions permissions) {
         return immutable(property, permissions, NO_CONDITIONS_TOP_GROUP);
     }
 
-    public Conditions immutable(final String property, final Permissions permissions,
+    public ValidationRule immutable(final String property, final Permissions permissions,
             final PropConstraint propConstraint) {
         return immutable(property, permissions, ConditionsGroup.AND(propConstraint));
     }
 
-    public Conditions immutable(final String property, final Permissions permissions,
+    public ValidationRule immutable(final String property, final Permissions permissions,
             final ConditionsAndGroup conditionsAndGroup) {
         return immutable(property, permissions, ConditionsTopGroup.OR(conditionsAndGroup));
     }
 
-    public Conditions immutable(final String property, final Permissions permissions,
+    public ValidationRule immutable(final String property, final Permissions permissions,
             final ConditionsOrGroup conditionsOrGroup) {
         return immutable(property, permissions, ConditionsTopGroup.AND(conditionsOrGroup));
     }
 
-    public Conditions immutable(final String property, final Permissions permissions,
+    public ValidationRule immutable(final String property, final Permissions permissions,
             final ConditionsTopGroup topGroup) {
         return addPropertyConditions(property, NO_CONSTRAINT, permissions, topGroup,
-                immutableConditionsMap.getOrInit(property), false);
+                immutableRulesMap.getOrInit(property), false);
     }
 
 
@@ -256,7 +256,7 @@ public class ValidationRules<T> {
      * @param property       the property name
      * @param constraint the constraint
      */
-    public Conditions content(final String property, final ConstraintRoot constraint) {
+    public ValidationRule content(final String property, final ConstraintRoot constraint) {
         return content(property, constraint, NO_PERMISSIONS, NO_CONDITIONS_TOP_GROUP);
     }
 
@@ -267,22 +267,22 @@ public class ValidationRules<T> {
      * @param constraint the constraint
      * @param propConstraint the property constraint
      */
-    public Conditions content(final String property, final ConstraintRoot constraint,
+    public ValidationRule content(final String property, final ConstraintRoot constraint,
             final PropConstraint propConstraint) {
         return content(property, constraint, NO_PERMISSIONS, ConditionsGroup.AND(propConstraint));
     }
 
-    public Conditions content(final String property, final ConstraintRoot constraint,
+    public ValidationRule content(final String property, final ConstraintRoot constraint,
             final ConditionsAndGroup conditionsAndGroup) {
         return content(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup));
     }
 
-    public Conditions content(final String property, final ConstraintRoot constraint,
+    public ValidationRule content(final String property, final ConstraintRoot constraint,
             final ConditionsOrGroup conditionsOrGroup) {
         return content(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup));
     }
 
-    public Conditions content(final String property, final ConstraintRoot constraint,
+    public ValidationRule content(final String property, final ConstraintRoot constraint,
             final ConditionsTopGroup topGroup) {
         return content(property, constraint, NO_PERMISSIONS, topGroup);
     }
@@ -293,7 +293,7 @@ public class ValidationRules<T> {
      * @param constraint the constraint
      * @param permissions the permissions
      */
-    public Conditions content(final String property, final ConstraintRoot constraint, final Permissions permissions) {
+    public ValidationRule content(final String property, final ConstraintRoot constraint, final Permissions permissions) {
         return content(property, constraint, permissions, NO_CONDITIONS_TOP_GROUP);
     }
 
@@ -307,71 +307,71 @@ public class ValidationRules<T> {
      * @param permissions permissions that restrict the validity of the rule.
      * @param propConstraint one or more property related conditions that restrict the validity of the rule.
      */
-    public Conditions content(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public ValidationRule content(final String property, final ConstraintRoot constraint, final Permissions permissions,
                         final PropConstraint propConstraint) {
         return content(property, constraint, permissions, ConditionsGroup.AND(propConstraint));
     }
 
-    public Conditions content(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public ValidationRule content(final String property, final ConstraintRoot constraint, final Permissions permissions,
                         final ConditionsAndGroup constraintsAndGroup) {
         return content(property, constraint, permissions, ConditionsTopGroup.OR(constraintsAndGroup));
     }
 
-    public Conditions content(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public ValidationRule content(final String property, final ConstraintRoot constraint, final Permissions permissions,
                         final ConditionsOrGroup constraintsOrGroups) {
         return content(property, constraint, permissions, ConditionsTopGroup.AND(constraintsOrGroups));
     }
 
-    public Conditions content(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public ValidationRule content(final String property, final ConstraintRoot constraint, final Permissions permissions,
                         final ConditionsTopGroup topGroup) {
         return addPropertyConditions(property, constraint, permissions, topGroup,
-                contentConditionsMap.getOrInit(property), true);
+                contentRulesMap.getOrInit(property), true);
     }
 
 
-    public Conditions update(final String property, final ConstraintRoot constraint,
+    public ValidationRule update(final String property, final ConstraintRoot constraint,
             final PropConstraint propConstraint) {
         return update(property, constraint, NO_PERMISSIONS, ConditionsGroup.AND(propConstraint));
     }
 
-    public Conditions update(final String property, final ConstraintRoot constraint,
+    public ValidationRule update(final String property, final ConstraintRoot constraint,
                        final ConditionsAndGroup conditionsAndGroup) {
         return update(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup));
     }
 
-    public Conditions update(final String property, final ConstraintRoot constraint,
+    public ValidationRule update(final String property, final ConstraintRoot constraint,
                        final ConditionsOrGroup conditionsOrGroup) {
         return update(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup));
     }
 
-    public Conditions update(final String property, final ConstraintRoot constraint, final ConditionsTopGroup topGroup) {
+    public ValidationRule update(final String property, final ConstraintRoot constraint, final ConditionsTopGroup topGroup) {
         return update(property, constraint, NO_PERMISSIONS, topGroup);
     }
 
-    public Conditions update(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public ValidationRule update(final String property, final ConstraintRoot constraint, final Permissions permissions,
             final PropConstraint propConstraint) {
         return update(property, constraint, permissions, ConditionsGroup.AND(propConstraint));
     }
 
-    public Conditions update(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public ValidationRule update(final String property, final ConstraintRoot constraint, final Permissions permissions,
                        final ConditionsAndGroup conditionsAndGroup) {
         return update(property, constraint, permissions, ConditionsTopGroup.OR(conditionsAndGroup));
     }
 
-    public Conditions update(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public ValidationRule update(final String property, final ConstraintRoot constraint, final Permissions permissions,
                        final ConditionsOrGroup conditionsOrGroup) {
         return update(property, constraint, permissions, ConditionsTopGroup.AND(conditionsOrGroup));
     }
 
-    public Conditions update(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public ValidationRule update(final String property, final ConstraintRoot constraint, final Permissions permissions,
             final ConditionsTopGroup topGroup) {
         return addPropertyConditions(property, constraint, permissions, topGroup,
-                updateConditionsMap.getOrInit(property), true);
+                updateRulesMap.getOrInit(property), true);
     }
 
-    public Conditions addPropertyConditions(final String property, final ConstraintRoot constraint,
+    public ValidationRule addPropertyConditions(final String property, final ConstraintRoot constraint,
             final Permissions permissions, final ConditionsTopGroup topGroup,
-            List<Conditions> conditionsList,
+            List<ValidationRule> validationRuleList,
             boolean isAggregateFunctionAllowed) {
         Objects.requireNonNull(property, "property must not be null");
         Objects.requireNonNull(constraint, "constraint must not be null");
@@ -391,9 +391,9 @@ public class ValidationRules<T> {
             validateConstraint(property, constraint);
         }
         validatePropertyAndConditions(property, topGroup);
-        Conditions newConditions = new Conditions(constraint, permissions, topGroup);
-        conditionsList.add(newConditions);
-        return newConditions;
+        ValidationRule newValidationRule = new ValidationRule(property, constraint, permissions, topGroup);
+        validationRuleList.add(newValidationRule);
+        return newValidationRule;
     }
 
     //TODO remove permanently if decision is made that permission validation makes no sense
@@ -492,43 +492,43 @@ public class ValidationRules<T> {
 
     public static String serializeToJson(final ValidationRules<?>... rules) {
         final List<ValidationRules<?>> validationRulesList = Arrays.asList(rules);
-        String json = asKey("schema-version") + quoted(SCHEMA_VERSION) + ",";
-        json += asKey("mandatoryRules") + asObject(validationRulesList.stream()
+        String jsonAll = asKey("schema-version") + quoted(SCHEMA_VERSION) + ",";
+        jsonAll += asKey("mandatoryRules") + asObject(validationRulesList.stream()
                 .map(ValidationRules::serializeMandatoryRules)
-                .filter(j -> !j.isEmpty())
+                .filter(json -> !json.isEmpty())
                 .collect(Collectors.joining(","))) + ",";
-        json += asKey("immutableRules") + asObject(validationRulesList.stream()
+        jsonAll += asKey("immutableRules") + asObject(validationRulesList.stream()
                 .map(ValidationRules::serializeImmutableRules)
-                .filter(j -> !j.isEmpty())
+                .filter(json -> !json.isEmpty())
                 .collect(Collectors.joining(","))) + ",";
-        json += asKey("contentRules") + asObject(validationRulesList.stream()
+        jsonAll += asKey("contentRules") + asObject(validationRulesList.stream()
                 .map(ValidationRules::serializeContentRules)
-                .filter(j -> !j.isEmpty())
+                .filter(json -> !json.isEmpty())
                 .collect(Collectors.joining(","))) + ",";
-        json += asKey("updateRules") + asObject(validationRulesList.stream()
+        jsonAll += asKey("updateRules") + asObject(validationRulesList.stream()
                 .map(ValidationRules::serializeUpdateRules)
-                .filter(j -> !j.isEmpty())
+                .filter(json -> !json.isEmpty())
                 .collect(Collectors.joining(",")));
-        return asObject(json);
+        return asObject(jsonAll);
     }
 
     private String serializeMandatoryRules() {
-        final String mapJson = mandatoryConditionsMap.serializeToJson();
+        final String mapJson = mandatoryRulesMap.serializeToJson();
         return !mapJson.isEmpty() ? asKey(typeJsonKey) + asObject(mapJson) : "";
     }
 
     private String serializeImmutableRules() {
-        final String mapJson = immutableConditionsMap.serializeToJson();
+        final String mapJson = immutableRulesMap.serializeToJson();
         return !mapJson.isEmpty() ? asKey(typeJsonKey) + asObject(mapJson): "";
     }
 
     private String serializeContentRules() {
-        final String mapJson = contentConditionsMap.serializeToJson();
+        final String mapJson = contentRulesMap.serializeToJson();
         return !mapJson.isEmpty() ? asKey(typeJsonKey) + asObject(mapJson): "";
     }
 
     private String serializeUpdateRules() {
-        final String mapJson = updateConditionsMap.serializeToJson();
+        final String mapJson = updateRulesMap.serializeToJson();
         return !mapJson.isEmpty() ? asKey(typeJsonKey) + asObject(mapJson): "";
     }
 

@@ -8,18 +8,25 @@ import de.swa.clv.groups.ConditionsTopGroup;
 import static de.swa.clv.json.JsonUtil.asKey;
 import static de.swa.clv.json.JsonUtil.asObject;
 
-public class Conditions {
+public class ValidationRule {
 
+    private String property;
     private final ConstraintRoot constraint;
     private final Permissions permissions;
     private final ConditionsTopGroup conditionsTopGroup;
     private ErrorCodeControl errorCodeControl;
     private boolean doNotSerialize = false;
 
-    public Conditions(ConstraintRoot constraint, Permissions permissions, ConditionsTopGroup conditionsTopGroup) {
+    public ValidationRule(String property, ConstraintRoot constraint, Permissions permissions,
+            ConditionsTopGroup conditionsTopGroup) {
+        this.property = property;
         this.constraint = constraint;
         this.permissions = permissions;
         this.conditionsTopGroup = conditionsTopGroup;
+    }
+
+    public String getProperty() {
+        return property;
     }
 
     public ConstraintRoot getConstraint() {
@@ -38,12 +45,16 @@ public class Conditions {
         return errorCodeControl;
     }
 
-    public Conditions errorCodeControl(UseType type, String code) {
+    public ValidationRule errorCodeControl(UseType type, String code) {
         errorCodeControl = ErrorCodeControl.of(type, code);
         return this;
     }
 
-    public Conditions doNotSerialize() {
+    public boolean isDoNotSerialize() {
+        return doNotSerialize;
+    }
+
+    public ValidationRule doNotSerialize() {
         doNotSerialize = true;
         return this;
     }
