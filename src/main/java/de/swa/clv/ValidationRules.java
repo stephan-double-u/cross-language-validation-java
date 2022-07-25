@@ -486,6 +486,10 @@ public class ValidationRules<T> {
         return typeJsonKey;
     }
 
+    public String serializeToJson() {
+        return serializeToJson(this);
+    }
+
     public static String serializeToJson(final ValidationRules<?>... rules) {
         final List<ValidationRules<?>> validationRulesList = Arrays.asList(rules);
         String json = asKey("schema-version") + quoted(SCHEMA_VERSION) + ",";

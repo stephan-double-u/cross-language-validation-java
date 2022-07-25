@@ -55,6 +55,7 @@ public class Validator {
     public List<String> validateMandatoryRules(final Object object, final UserPermissions userPermissions,
             final ValidationRules<?> rules) {
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
+        //TODO refactor: use argument rules.getMandatoryConditionsList(property) instead of rules!?
         return rules.getMandatoryConditionsKeys().stream()
                 .map(property -> validateMandatoryPropertyRules(property, object, userPermissions, rules))
                 .filter(Optional::isPresent)
@@ -189,7 +190,6 @@ public class Validator {
         }
         return code;
     }
-
 
     private Optional<Conditions> getMatchingConditions(final String property, final Object object,
             final UserPermissions userPermissions,
