@@ -56,24 +56,20 @@ public class Validator {
             final ValidationRules<?> rules) {
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
         //TODO refactor: use argument rules.getMandatoryConditionsList(property) instead of rules!?
-        return rules.getMandatoryConditionsKeys().stream()
-                .map(property -> validateMandatoryPropertyRules(property, object, userPermissions, rules))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+        return rules.getMandatoryRulesKeys().stream()
+                .flatMap(property -> validateMandatoryPropertyRules(property, object, userPermissions, rules).stream())
                 .collect(Collectors.toList());
     }
 
-    private Optional<String> validateMandatoryPropertyRules(final String property, final Object object,
+    private List<String> validateMandatoryPropertyRules(final String property, final Object object,
             final UserPermissions userPermissions, final ValidationRules<?> rules) {
-        final Optional<ValidationRule> conditionsOpt = getMatchingRule(property, object, userPermissions, rules,
+        final List<ValidationRule> matchingRules = getMatchingRules(property, object, userPermissions, rules,
                 RulesType.MANDATORY);
-        log.debug("{}.{} IS{} mandatory", rules.getSimpleTypeName(), property, (conditionsOpt.isPresent() ? "" : "NOT"));
-        if (conditionsOpt.isPresent()
-                && !constraintIsMet(Condition.of(property, Equals.notNull()), object)) {
-            return Optional.of(buildErrorMessage(defaultMandatoryMessagePrefix, null, rules.getTypeJsonKey(),
-                    conditionsOpt.get().getErrorCodeControl(), property));
-        }
-        return Optional.empty();
+        log.debug("{}.{} IS{} mandatory", rules.getSimpleTypeName(), property, (matchingRules.isEmpty() ? " NOT" : ""));
+        return matchingRules.stream()
+                .filter(rule -> !constraintIsMet(Condition.of(property, Equals.notNull()), object))
+                .map(rule -> buildErrorMessage(defaultMandatoryMessagePrefix, null, rules.getTypeJsonKey(),
+                        rule.getErrorCodeControl(), property)).toList();
     }
 
 
@@ -88,25 +84,21 @@ public class Validator {
         if (originalObject.getClass() != modifiedObject.getClass()) {
             throw new IllegalArgumentException("originalObject and modifiedObject must have same type");
         }
-        return rules.getImmutableConditionsKeys().stream()
-                .map(property -> validateImmutablePropertyRules(property, originalObject, modifiedObject,
-                        userPermissions, rules))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+        return rules.getImmutableRulesKeys().stream()
+                .flatMap(property -> validateImmutablePropertyRules(property, originalObject, modifiedObject,
+                        userPermissions, rules).stream())
                 .collect(Collectors.toList());
     }
 
-    private Optional<String> validateImmutablePropertyRules(final String property, final Object originalObject,
+    private List<String> validateImmutablePropertyRules(final String property, final Object originalObject,
             final Object modifiedObject, final UserPermissions userPermissions, final ValidationRules<?> rules) {
-        final Optional<ValidationRule> conditionsOpt = getMatchingRule(property, originalObject, userPermissions,
+        final List<ValidationRule> matchingRules = getMatchingRules(property, originalObject, userPermissions,
                 rules, RulesType.IMMUTABLE);
-        log.debug("{}.{} IS{} immutable", rules.getSimpleTypeName(), property, (conditionsOpt.isPresent() ? "" : "NOT"));
-        if (conditionsOpt.isPresent()
-                && !propertyValuesEquals(property, originalObject, modifiedObject)) {
-            return Optional.of(buildErrorMessage(defaultImmutableMessagePrefix, null, rules.getTypeJsonKey(),
-                    conditionsOpt.get().getErrorCodeControl(), property));
-        }
-        return Optional.empty();
+        log.debug("{}.{} IS{} immutable", rules.getSimpleTypeName(), property, (matchingRules.isEmpty() ? " NOT" : ""));
+        return matchingRules.stream()
+                .filter(rule -> !propertyValuesEquals(property, originalObject, modifiedObject))
+                .map(rule -> buildErrorMessage(defaultImmutableMessagePrefix, null, rules.getTypeJsonKey(),
+                        rule.getErrorCodeControl(), property)).toList();
     }
 
 
@@ -117,19 +109,16 @@ public class Validator {
     public List<String> validateContentRules(final Object object, final UserPermissions userPermissions,
             final ValidationRules<?> rules) {
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
-
-        return rules.getContentConditionsKeys().stream()
-                .map(property -> validateContentPropertyRules(property, object, userPermissions, rules))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+        return rules.getContentRulesKeys().stream()
+                .flatMap(property -> validateContentPropertyRules(property, object, userPermissions, rules).stream())
                 .collect(Collectors.toList());
     }
 
-    private Optional<String> validateContentPropertyRules(final String property, final Object object,
+    private List<String> validateContentPropertyRules(final String property, final Object object,
             final UserPermissions userPermissions, final ValidationRules<?> rules) {
-        Optional<ValidationRule> conditionsOpt = getMatchingRule(property, object, userPermissions, rules,
+        List<ValidationRule> matchingRules = getMatchingRules(property, object, userPermissions, rules,
                 RulesType.CONTENT);
-        return validatePropertyRule(property, object, rules.getTypeJsonKey(), conditionsOpt,
+        return validatePropertyRule(property, object, rules.getTypeJsonKey(), matchingRules,
                 defaultContentMessagePrefix);
     }
 
@@ -144,33 +133,26 @@ public class Validator {
         if (originalObject.getClass() != modifiedObject.getClass()) {
             throw new IllegalArgumentException("originalObject and modifiedObject must have same type");
         }
-        return rules.getUpdateConditionsKeys().stream()
-                .map(property -> validateUpdatePropertyRules(property, originalObject, modifiedObject, userPermissions,
-                        rules))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+        return rules.getUpdateRulesKeys().stream()
+                .flatMap(property -> validateUpdatePropertyRules(property, originalObject, modifiedObject, userPermissions,
+                        rules).stream())
                 .collect(Collectors.toList());
     }
 
-    private Optional<String> validateUpdatePropertyRules(final String property, final Object originalObject,
+    private List<String> validateUpdatePropertyRules(final String property, final Object originalObject,
             final Object modifiedObject, final UserPermissions userPermissions, final ValidationRules<?> rules) {
-        Optional<ValidationRule> conditionsOpt = getMatchingRule(property, originalObject, userPermissions, rules,
+        List<ValidationRule> matchingRules = getMatchingRules(property, originalObject, userPermissions, rules,
                 RulesType.UPDATE);
-        return validatePropertyRule(property, modifiedObject, rules.getTypeJsonKey(), conditionsOpt,
+        return validatePropertyRule(property, modifiedObject, rules.getTypeJsonKey(), matchingRules,
                 defaultUpdateMessagePrefix);
     }
 
-    private Optional<String> validatePropertyRule(String property, Object object, String typeJsonKey,
-            Optional<ValidationRule> conditionsOpt, String defaultMessagePrefix) {
-        if (conditionsOpt.isPresent()) {
-            ValidationRule propValidationRule = conditionsOpt.get();
-            ConstraintRoot constraint = propValidationRule.getConstraint();
-            if (!constraintIsMet(Condition.of(property, constraint), object)) {
-                return Optional.of(buildErrorMessage(defaultMessagePrefix, constraint, typeJsonKey,
-                        propValidationRule.getErrorCodeControl(), property));
-            }
-        }
-        return Optional.empty();
+    private List<String> validatePropertyRule(String property, Object object, String typeJsonKey,
+            List<ValidationRule> rules, String defaultMessagePrefix) {
+        return rules.stream()
+                .filter(rule -> !constraintIsMet(Condition.of(property, rule.getConstraint()), object))
+                .map(rule -> buildErrorMessage(defaultMessagePrefix, rule.getConstraint(), typeJsonKey,
+                        rule.getErrorCodeControl(), property)).toList();
     }
 
     private String buildErrorMessage(String defaultMessagePrefix, ConstraintRoot constraint, String typeJsonKey,
@@ -191,10 +173,8 @@ public class Validator {
         return code;
     }
 
-    private Optional<ValidationRule> getMatchingRule(final String property, final Object object,
-            final UserPermissions userPermissions,
-            final ValidationRules<?> rules,
-            RulesType rulesType) {
+    private List<ValidationRule> getMatchingRules(final String property, final Object object,
+            final UserPermissions userPermissions, final ValidationRules<?> rules, RulesType rulesType) {
         Objects.requireNonNull(property, ERR_MSG_PROPERTY_NULL);
         Objects.requireNonNull(object, ERR_MSG_OBJECT_NULL);
         Objects.requireNonNull(userPermissions, ERR_MSG_USER_PERMISSIONS_NULL);
@@ -210,11 +190,10 @@ public class Validator {
         log.debug("Validate #{} {} rules for {}.{}",
                 validationRuleList.size(), rulesType, rules.getSimpleTypeName(), property);
 
-        Optional<ValidationRule> conditions = getMatchingRule(validationRuleList, object, userPermissions);
+        List<ValidationRule> matchingRule = getMatchingRules(validationRuleList, object, userPermissions);
 
-        log.debug("{}.{} has{} matching {} rule", rules.getSimpleTypeName(), property,
-                (conditions.isPresent() ? "" : " NO"), rulesType);
-        return conditions;
+        log.debug("{}.{} has {} matching {} rules", rules.getSimpleTypeName(), property, matchingRule.size(), rulesType);
+        return matchingRule;
     }
 
     private void validateArguments(final String property, final Object object, final ValidationRules<?> rules) {
@@ -229,22 +208,20 @@ public class Validator {
         INSTANCE.validateProperty(property, typeClass); // TODO? optional here
     }
 
-    private Optional<ValidationRule> getMatchingRule(List<ValidationRule> validationRules, Object object,
+    private List<ValidationRule> getMatchingRules(List<ValidationRule> validationRules, Object object,
             UserPermissions userPermissions) {
-        // find first rule with matching permission and valid reference constraints
-        Optional<ValidationRule> ruleOpt = validationRules.stream()
+        // find all rules with matching permission and matching conditions
+        List<ValidationRule> matchingRules = validationRules.stream()
                 .filter(rule -> rule.getPermissions().validate(userPermissions.getValues()))
-                .peek(rule -> log.debug("Checking rule with matching permissions"))
                 .filter(rule -> allConstraintsAreMet(rule.getConditionsTopGroup(), object))
-                .findFirst();
-        // find first default rule (w/o any permission) and valid reference constraints
-        if (!ruleOpt.isPresent())
-            ruleOpt = validationRules.stream()
+                .toList();
+        // find all default rules (w/o any permission) with matching conditions
+        if (matchingRules.isEmpty())
+            matchingRules = validationRules.stream()
                     .filter(rule -> rule.getPermissions() == NO_PERMISSIONS)
-                    .peek(rule -> log.debug("Checking rule without permissions"))
                     .filter(rule -> allConstraintsAreMet(rule.getConditionsTopGroup(), object))
-                    .findFirst();
-        return ruleOpt;
+                    .toList();
+        return matchingRules;
     }
 
     /**

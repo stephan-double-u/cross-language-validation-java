@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import static de.swa.clv.json.JsonUtil.*;
 
-//@SuppressWarnings("squid:S100")
+@SuppressWarnings("squid:S100")
 public class ConditionsTopGroup implements JsonSerializable {
 
     private final LogicalOperator logicalOperator;

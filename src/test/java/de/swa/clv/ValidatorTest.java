@@ -89,7 +89,7 @@ public class ValidatorTest {
                 "subClassArrayProp[3].stringListProp[8]",
                 "subClassArrayProp[3].stringListProp[9]");
 
-        List<String> inflated = Validator.instance().inflateIndexedProperty("subClassArrayProp[2,3].stringListProp[7-9]", new ClassUnderTest());
+        List<String> inflated = Validator.instance().inflateIndexedProperty("subClassArrayProp[9].stringListProp[7-9]", new ClassUnderTest());
 
         assertEquals(expected, inflated);
     }
@@ -99,8 +99,14 @@ public class ValidatorTest {
     @Before
     public void before() {
         classUnderTestRules = new ValidationRules<>(ClassUnderTest.class);
-        classUnderTestRules.mandatory("stringProp");
-        classUnderTestRules.immutable("enumProp");
+        classUnderTestRules.mandatory("stringProp", Condition.of("utilDate", Equals.notNull()))
+                .errorCodeControl(UseType.AS_SUFFIX, "#1st");
+        classUnderTestRules.mandatory("stringProp", Condition.of("enumProp", Equals.notNull()))
+                .errorCodeControl(UseType.AS_SUFFIX, "#2nd");
+        classUnderTestRules.immutable("enumProp", Condition.of("utilDate", Equals.notNull()))
+                .errorCodeControl(UseType.AS_SUFFIX, "#1st");
+        classUnderTestRules.immutable("enumProp", Condition.of("stringProp", Equals.null_()))
+                .errorCodeControl(UseType.AS_SUFFIX, "#2nd");
     }
 
     @Test
@@ -186,9 +192,11 @@ public class ValidatorTest {
 
     @Test
     public void validateMandatoryRules_false() {
-        ClassUnderTest object = new ClassUnderTest(null, null);
+        ClassUnderTest object = new ClassUnderTest(null, SomeEnum.ONE);
         List<String> errors = Validator.instance().validateMandatoryRules(object, classUnderTestRules);
-        assertEquals(List.of("error.validation.mandatory.classundertest.stringProp"), errors);
+        assertEquals(List.of(
+                "error.validation.mandatory.classundertest.stringProp#1st",
+                "error.validation.mandatory.classundertest.stringProp#2nd"), errors);
     }
 
     @Test
@@ -230,10 +238,12 @@ public class ValidatorTest {
 
     @Test
     public void validateImmutableRules_differentEnums() {
-        ClassUnderTest original = new ClassUnderTest("someString", SomeEnum.ONE);
-        ClassUnderTest modified1 = new ClassUnderTest("otherString", SomeEnum.TWO);
+        ClassUnderTest original = new ClassUnderTest(null, SomeEnum.ONE);
+        ClassUnderTest modified1 = new ClassUnderTest(null, SomeEnum.TWO);
         List<String> errors = Validator.instance().validateImmutableRules(original, modified1, classUnderTestRules);
-        assertEquals(List.of("error.validation.immutable.classundertest.enumProp"), errors);
+        assertEquals(List.of(
+                "error.validation.immutable.classundertest.enumProp#1st",
+                "error.validation.immutable.classundertest.enumProp#2nd"), errors);
     }
 
     @Test
@@ -241,7 +251,7 @@ public class ValidatorTest {
         ClassUnderTest original = new ClassUnderTest("someString", SomeEnum.ONE);
         ClassUnderTest modified1 = new ClassUnderTest("otherString", null);
         List<String> errors = Validator.instance().validateImmutableRules(original, modified1, classUnderTestRules);
-        assertEquals(List.of("error.validation.immutable.classundertest.enumProp"), errors);
+        assertEquals(List.of("error.validation.immutable.classundertest.enumProp#1st"), errors);
     }
 
     @Test
@@ -249,7 +259,7 @@ public class ValidatorTest {
         ClassUnderTest original = new ClassUnderTest("someString", null);
         ClassUnderTest modified1 = new ClassUnderTest("otherString", SomeEnum.TWO);
         List<String> errors = Validator.instance().validateImmutableRules(original, modified1, classUnderTestRules);
-        assertEquals(Arrays.asList("error.validation.immutable.classundertest.enumProp"), errors);
+        assertEquals(Arrays.asList("error.validation.immutable.classundertest.enumProp#1st"), errors);
     }
 
     @Test

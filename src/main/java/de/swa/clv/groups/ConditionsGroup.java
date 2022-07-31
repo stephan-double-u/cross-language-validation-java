@@ -13,9 +13,6 @@ public abstract class ConditionsGroup implements JsonSerializable {
 
     protected PropConstraint[] propConstraints;
 
-    public static final String ANDED_GROUP_JSON_VALUE = "AND";
-    public static final String ORED_GROUP_JSON_VALUE = "OR";
-
     public static ConditionsAndGroup AND(final PropConstraint... propConstraints) {
         return new ConditionsAndGroup(propConstraints);
     }

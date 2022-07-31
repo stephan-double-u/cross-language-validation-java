@@ -39,7 +39,7 @@ public class ValidationRules<T> {
         typeJsonKey = typeClass.getSimpleName().toLowerCase();
     }
 
-    public Set<String> getMandatoryConditionsKeys() {
+    public Set<String> getMandatoryRulesKeys() {
         return mandatoryRulesMap.keySet();
     }
 
@@ -47,7 +47,7 @@ public class ValidationRules<T> {
         return mandatoryRulesMap.get(property);
     }
 
-    public Set<String> getImmutableConditionsKeys() {
+    public Set<String> getImmutableRulesKeys() {
         return immutableRulesMap.keySet();
     }
 
@@ -55,7 +55,7 @@ public class ValidationRules<T> {
         return immutableRulesMap.get(property);
     }
 
-    public Set<String> getContentConditionsKeys() {
+    public Set<String> getContentRulesKeys() {
         return contentRulesMap.keySet();
     }
 
@@ -63,7 +63,7 @@ public class ValidationRules<T> {
         return contentRulesMap.get(property);
     }
 
-    public Set<String> getUpdateConditionsKeys() {
+    public Set<String> getUpdateRulesKeys() {
         return updateRulesMap.keySet();
     }
 

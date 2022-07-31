@@ -9,12 +9,14 @@ import java.util.stream.Collectors;
 import static de.swa.clv.json.JsonUtil.*;
 
 /**
- * Maps property string to {@code List&lt;ValidationRule&gt;}.
+ * Maps property names to their validation rules ({@code List&lt;ValidationRule&gt;}).
+ * A {@link LinkedHashMap} is used to preserve insertion order and thereby define the validation order.
+ * This can be used to e.g. do cheaper validations first.
  */
 public class PropertyRulesMap implements JsonSerializable {
 
-    // Linked HashMap to preserve insertion order and thereby define validation order, e.g. to do cheap validations
-    // first, i.e. no need for something like javax.validation.GroupSequence
+    // Linked HashMap to preserve insertion order and thereby define validation order, e.g. to do cheaper validations
+    // first
     private final Map<String, List<ValidationRule>> map = new LinkedHashMap<>();
 
     public Set<String> keySet() {
