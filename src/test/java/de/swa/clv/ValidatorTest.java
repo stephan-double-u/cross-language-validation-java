@@ -89,7 +89,7 @@ public class ValidatorTest {
                 "subClassArrayProp[3].stringListProp[8]",
                 "subClassArrayProp[3].stringListProp[9]");
 
-        List<String> inflated = Validator.instance().inflateIndexedProperty("subClassArrayProp[9].stringListProp[7-9]", new ClassUnderTest());
+        List<String> inflated = Validator.instance().inflateIndexedProperty("subClassArrayProp[2-3].stringListProp[7-9]", new ClassUnderTest());
 
         assertEquals(expected, inflated);
     }
