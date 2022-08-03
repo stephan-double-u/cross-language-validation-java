@@ -13,7 +13,7 @@ import static org.junit.Assert.*;
 
 public class ValidationRulesTest {
 
-    private static final String SCHEMA_VERSION_JSON = Util.doubleQuote("{'schema-version':'" + SCHEMA_VERSION + "',");
+    private static final String SCHEMA_VERSION_JSON = Util.doubleQuote("{'schemaVersion':'" + SCHEMA_VERSION + "',");
 
     @Test
     public void exceptionIfUnknownProperty() {
