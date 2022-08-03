@@ -50,9 +50,9 @@ public class ValidationTesting {
                 ConditionsGroup.AND(
                         Condition.of("someString", RegEx.any("nomatch", "N[A-Z]+")),
                         Condition.of("status", RegEx.any("E")),
-                        Condition.of("startDate", Dates.future(0)),
-                        Condition.of("startLocalDate", Dates.past(2)),
-                        Condition.of("startCalDate", Dates.future(100))));
+                        Condition.of("startDate", Future.minDays(0)),
+                        Condition.of("startLocalDate", Past.minDays(2)),
+                        Condition.of("startCalDate", Future.minDays(100))));
 
         rules.mandatory("status",
                 ConditionsTopGroup.OR(
@@ -201,23 +201,23 @@ public class ValidationTesting {
                         Condition.of("someInt", Equals.any(123)),
                         Condition.of("startLocalDate", Equals.any(LocalDate.now().minusDays(10))),
                         Condition.of("aBoolean", Equals.any(TRUE)),
-                        Condition.of("status", Equals.anyRef("someString")),
+                        Condition.of("status", Equals.anyRef("status")),
 
                         Condition.of("status", Equals.none(ReservationStatus.RETURNED)),
                         Condition.of("someString", Equals.none("OLD")),
                         Condition.of("someInt", Equals.none(1, 2, 33)),
                         Condition.of("startLocalDate", Equals.none(LocalDate.now())),
                         Condition.of("aBoolean", Equals.none(FALSE)),
-                        Condition.of("id", Equals.noneRef("someInt")),
+                        Condition.of("id", Equals.noneRef("id")),
 
                         Condition.of("nullString", Equals.null_()),
                         Condition.of("someString", Equals.notNull()),
 
                         Condition.of("someString", RegEx.any("nomatch", "N[A-Z]+")),
 
-                        Condition.of("startDate", Dates.future(0)),
-                        Condition.of("startLocalDate", Dates.past(2)),
-                        Condition.of("startCalDate", Dates.future(100))
+                        Condition.of("startDate", Future.minDays(0)),
+                        Condition.of("startLocalDate", Past.minDays(2)),
+                        Condition.of("startCalDate", Future.minDays(100))
                 ));
         System.out.println("serializeToJson: " + ValidationRules.serializeToJson(condAllInOne));
     }
