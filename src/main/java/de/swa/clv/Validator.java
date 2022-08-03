@@ -55,7 +55,7 @@ public class Validator {
     public List<String> validateMandatoryRules(final Object object, final UserPermissions userPermissions,
             final ValidationRules<?> rules) {
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
-        //TODO refactor: use argument rules.getMandatoryConditionsList(property) instead of rules!?
+        //TODO refactor: use argument rules.getMandatoryConditionsList(property) instead of rules
         return rules.getMandatoryRulesKeys().stream()
                 .flatMap(property -> validateMandatoryPropertyRules(property, object, userPermissions, rules).stream())
                 .collect(Collectors.toList());
