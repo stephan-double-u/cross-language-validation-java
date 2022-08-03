@@ -492,7 +492,7 @@ public class ValidationRules<T> {
 
     public static String serializeToJson(final ValidationRules<?>... rules) {
         final List<ValidationRules<?>> validationRulesList = Arrays.asList(rules);
-        String jsonAll = asKey("schema-version") + quoted(SCHEMA_VERSION) + ",";
+        String jsonAll = asKey("schemaVersion") + quoted(SCHEMA_VERSION) + ",";
         jsonAll += asKey("mandatoryRules") + asObject(validationRulesList.stream()
                 .map(ValidationRules::serializeMandatoryRules)
                 .filter(json -> !json.isEmpty())
