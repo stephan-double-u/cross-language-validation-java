@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("squid:S1610")
 public abstract class JsonUtil {
 
     private JsonUtil() {

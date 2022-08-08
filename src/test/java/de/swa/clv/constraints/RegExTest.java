@@ -2,6 +2,7 @@ package de.swa.clv.constraints;
 
 import org.junit.Test;
 
+import static de.swa.clv.constraints.ConstraintRoot.NULL_VALUE_ERR_MESSAGE;
 import static de.swa.clv.test.Util.doubleQuote;
 import static java.lang.Boolean.TRUE;
 import static org.junit.Assert.*;
@@ -14,7 +15,7 @@ public class RegExTest {
     public void exceptionIfRegExIsNull() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> RegEx.any("[a-c]+.", null));
-        assertEquals("Null values are not allowed", ex.getMessage());
+        assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test(expected = IllegalArgumentException.class)

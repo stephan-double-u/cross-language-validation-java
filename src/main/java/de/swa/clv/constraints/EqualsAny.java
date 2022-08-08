@@ -4,41 +4,48 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
 
 public class EqualsAny extends EqualsRoot {
 
     private static final Logger log = LoggerFactory.getLogger(EqualsAny.class);
 
-    EqualsAny(final String... values) {
-        setObjectValues(Arrays.asList(values));
+    public static final String TOKEN = "EQUALS_ANY";
+
+    EqualsAny(final boolean nullEqualsTrue, String... values) {
+        setObjectValues(getValuesWithAllowFlagAsObjectList(nullEqualsTrue, values));
     }
 
-    EqualsAny(final Enum<?>... values) {
-        setObjectValues(Arrays.asList(values));
+    EqualsAny(final boolean nullEqualsTrue, final Enum<?>... values) {
+        setObjectValues(getValuesWithAllowFlagAsObjectList(nullEqualsTrue, values));
     }
 
-    EqualsAny(final Number... values) {
-        setObjectValues(Arrays.asList(values));
+    EqualsAny(final boolean nullEqualsTrue, final Number... values) {
+        setObjectValues(getValuesWithAllowFlagAsObjectList(nullEqualsTrue, values));
     }
 
-    EqualsAny(final Boolean... value) {
-        setObjectValues(Arrays.asList(value));
+    EqualsAny(final boolean nullEqualsTrue, final Boolean... values) {
+        setObjectValues(getValuesWithAllowFlagAsObjectList(nullEqualsTrue, values));
     }
 
-    EqualsAny(final LocalDate... value) {
-        setObjectValues(Arrays.asList(value));
+    EqualsAny(final boolean nullEqualsTrue, final LocalDate... values) {
+        setObjectValues(getValuesWithAllowFlagAsObjectList(nullEqualsTrue, values));
     }
 
     @Override
     public String getType() {
-        return "EQUALS_ANY";
+        return TOKEN;
     }
 
     @Override
     public boolean validate(final Object objectToValidate, final Object notRelevant) {
-        final boolean match = getValues().stream().anyMatch(value -> EqualsRoot.equals(objectToValidate, value));
+        final Boolean nullEqualsTrue = (Boolean) getValues().get(0);
+        if (objectToValidate == null) {
+            log.debug("'Null object equals to {}", nullEqualsTrue);
+            return nullEqualsTrue;
+        }
+        final boolean match = getValues().stream()
+                .skip(1)
+                .anyMatch(value -> EqualsRoot.equals(objectToValidate, value));
         log.debug("'{}' does{}" + " equals one of {}", objectToValidate, (match ? "" : " NOT"), getValues());
         return match;
     }

@@ -398,7 +398,6 @@ public class ValidatorTest {
         assertTrue(errors.toString(), errors.isEmpty());
     }
 
-
     @Test
     public void validateUpdateRules_ok() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
@@ -474,7 +473,6 @@ public class ValidatorTest {
         errors = Validator.instance().validateUpdateRules(originalTWO, modifiedFOUR, UserPermissions.of("TRAINEE"), rules);
         assertTrue(errors.isEmpty());
     }
-
 
     @Test
     public void aggregateFunction_propertyNotIndexed() {

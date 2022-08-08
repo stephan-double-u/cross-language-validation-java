@@ -4,7 +4,7 @@ import de.swa.clv.util.TypeHelper;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
+import java.util.*;
 
 import static de.swa.clv.json.JsonUtil.*;
 
@@ -43,8 +43,8 @@ public abstract class EqualsRoot extends ConstraintRoot {
     @Override
     public boolean isSupportedType(Class<?> clazz) {
         final Class<?> wrappedClass = (clazz.isPrimitive()) ? TypeHelper.PRIMITIVE_TO_WRAPPER_TYPES.get(clazz) : clazz;
-        // EqualsNull and EqualsNotNull have no values
-        Class<?> valueClass = getValues() != null ? getValues().get(0).getClass() : null;
+        // EqualsNull and EqualsNotNull have no values; 1st value of other constraints in 'nullEqualsTrue'-boolean
+        Class<?> valueClass = getValues() != null ? getValues().get(1).getClass() : null;
         //TODO allow LocalDateTime
         return (String.class == wrappedClass || Enum.class.isAssignableFrom(clazz))
                 && (valueClass == null || String.class == valueClass || Enum.class.isAssignableFrom(valueClass))
@@ -54,11 +54,21 @@ public abstract class EqualsRoot extends ConstraintRoot {
                 || Date.class.isAssignableFrom(wrappedClass))
                 && (valueClass == null || wrappedClass == valueClass);
     }
+
     @Override
     public String serializeToJson() {
-        String type = getType();
-        String valuesJson = getValues() != null ? "," + asKey("values") + asArray(getValues()) : "";
-        return asKey("type") + quoted(type) + valuesJson;
+        String nullEqualsTrueJson = "";
+        Boolean nullEqualsTo = (Boolean) getValues().get(0);
+        // Serialize "nullEqualsTo" key only for non-default values,
+        // i.e. 'true' for EqualsAny and EqualsAnyRef resp. 'false' for EqualsNONE and EqualsNoneRef
+        if (nullEqualsTo.equals(Boolean.TRUE)
+                && (getType().equals(EqualsAny.TOKEN) || getType().equals(EqualsAnyRef.TOKEN))
+                || nullEqualsTo.equals(Boolean.FALSE)
+                && (getType().equals(EqualsNone.TOKEN) || getType().equals(EqualsNoneRef.TOKEN))) {
+            nullEqualsTrueJson = "," + asKey("nullEqualsTo") + nullEqualsTo;
+        }
+        String valuesJson = "," + asKey("values") + asArray(getValues().subList(1, getValues().size()));
+        return asKey("type") + quoted(getType()) + valuesJson + nullEqualsTrueJson;
     }
 
 }

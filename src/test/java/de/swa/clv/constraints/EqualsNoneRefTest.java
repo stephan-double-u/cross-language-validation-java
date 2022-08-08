@@ -8,24 +8,54 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.Date;
 
+import static de.swa.clv.constraints.ConstraintRoot.EMPTY_VALUES_ERR_MESSAGE;
+import static de.swa.clv.constraints.ConstraintRoot.NULL_VALUE_ERR_MESSAGE;
 import static org.junit.Assert.*;
 
 public class EqualsNoneRefTest {
 
-    private static EqualsNoneRefTest.Foo foo = new EqualsNoneRefTest.Foo(new EqualsNoneRefTest.Bar("baz", EqualsNoneRefTest.Enum.ABC, (short) 1, true,
+    private static final EqualsNoneRefTest.Foo foo = new EqualsNoneRefTest.Foo(
+            new EqualsNoneRefTest.Bar("baz", EqualsNoneRefTest.Enum.ABC, (short) 1, true,
             LocalDate.of(2000, Month.JANUARY, 1),
             new Date(LocalDate.of(2000, Month.JANUARY, 1).toEpochDay())));
 
 
     @Test
-    public void validateNullVsNull() {
-        EqualsNoneRef constraint = Equals.noneRef(null, "bar.stringProp");
+    public void nullNotAllowed() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                Equals::noneRef);
+        assertEquals(EMPTY_VALUES_ERR_MESSAGE, ex.getMessage());
+    }
+
+    @Test
+    public void noValuesNotAllowed() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> Equals.noneRef(null));
+        assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
+    }
+
+    @Test
+    public void nullValuesNotAllowed() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> Equals.noneRef(null, "someProp"));
+        assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
+    }
+
+    @Test
+    public void validateNoneRefVsNull() {
+        EqualsNoneRef constraint = Equals.noneRef("bar.stringProp");
+        assertTrue(constraint.validate(null, foo));
+    }
+
+    @Test
+    public void validateNoneRefNorNullVsNull() {
+        EqualsNoneRef constraint = Equals.noneRefNotNull("bar.stringProp");
         assertFalse(constraint.validate(null, foo));
     }
 
     @Test
     public void validateString() {
-        EqualsNoneRef constraint = Equals.noneRef(null, "bar.stringProp");
+        EqualsNoneRef constraint = Equals.noneRef( "bar.stringProp");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("bar.stringProp", Foo.class);
         assertTrue(constraint.validate("invalid", foo));
@@ -33,7 +63,7 @@ public class EqualsNoneRefTest {
 
     @Test
     public void validateStringVsEnum() {
-        EqualsNoneRef constraint = Equals.noneRef(null, "bar.enumProp");
+        EqualsNoneRef constraint = Equals.noneRef("bar.enumProp");
         // Validating caches the getEnumProp() method!
         Validator.instance().validateProperty("bar.enumProp", Foo.class);
         assertTrue(constraint.validate("INVALID", foo));
@@ -122,7 +152,8 @@ public class EqualsNoneRefTest {
     @Test
     public void serializeToJson() {
         EqualsNoneRef constraint = Equals.noneRef("bar.stringProp");
-        assertEquals(Util.doubleQuote("'type':'EQUALS_NONE_REF','values':['bar.stringProp']"), constraint.serializeToJson());
+        assertEquals(Util.doubleQuote("'type':'EQUALS_NONE_REF','values':['bar.stringProp']"),
+                constraint.serializeToJson());
     }
 
     protected static class Foo {
@@ -144,14 +175,15 @@ public class EqualsNoneRefTest {
     }
 
     protected static class Bar {
-        private String stringProp;
-        private Enum enumProp;
-        private int intProp;
-        private Boolean booleanProp;
-        private LocalDate localDateProp;
-        private Date dateProp;
+        private final String stringProp;
+        private final Enum enumProp;
+        private final int intProp;
+        private final Boolean booleanProp;
+        private final LocalDate localDateProp;
+        private final Date dateProp;
 
-        public Bar(String stringProp, Enum enumProp, int intProp, Boolean booleanProp, LocalDate localDateProp, Date dateProp) {
+        public Bar(String stringProp, Enum enumProp, int intProp, Boolean booleanProp, LocalDate localDateProp,
+                Date dateProp) {
             this.stringProp = stringProp;
             this.enumProp = enumProp;
             this.intProp = intProp;
@@ -187,7 +219,7 @@ public class EqualsNoneRefTest {
         ONE(Enum.ABC, Enum.DEF, Enum.GHI),
         TWO();
 
-        private Enum[] nestedEnums;
+        private final Enum[] nestedEnums;
 
         Enum2(Enum... enums) {
             this.nestedEnums = enums;

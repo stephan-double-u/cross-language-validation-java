@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -123,41 +122,7 @@ public class IndexedPropertyHelper {
         LIST, INCREMENT
     }
 
-    public static class IndexInfo {
-        private final IndexType indexType;
-        private final List<Integer> values;
-
-        public IndexInfo(final IndexType indexType, final List<Integer> values) {
-            this.indexType = indexType;
-            this.values = values;
-        }
-
-        public IndexType getIndexType() {
-            return indexType;
-        }
-
-        public List<Integer> getValues() {
-            return values;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof IndexInfo)) return false;
-            IndexInfo indexInfo = (IndexInfo) o;
-            return indexType == indexInfo.indexType &&
-                    values.equals(indexInfo.values);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(indexType, values);
-        }
-
-        @Override
-        public String toString() {
-            return "IndexInfo [indexType=" + indexType + ", values=" + values + "]";
-        }
+    public record IndexInfo (IndexType indexType, List<Integer> values) {
     }
 
 }

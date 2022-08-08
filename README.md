@@ -2,7 +2,8 @@
 
 # Cross Language Validation Java 
 
-This library implements the server side part of the [Cross Language Validation Schema](https://github.com/stephan-double-u/cross-language-validation-schema),
+This library implements the server side part of the
+[Cross Language Validation Schema](https://github.com/stephan-double-u/cross-language-validation-schema),
 i.e. it contains:
 - an rich API to define the different kinds of validation rules that are specified by that schema.
 - a validator that checks the validation rules against the relevant objects.
@@ -13,7 +14,7 @@ i.e. it contains:
     <dependency>
       <groupId>de.swa</groupId>
       <artifactId>cross-language-validation</artifactId>
-      <version>0.6.0</version>
+      <version>0.7.0</version>
     </dependency>
 
 ### settings.xml

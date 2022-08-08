@@ -12,6 +12,8 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.Date;
 
+import static de.swa.clv.constraints.ConstraintRoot.EMPTY_VALUES_ERR_MESSAGE;
+import static de.swa.clv.constraints.ConstraintRoot.NULL_VALUE_ERR_MESSAGE;
 import static org.junit.Assert.*;
 
 public class EqualsAnyRefTest {
@@ -21,14 +23,41 @@ public class EqualsAnyRefTest {
             new Date(LocalDate.of(2000, Month.JANUARY, 1).toEpochDay())));
 
     @Test
-    public void validateNullVsNull() {
-        EqualsAnyRef constraint = Equals.anyRef(null, "bar.stringProp");
+    public void nullNotAllowed() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                Equals::anyRef);
+        assertEquals(EMPTY_VALUES_ERR_MESSAGE, ex.getMessage());
+    }
+
+    @Test
+    public void noValuesNotAllowed() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> Equals.anyRef((String) null));
+        assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
+    }
+
+    @Test
+    public void nullValuesNotAllowed() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> Equals.anyRef(null, "someProp"));
+        assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
+    }
+
+    @Test
+    public void validateAnyRefVsNull() {
+        EqualsAnyRef constraint = Equals.anyRef("bar.stringProp");
+        assertFalse(constraint.validate(null, foo));
+    }
+
+    @Test
+    public void validateAnyRefOrNullVsNull() {
+        EqualsAnyRef constraint = Equals.anyRefOrNull("bar.stringProp");
         assertTrue(constraint.validate(null, foo));
     }
 
     @Test
     public void validateString() {
-        EqualsAnyRef constraint = Equals.anyRef(null, "bar.stringProp");
+        EqualsAnyRef constraint = Equals.anyRef("bar.stringProp");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("bar.stringProp", Foo.class);
         assertTrue(constraint.validate("baz", foo));

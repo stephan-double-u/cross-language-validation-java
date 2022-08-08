@@ -8,20 +8,54 @@ import java.math.BigInteger;
 import java.sql.JDBCType;
 import java.time.LocalDate;
 
+import static de.swa.clv.constraints.ConstraintRoot.EMPTY_VALUES_ERR_MESSAGE;
+import static de.swa.clv.constraints.ConstraintRoot.NULL_VALUE_ERR_MESSAGE;
 import static org.junit.Assert.*;
 
 public class EqualsAnyTest {
 
     @Test
-    public void validateStringVsString() {
+    public void nullValuesNotAllowed() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> Equals.any((String) null));
+        assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
+    }
+
+    @Test
+    public void emptyValuesNotAllowed() {
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> Equals.any(new String[] {}));
+        assertEquals(EMPTY_VALUES_ERR_MESSAGE, ex.getMessage());
+    }
+
+    @Test
+    public void validateAnyStringVsString() {
         EqualsAny any = Equals.any("foo", "bar");
         assertTrue(any.validate("bar", null));
     }
 
     @Test
-    public void validateNullStringVsNu__() {
-        EqualsAny any = Equals.any((String) null);
-        assertTrue(any.validate(null, null));
+    public void validateAnyStringVsStringFail() {
+        EqualsAny any = Equals.any("foo", "bar");
+        assertFalse(any.validate("zoo", null));
+    }
+
+    @Test
+    public void validateAnyStringVsNull() {
+        EqualsAny any = Equals.any("foo", "bar");
+        assertFalse(any.validate(null, null));
+    }
+
+    @Test
+    public void validateAnyOrNullStringVsNull() {
+        EqualsAny anyOrNull = Equals.anyOrNull("foo", "bar");
+        assertTrue(anyOrNull.validate(null, null));
+    }
+
+    @Test
+    public void validateAnyOrNullStringVsString() {
+        EqualsAny anyOrNull = Equals.anyOrNull("foo", "bar");
+        assertTrue(anyOrNull.validate("bar", null));
     }
 
     @Test
@@ -43,9 +77,33 @@ public class EqualsAnyTest {
     }
 
     @Test
+    public void validateAnyOrNullEnumVsOtherEnum() {
+        EqualsAny anyOrNull = Equals.anyOrNull(JDBCType.BLOB);
+        assertTrue(anyOrNull.validate(OtherEnum.BLOB, null));
+    }
+
+    @Test
+    public void validateAnyOrNullEnumVsOtherEnumFalse() {
+        EqualsAny anyOrNull = Equals.anyOrNull(JDBCType.BLOB);
+        assertFalse(anyOrNull.validate(JDBCType.DATE, null));
+    }
+
+    @Test
+    public void validateAnyOrNullEnumVsNull() {
+        EqualsAny anyOrNull = Equals.anyOrNull(JDBCType.BLOB);
+        assertTrue(anyOrNull.validate(null, null));
+    }
+
+    @Test
     public void validateInteger() {
         EqualsAny any = Equals.any(1L, 2L, 3L);
         assertTrue(any.validate(2L, null));
+    }
+
+    @Test
+    public void validateIntegerFalse() {
+        EqualsAny any = Equals.any(1L, 2L, 3L);
+        assertFalse(any.validate(4L, null));
     }
 
     @Test
@@ -61,13 +119,31 @@ public class EqualsAnyTest {
     }
 
     @Test
+    public void validateAnyOrNullVsNumber() {
+        EqualsAny anyOrNull = Equals.anyOrNull(1);
+        assertTrue(anyOrNull.validate(null, null));
+    }
+
+    @Test
     public void validateBoolean() {
         EqualsAny any = Equals.any(Boolean.TRUE);
         assertTrue(any.validate(Boolean.TRUE, null));
     }
 
     @Test
-    public void validateLocalDate() {
+    public void validateBooleanFalse() {
+        EqualsAny any = Equals.any(Boolean.TRUE);
+        assertFalse(any.validate(Boolean.FALSE, null));
+    }
+
+    @Test
+    public void validateAnyOrNullBoolean() {
+        EqualsAny anyOrNull = Equals.anyOrNull(Boolean.TRUE);
+        assertTrue(anyOrNull.validate(null, null));
+    }
+
+    @Test
+    public void validateLocalDateTrue() {
         final LocalDate localDate1 = LocalDate.of(2019, 12, 31);
         final LocalDate localDate2 = LocalDate.of(2019, 12, 31);
         EqualsAny any = Equals.any(localDate1);
@@ -83,9 +159,22 @@ public class EqualsAnyTest {
     }
 
     @Test
+    public void validateAnyOrNullLocalDateTrue() {
+        EqualsAny anyOrNull = Equals.anyOrNull(LocalDate.now());
+        assertTrue(anyOrNull.validate(null, null));
+    }
+
+    @Test
     public void serializeString() {
         EqualsAny any = Equals.any("foo", "bar");
         assertEquals(Util.doubleQuote("'type':'EQUALS_ANY','values':['foo','bar']"), any.serializeToJson());
+    }
+
+    @Test
+    public void serializeStringNullEqualsTrue() {
+        EqualsAny anyOrNull = Equals.anyOrNull("foo", "bar");
+        assertEquals("""
+                "type":"EQUALS_ANY","values":["foo","bar"],"nullEqualsTo":true""", anyOrNull.serializeToJson());
     }
 
     @Test

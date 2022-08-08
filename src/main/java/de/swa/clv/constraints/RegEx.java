@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static de.swa.clv.json.JsonUtil.asArray;
 import static de.swa.clv.json.JsonUtil.asKey;
@@ -28,7 +27,7 @@ public class RegEx extends ConstraintRoot {
         patterns = Arrays.stream(regex)
                 .filter(Objects::nonNull)
                 .map(Pattern::compile)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -45,7 +44,7 @@ public class RegEx extends ConstraintRoot {
      */
     public static RegEx any(final String... regex) {
         if (Arrays.asList(regex).contains(null)) {
-            throw new IllegalArgumentException("Null values are not allowed");
+            throw new IllegalArgumentException(NULL_VALUE_ERR_MESSAGE);
         }
         return new RegEx(regex);
     }
@@ -76,6 +75,7 @@ public class RegEx extends ConstraintRoot {
     }
 
     @Override
+    @SuppressWarnings({"squid:S5361"})
     public String serializeToJson() {
         List<String> regExWithDoubledBackslashes = getValues().stream()
                 .map(regEx -> ((String) regEx).replaceAll("\\\\", "\\\\\\\\"))

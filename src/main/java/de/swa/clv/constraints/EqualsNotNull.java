@@ -2,6 +2,9 @@ package de.swa.clv.constraints;
 
 import java.io.Serializable;
 
+import static de.swa.clv.json.JsonUtil.asKey;
+import static de.swa.clv.json.JsonUtil.quoted;
+
 public class EqualsNotNull extends EqualsRoot {
 
     EqualsNotNull() {
@@ -23,6 +26,11 @@ public class EqualsNotNull extends EqualsRoot {
     @Override
     public boolean validate(final Object object, final Object ignored) {
         return object != null;
+    }
+
+    @Override
+    public String serializeToJson() {
+        return asKey("type") + quoted(getType());
     }
 
 }

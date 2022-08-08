@@ -22,6 +22,7 @@ public abstract class EqualsRef extends EqualsRoot {
     @Override
     public void validateValuesOrFail(final Class<?> typeClass, final Class<?> propertyType) {
          getValues().stream()
+                 .skip(1)
                  .filter(Objects::nonNull)
                  .forEach(refProperty  -> validateValueOrFail(typeClass, propertyType, (String) refProperty));
     }

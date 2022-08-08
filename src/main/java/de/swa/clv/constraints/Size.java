@@ -114,23 +114,23 @@ public class Size extends ConstraintRoot {
     
     @Override
     public boolean
-    validate(final Object object, final Object ignored) {
-        if (object == null) {
+    validate(final Object objectToValidate, final Object ignored) {
+        if (objectToValidate == null) {
             return true;
         }
         final Integer minValue = (Integer) getValues().get(0);
         final Integer maxValue = (Integer) getValues().get(1);
         final int objectLength;
-        if (object instanceof CharSequence) {
-            objectLength = ((CharSequence) object).length();
-        } else if (object instanceof Collection) {
-            objectLength = ((Collection<?>) object).size();
-        } else if (object instanceof Map) {
-            objectLength = ((Map<?, ?>) object).size();
-        } else if (object.getClass().isArray()) {
-            objectLength = Array.getLength(object);
+        if (objectToValidate instanceof CharSequence charSequence) {
+            objectLength = charSequence.length();
+        } else if (objectToValidate instanceof Collection<?> collection) {
+            objectLength = collection.size();
+        } else if (objectToValidate instanceof Map<?, ?> map) {
+            objectLength = map.size();
+        } else if (objectToValidate.getClass().isArray()) {
+            objectLength = Array.getLength(objectToValidate);
         } else {
-            throw new IllegalArgumentException("Unsupported type: " + object.getClass());
+            throw new IllegalArgumentException("Unsupported type: " + objectToValidate.getClass());
         }
         return (minValue == null || objectLength >= minValue) && (maxValue == null || objectLength <= maxValue);
     }

@@ -2,12 +2,18 @@ package de.swa.clv.constraints;
 
 import de.swa.clv.json.JsonSerializable;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public abstract class ConstraintRoot implements JsonSerializable {
 
-    // Holds constraint related values
+    public static final String NULL_VALUE_ERR_MESSAGE = "Null values are not allowed";
+    public static final String EMPTY_VALUES_ERR_MESSAGE = "Provide at least one value";
+    public static final String NUMBERS_TYPE_ERR_MESSAGE = "Numbers must have same type";
+
+    // Holds constraint specific values
     private List<Object> values;
 
     ConstraintRoot() {
@@ -63,6 +69,21 @@ public abstract class ConstraintRoot implements JsonSerializable {
      */
     void setObjectValues(final List<Object> values) {
         this.values = Collections.unmodifiableList(values);
+    }
+
+    static void assertValuesAndSizeOk(Object[] values) {
+        if (values == null || Arrays.asList(values).contains(null)) {
+            throw new IllegalArgumentException(NULL_VALUE_ERR_MESSAGE);
+        }
+        if (values.length == 0) {
+            throw new IllegalArgumentException(EMPTY_VALUES_ERR_MESSAGE);
+        }
+    }
+
+    List<Object> getValuesWithAllowFlagAsObjectList(boolean nullEqualsTrue, Object[] values) {
+        List<Object> list = new ArrayList<>(Arrays.asList(values));
+        list.add(0, nullEqualsTrue);
+        return list;
     }
 
 }

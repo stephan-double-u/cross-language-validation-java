@@ -166,8 +166,8 @@ public class Validator {
         if (errorCodeControl == null) {
             return defaultErrorMessage;
         }
-        String code = errorCodeControl.getCode();
-        if (errorCodeControl.getType() == UseType.AS_SUFFIX) {
+        String code = errorCodeControl.code();
+        if (errorCodeControl.type() == UseType.AS_SUFFIX) {
             return defaultErrorMessage + code;
         }
         return code;
@@ -317,8 +317,7 @@ public class Validator {
             // 2. get generic type (e.g. Article.class)
             final ParameterizedType listType = (ParameterizedType) listField.getGenericType();
             Type actualTypeArgument = listType.getActualTypeArguments()[0];
-            if (actualTypeArgument instanceof WildcardType) {
-                WildcardType wildcardType = (WildcardType) actualTypeArgument;
+            if (actualTypeArgument instanceof WildcardType wildcardType) {
                 if (wildcardType.getLowerBounds().length == 0) {
                     actualTypeArgument = wildcardType.getUpperBounds()[0]; // '? extends Foo'
                 } else {
@@ -408,10 +407,10 @@ public class Validator {
     }
 
     private Integer getSingleIndexOrFail(IndexInfo indexInfo) {
-        if (indexInfo.getIndexType() != IndexedPropertyHelper.IndexType.LIST || indexInfo.getValues().size() != 1) {
+        if (indexInfo.indexType() != IndexedPropertyHelper.IndexType.LIST || indexInfo.values().size() != 1) {
             throw new IllegalArgumentException("Should not happen: multi index definition is not valid here!");
         }
-        return indexInfo.getValues().get(0);
+        return indexInfo.values().get(0);
     }
 
     private Object invokePropertyGetter(String propertyKey, Class<?> objectClass, Object propertyObject) {
@@ -474,27 +473,29 @@ public class Validator {
     }
 
     public boolean constraintIsMet(final PropConstraint propConstraint, final Object object) {
-        AggregateFunction aggregateFunction = validateAndGetTerminalAggregateFunctionIfExist(
-                propConstraint.getProperty()).orElseGet(() -> null);
-        String pureProperty = propConstraint.getProperty().split("#")[0];
+        String constraintProperty = propConstraint.property();
+        AggregateFunction aggregateFunction = validateAndGetTerminalAggregateFunctionIfExist(constraintProperty)
+                .orElseGet(() -> null);
+        String pureProperty = constraintProperty.split("#")[0];
         List<String> propertiesToCheck = inflatePropertyIfIndexed(pureProperty, object);
+        ConstraintRoot propertyConstraint = propConstraint.constraint();
         if (aggregateFunction != null) {
             switch (aggregateFunction) {
             case sum -> {
                 BigDecimal sum = sumUpPropertyValues(object, propertiesToCheck);
-                return propConstraint.getConstraint().validate(sum, object);
+                return propertyConstraint.validate(sum, object);
             }
             case distinct -> {
                 Boolean distinct = distinctCheckForPropertyValues(object, propertiesToCheck);
-                return propConstraint.getConstraint().validate(distinct, object);
+                return propertyConstraint.validate(distinct, object);
             }
             default -> throw new IllegalArgumentException("Should not happen. Unsupported: " + aggregateFunction);
             }
         } else {
             for (String propertyToCheck : propertiesToCheck) {
                 Object value = getPropertyResultObject(propertyToCheck, object);
-                log.debug("Value of property '{}' is '{}'", propConstraint.getProperty(), value);
-                if (!propConstraint.getConstraint().validate(value, object)) {
+                log.debug("Value of property '{}' is '{}'", constraintProperty, value);
+                if (!propertyConstraint.validate(value, object)) {
                     return false;
                 }
             }
@@ -567,20 +568,20 @@ public class Validator {
             if (IndexedPropertyHelper.isIndexedProperty(propertyPart)) {
                 final IndexInfo indexInfo = IndexedPropertyHelper.getIndexInfo(propertyPart).get();
                 String propertyPartName = delimiter + propertyPart.substring(0, propertyPart.indexOf('['));
-                if (indexInfo.getIndexType() == IndexedPropertyHelper.IndexType.LIST) {
+                if (indexInfo.indexType() == IndexedPropertyHelper.IndexType.LIST) {
                     inflatedProperties = inflatedProperties.stream()
                             .map(ip -> ip + propertyPartName)
-                            .flatMap(ip -> inflateListProperty(ip, indexInfo.getValues()).stream())
+                            .flatMap(ip -> inflateListProperty(ip, indexInfo.values()).stream())
                             .collect(Collectors.toList());
-                } else if (indexInfo.getIndexType() == IndexedPropertyHelper.IndexType.INCREMENT) {
+                } else if (indexInfo.indexType() == IndexedPropertyHelper.IndexType.INCREMENT) {
                     inflatedProperties = inflatedProperties.stream()
                             .map(ip -> ip + propertyPartName)
-                            .flatMap(ip -> inflateIncrementProperty(ip, object, indexInfo.getValues().get(0),
-                                    indexInfo.getValues().get(1)).stream())
+                            .flatMap(ip -> inflateIncrementProperty(ip, object, indexInfo.values().get(0),
+                                    indexInfo.values().get(1)).stream())
                             .collect(Collectors.toList());
                 } else {
                     throw new IllegalArgumentException("Should not happen:  unknown IndexType: "
-                            + indexInfo.getIndexType());
+                            + indexInfo.indexType());
                 }
             } else {
                 String propertyPartName = delimiter + propertyPart;

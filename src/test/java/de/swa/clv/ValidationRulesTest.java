@@ -53,7 +53,7 @@ public class ValidationRulesTest {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
         try {
             rules.mandatory("stringArrayProp[1-3]", Condition.of("stringArrayProp[4]",
-                    Equals.anyRef("stringArrayProp[5,6]", null)));
+                    Equals.anyRef("stringArrayProp[5,6]")));
         } catch (Exception e) {
             e.printStackTrace();
             fail(e.getMessage());

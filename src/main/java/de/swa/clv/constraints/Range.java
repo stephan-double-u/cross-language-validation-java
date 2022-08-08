@@ -112,7 +112,7 @@ public class Range extends ConstraintRoot {
 
     private static <T extends Number & Comparable<T>> void validateNotNull(Object minValue, Object maxValue) {
         if (minValue == null || maxValue == null) {
-            throw new IllegalArgumentException("Null values are not allowed");
+            throw new IllegalArgumentException(NULL_VALUE_ERR_MESSAGE);
         }
     }
 

@@ -2,15 +2,13 @@ package de.swa.clv.constraints;
 
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Objects;
+
+import static de.swa.clv.constraints.ConstraintRoot.*;
 
 /**
  * Provides static methods to create all different kinds of equals constraints.
  */
 public class Equals {
-
-    static final String NULL_VALUES_MESSAGE = "Null values are not allowed";
-    static final String NUMBERS_CLASS_MESSAGE = "Numbers must have same type";
 
     private Equals() {
     }
@@ -20,24 +18,55 @@ public class Equals {
      */
     
     public static EqualsAny any(final String... values) {
-        return new EqualsAny(values);
+        assertValuesAndSizeOk(values);
+        return new EqualsAny(false, values);
     }
-    
+
+    public static EqualsAny anyOrNull(final String... values) {
+        assertValuesAndSizeOk(values);
+        return new EqualsAny(true, values);
+    }
+
     public static EqualsAny any(final Enum<?>... values) {
-        return new EqualsAny(values);
+        assertValuesAndSizeOk(values);
+        return new EqualsAny(false, values);
+    }
+
+    public static EqualsAny anyOrNull(final Enum<?>... values) {
+        assertValuesAndSizeOk(values);
+        return new EqualsAny(true, values);
     }
 
     public static EqualsAny any(final Number... values) {
-        checkNumbersHaveSameTypeOfFail(values);
-        return new EqualsAny(values);
+        assertValuesAndSizeOk(values);
+        assertNumbersHaveSameType(values);
+        return new EqualsAny(false, values);
+    }
+
+    public static EqualsAny anyOrNull(final Number... values) {
+        assertValuesAndSizeOk(values);
+        assertNumbersHaveSameType(values);
+        return new EqualsAny(true, values);
     }
 
     public static EqualsAny any(final Boolean... values) {
-        return new EqualsAny(values);
+        assertValuesAndSizeOk(values);
+        return new EqualsAny(false, values);
+    }
+
+    public static EqualsAny anyOrNull(final Boolean... values) {
+        assertValuesAndSizeOk(values);
+        return new EqualsAny(true, values);
     }
 
     public static EqualsAny any(final LocalDate... values) {
-        return new EqualsAny(values);
+        assertValuesAndSizeOk(values);
+        return new EqualsAny(false, values);
+    }
+
+    public static EqualsAny anyOrNull(final LocalDate... values) {
+        assertValuesAndSizeOk(values);
+        return new EqualsAny(true, values);
     }
 
     /*
@@ -45,28 +74,84 @@ public class Equals {
      */
     
     public static EqualsNone none(final String... values) {
-        return new EqualsNone(values);
+        assertValuesAndSizeOk(values);
+        return new EqualsNone(true, values);
     }
     
+    public static EqualsNone noneNorNull(final String... values) {
+        assertValuesAndSizeOk(values);
+        return new EqualsNone(false, values);
+    }
+
     public static EqualsNone none(final Enum<?>... values) {
-        return new EqualsNone(values);
+        assertValuesAndSizeOk(values);
+        return new EqualsNone(true, values);
+    }
+
+    public static EqualsNone noneNorNull(final Enum<?>... values) {
+        assertValuesAndSizeOk(values);
+        return new EqualsNone(false, values);
     }
 
     public static EqualsNone none(final Number... values) {
-        checkNumbersHaveSameTypeOfFail(values);
-        return new EqualsNone(values);
+        assertValuesAndSizeOk(values);
+        assertNumbersHaveSameType(values);
+        return new EqualsNone(true, values);
+    }
+
+    public static EqualsNone noneNorNull(final Number... values) {
+        assertValuesAndSizeOk(values);
+        assertNumbersHaveSameType(values);
+        return new EqualsNone(false, values);
     }
 
     public static EqualsNone none(final Long... values) {
-        return new EqualsNone(values);
+        assertValuesAndSizeOk(values);
+        return new EqualsNone(true, values);
     }
 
     public static EqualsNone none(final Boolean... values) {
-        return new EqualsNone(values);
+        assertValuesAndSizeOk(values);
+        return new EqualsNone(true, values);
+    }
+
+    public static EqualsNone noneNorNull(final Boolean... values) {
+        assertValuesAndSizeOk(values);
+        return new EqualsNone(false, values);
     }
 
     public static EqualsNone none(final LocalDate... values) {
-        return new EqualsNone(values);
+        assertValuesAndSizeOk(values);
+        return new EqualsNone(true, values);
+    }
+
+    public static EqualsNone noneNorNull(final LocalDate... values) {
+        assertValuesAndSizeOk(values);
+        return new EqualsNone(false, values);
+    }
+
+    /*
+     * Methods that create Equals*Ref constraints
+     */
+    
+    public static EqualsAnyRef anyRef(final String... values) {
+        assertValuesAndSizeOk(values);
+        return new EqualsAnyRef(false, values);
+    }
+    
+    public static EqualsAnyRef anyRefOrNull(final String... values) {
+        assertValuesAndSizeOk(values);
+        return new EqualsAnyRef(true, values);
+    }
+
+    public static EqualsNoneRef noneRef(final String... values) {
+        assertValuesAndSizeOk(values);
+        return new EqualsNoneRef(true, values);
+    }
+
+    public static EqualsNoneRef noneRefNotNull(final String... values) {
+        assertValuesAndSizeOk(values);
+        return new EqualsNoneRef(false, values);
     }
 
     /*
@@ -81,23 +166,11 @@ public class Equals {
         return new EqualsNotNull();
     }
 
-    /*
-     * Methods that create Equals*Ref constraints
-     */
-    
-    public static EqualsAnyRef anyRef(final String... values) {
-        return new EqualsAnyRef(Objects.requireNonNullElseGet(values, () -> new String[] { null }));
-    }
-    
-    public static EqualsNoneRef noneRef(final String... values) {
-        return new EqualsNoneRef(Objects.requireNonNullElseGet(values, () -> new String[] { null }));
-    }
 
-
-    private static void checkNumbersHaveSameTypeOfFail(Number[] values) {
+    private static void assertNumbersHaveSameType(Number[] values) {
         Class<? extends Number> numberClass = values[0].getClass();
         if (!Arrays.stream(values).allMatch(v -> numberClass == v.getClass())) {
-            throw new IllegalArgumentException(NUMBERS_CLASS_MESSAGE);
+            throw new IllegalArgumentException(NUMBERS_TYPE_ERR_MESSAGE);
         }
     }
 

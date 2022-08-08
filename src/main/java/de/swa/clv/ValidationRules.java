@@ -19,7 +19,7 @@ import static de.swa.clv.json.JsonUtil.*;
  */
 public class ValidationRules<T> {
 
-    public static final String SCHEMA_VERSION = "0.6";
+    public static final String SCHEMA_VERSION = "0.7";
     public static final ConstraintRoot NO_CONSTRAINT = Equals.none("");
     @SuppressWarnings("squid:S3878")
     public static final Permissions NO_PERMISSIONS = Permissions.any(new String[0]);
@@ -449,7 +449,7 @@ public class ValidationRules<T> {
         if (propConstraint == null) {
             throw new IllegalArgumentException("PropConstraint must not be null");
         }
-        validateConstraint(propConstraint.getProperty(), propConstraint.getConstraint());
+        validateConstraint(propConstraint.property(), propConstraint.constraint());
     }
 
     private void validateConstraint(final String property, final ConstraintRoot constraint) {

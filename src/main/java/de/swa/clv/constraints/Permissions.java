@@ -23,7 +23,7 @@ public abstract class Permissions extends ConstraintRoot {
      */
     public static PermissionsAny any(final String... values) {
         if (Arrays.asList(values).contains(null)) {
-            throw new IllegalArgumentException("Null values are not allowed");
+            throw new IllegalArgumentException(NULL_VALUE_ERR_MESSAGE);
         }
         return new PermissionsAny(values);
     }
@@ -37,7 +37,7 @@ public abstract class Permissions extends ConstraintRoot {
      */
     public static PermissionsAny any(final Enum<?>... values) {
         if (Arrays.asList(values).contains(null)) {
-            throw new IllegalArgumentException("Null values are not allowed");
+            throw new IllegalArgumentException(NULL_VALUE_ERR_MESSAGE);
         }
         String[] valuesAsStrings = Arrays.stream(values).map(Enum::name).toArray(String[]::new);
         return new PermissionsAny(valuesAsStrings);
@@ -51,7 +51,7 @@ public abstract class Permissions extends ConstraintRoot {
      */
     public static PermissionsAll all(final String... values) {
         if (Arrays.asList(values).contains(null)) {
-            throw new IllegalArgumentException("Null values are not allowed");
+            throw new IllegalArgumentException(NULL_VALUE_ERR_MESSAGE);
         }
         return new PermissionsAll(values);
     }
@@ -65,7 +65,7 @@ public abstract class Permissions extends ConstraintRoot {
      */
     public static PermissionsAll all(final Enum<?>... values) {
         if (Arrays.asList(values).contains(null)) {
-            throw new IllegalArgumentException("Null values are not allowed");
+            throw new IllegalArgumentException(NULL_VALUE_ERR_MESSAGE);
         }
         String[] valuesAsStrings = Arrays.stream(values).map(Enum::name).toArray(String[]::new);
         return new PermissionsAll(valuesAsStrings);
@@ -79,7 +79,7 @@ public abstract class Permissions extends ConstraintRoot {
      */
     public static PermissionsNone none(final String... values) {
         if (Arrays.asList(values).contains(null)) {
-            throw new IllegalArgumentException("Null values are not allowed");
+            throw new IllegalArgumentException(NULL_VALUE_ERR_MESSAGE);
         }
         return new PermissionsNone(values);
     }
@@ -93,7 +93,7 @@ public abstract class Permissions extends ConstraintRoot {
      */
     public static PermissionsNone none(final Enum<?>... values) {
         if (Arrays.asList(values).contains(null)) {
-            throw new IllegalArgumentException("Null values are not allowed");
+            throw new IllegalArgumentException(NULL_VALUE_ERR_MESSAGE);
         }
         String[] valuesAsStrings = Arrays.stream(values).map(Enum::name).toArray(String[]::new);
         return new PermissionsNone(valuesAsStrings);

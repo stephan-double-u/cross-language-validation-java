@@ -3,6 +3,7 @@ package de.swa.clv.constraints;
 import de.swa.clv.UserPermissions;
 import org.junit.Test;
 
+import static de.swa.clv.constraints.ConstraintRoot.NULL_VALUE_ERR_MESSAGE;
 import static org.junit.Assert.*;
 
 public class PermissionsAllTest {
@@ -11,14 +12,14 @@ public class PermissionsAllTest {
     public void exceptionIfStringIsNull() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Permissions.all("ONE", null));
-        assertEquals("Null values are not allowed", ex.getMessage());
+        assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
     public void exceptionIfEnumIsNull() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Permissions.all(SomeEnum.ONE, null));
-        assertEquals("Null values are not allowed", ex.getMessage());
+        assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test

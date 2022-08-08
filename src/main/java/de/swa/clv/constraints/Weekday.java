@@ -19,12 +19,9 @@ public class Weekday extends Dates {
     private static final Logger log = LoggerFactory.getLogger(Weekday.class);
 
     public static final String TOKEN = "WEEKDAY_ANY";
-    private static final String NULL_VALUES_MESSAGE = "Null values are not allowed";
-    private static final String EMPTY_VALUES_MESSAGE = "Provide at least one value";
 
-    private Weekday(final List<Object> values) {
-        setObjectValues(values);
-        validateValuesOrFail(null, null);
+    private Weekday(final boolean nullEqualsTrue, final DayOfWeek ... days) {
+        setObjectValues(getValuesWithAllowFlagAsObjectList(nullEqualsTrue, days));
     }
 
     @Override
@@ -33,23 +30,13 @@ public class Weekday extends Dates {
     }
 
     public static Weekday any(DayOfWeek ... days) {
-        validateNotNullAndNotEmptyOrFail(days);
-        return new Weekday(Arrays.asList(days));
+        assertValuesAndSizeOk(days);
+        return new Weekday(false, days);
     }
 
-    public static Weekday anyOrNull(DayOfWeek ... values) {
-        validateNotNullAndNotEmptyOrFail(values);
-        ArrayList<Object> daysWithNull = new ArrayList<>(Arrays.asList(values));
-        daysWithNull.add(null);
-        return new Weekday(daysWithNull);
-    }
-
-    private static void validateNotNullAndNotEmptyOrFail(DayOfWeek[] values) {
-        if (values == null || Arrays.asList(values).contains(null)) {
-            throw new IllegalArgumentException(NULL_VALUES_MESSAGE);
-        } else if (values.length == 0) {
-            throw new IllegalArgumentException(EMPTY_VALUES_MESSAGE);
-        }
+    public static Weekday anyOrNull(DayOfWeek ... days) {
+        assertValuesAndSizeOk(days);
+        return new Weekday(true, days);
     }
 
     @Override
@@ -58,34 +45,37 @@ public class Weekday extends Dates {
     }
 
     @Override
-    public boolean validate(final Object dateObject, final Object ignored) {
-        if (dateObject == null) {
-            return getValues().contains(null);
+    public boolean validate(final Object objectToValidate, final Object ignored) {
+        final Boolean nullEqualsTrue = (Boolean) getValues().get(0);
+        if (objectToValidate == null) {
+            log.debug("'Null object equals to {}", nullEqualsTrue);
+            return nullEqualsTrue;
         }
         final boolean match;
-        if (dateObject instanceof LocalDate date) {
+        if (objectToValidate instanceof LocalDate date) {
             match = validate(date.getDayOfWeek().getValue());
-        } else if (dateObject instanceof LocalDateTime date) {
+        } else if (objectToValidate instanceof LocalDateTime date) {
             match = validate(date.getDayOfWeek().getValue());
-        } else if (dateObject instanceof Calendar date) {
+        } else if (objectToValidate instanceof Calendar date) {
             int dayOfWeek = date.get(Calendar.DAY_OF_WEEK); // Sun=1!
             int dayOfWeekIso = (dayOfWeek + 5) % 7 + 1;
             match = validate(dayOfWeekIso);
-        } else if (dateObject instanceof Date date) {
+        } else if (objectToValidate instanceof Date date) {
             Calendar cal = Calendar.getInstance();
             cal.setTime(date);
             int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK); // Sun=1!
             int dayOfWeekIso = (dayOfWeek + 5) % 7 + 1;
             match = validate(dayOfWeekIso);
         } else {
-            throw new IllegalArgumentException("Unsupported type: " + dateObject.getClass());
+            throw new IllegalArgumentException("Unsupported type: " + objectToValidate.getClass());
         }
-        log.debug("Date '{}' is {} {}: {}", dateObject, getType(), getValues(), match);
+        log.debug("Date '{}' is {} {}: {}", objectToValidate, getType(), getValues(), match);
         return match;
     }
 
     private boolean validate(final Integer dateDaysOfWeek) {
         return getValues().stream()
+                .skip(1)
                 .filter(Objects::nonNull)
                 .map(v -> ((DayOfWeek) v).getValue())
                 .filter(dayOfWeek -> Objects.equals(dayOfWeek, dateDaysOfWeek))
@@ -95,10 +85,22 @@ public class Weekday extends Dates {
 
     @Override
     public String serializeToJson() {
-        String valuesJson = getValues().stream()
-                .map(v -> quoted("" + v))
-                .collect(Collectors.joining(","));
-        return asKey("type") + quoted(getType()) + "," + asKey("days") + asArray(valuesJson) ;
+        String nullEqualsTrueJson = "";
+        Boolean nullEqualsTo = (Boolean) getValues().get(0);
+        // Serialize "nullEqualsTo" key only for non-default value 'true',
+        if (nullEqualsTo.equals(Boolean.TRUE)) {
+            nullEqualsTrueJson = "," + asKey("nullEqualsTo") + nullEqualsTo;
+        }
+        String valuesJson = "," + asKey("days") + asArray(getValues().subList(1, getValues().size()));
+        return asKey("type") + quoted(getType()) + valuesJson + nullEqualsTrueJson;
     }
+
+//    @Override
+//    public String serializeToJsonx() {
+//        String valuesJson = getValues().stream()
+//                .map(v -> quoted("" + v))
+//                .collect(Collectors.joining(","));
+//        return asKey("type") + quoted(getType()) + "," + asKey("days") + asArray(valuesJson) ;
+//    }
 
 }
