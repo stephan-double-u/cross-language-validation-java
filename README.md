@@ -54,11 +54,11 @@ all rules for all corresponding classes:
 public class Rules {
     public static final ValidationRules<Foo> FOO = new ValidationRules<>(Foo.class);
     static {
-        RULES.mandatory("fooProperty");
+        FOO.mandatory("fooProperty");
     }
     public static final ValidationRules<Bar> BAR = new ValidationRules<>(Bar.class);
     static {
-        RULES.immutable("barProperty");
+        BAR.immutable("barProperty");
     }
 }
 ```
