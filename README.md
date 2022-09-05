@@ -14,7 +14,7 @@ i.e. it contains:
     <dependency>
       <groupId>de.swa</groupId>
       <artifactId>cross-language-validation</artifactId>
-      <version>0.7.0</version>
+      <version>0.7.1</version>
     </dependency>
 
 ### settings.xml

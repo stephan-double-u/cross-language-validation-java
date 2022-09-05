@@ -498,6 +498,38 @@ public class ValidatorTest {
                 ex.getMessage());
     }
 
+    @Test
+    public void validateRecord_ok() {
+        ValidationRules<Record> rules = new ValidationRules<>(Record.class);
+        rules.mandatory("aString");
+        rules.immutable("aInt", Condition.of("aString", Equals.null_()));
+
+        Record record1 = new Record("foo", 1);
+        Record record2 = new Record("foo", 2);
+        List<String> errors = Validator.instance().validateMandatoryRules(record1, rules);
+        errors.addAll(Validator.instance().validateImmutableRules(record1, record2, rules));
+
+        assertEquals(0, errors.size());
+    }
+
+    @Test
+    public void validateRecord_2errors() {
+        ValidationRules<Record> rules = new ValidationRules<>(Record.class);
+        rules.mandatory("aString");
+        rules.immutable("aInt", Condition.of("aString", Equals.null_()));
+
+        Record record1 = new Record(null, 1);
+        List<String> errors = Validator.instance().validateMandatoryRules(record1, rules);
+        errors.addAll(Validator.instance().validateContentRules(record1, rules));
+        errors.addAll(Validator.instance().validateImmutableRules(record1, new Record(null, 2), rules));
+
+        assertEquals(List.of("error.validation.mandatory.record.aString", "error.validation.immutable.record.aInt"),
+                errors);
+    }
+
+    record Record(String aString, int aInt) {
+    }
+
     class ClassUnderTest extends BaseClass implements Identifiable<Integer> {
         private String stringProp;
         private SomeEnum enumProp;

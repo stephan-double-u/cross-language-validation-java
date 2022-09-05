@@ -627,18 +627,34 @@ public class Validator {
                 .map(i -> property + "[" + i + "]").toList();
     }
 
-    // try isFoo for booleans, then getFoo for all
+    // try isFoo() for booleans, then getFoo() for class, then foo() for record
     private Method getGetterMethodOrFail(final String propertyName, final Class<?> clazz) {
         final Map<String, Method> noArgGetters = getNoArgGetterMethodMap(clazz);
+        Method getterMethod = clazz.isRecord()
+                ? getGetterMethodForRecord(propertyName, clazz, noArgGetters)
+                : getGetterMethodForBean(propertyName, noArgGetters);
+        if (getterMethod == null) {
+            throw new IllegalArgumentException(
+                    "No no-arg getter found for property '" + propertyName + "' in " + clazz.getName());
+        }
+        return getterMethod;
+    }
+
+    private Method getGetterMethodForBean(String propertyName, Map<String, Method> noArgGetters) {
         Method getterMethod = noArgGetters.get(buildGetterName("is", propertyName));
         if (getterMethod == null) {
             getterMethod = noArgGetters.get(buildGetterName("get", propertyName));
-            if (getterMethod == null) {
-                throw new IllegalArgumentException(
-                        "No no-arg getter found for property '" + propertyName + "' in " + clazz.getName());
-            }
         }
         return getterMethod;
+    }
+
+    private Method getGetterMethodForRecord(String propertyName, Class<?> clazz, Map<String, Method> noArgGetters) {
+        return Arrays.stream(clazz.getRecordComponents())
+                .map(RecordComponent::getName)
+                .filter(fieldName -> fieldName.equals(propertyName))
+                .map(noArgGetters::get)
+                .findAny()
+                .orElse(null);
     }
 
     private Map<String, Method> getNoArgGetterMethodMap(final Class<?> clazz) {
@@ -648,18 +664,18 @@ public class Validator {
         } catch (final IntrospectionException e) {
             throw new IllegalStateException("Introspection of bean info for " + clazz.getName() + " failed:", e);
         }
-        return getNoArgGetterMethodMap(beanInfo);
+        return getNoArgGetterMethodMap(beanInfo, clazz.isRecord());
     }
 
-    private Map<String, Method> getNoArgGetterMethodMap(final BeanInfo beanInfo) {
+    private Map<String, Method> getNoArgGetterMethodMap(final BeanInfo beanInfo, boolean isRecord) {
         final Map<String, Method> methodNamesMap = new HashMap<>();
         for (final MethodDescriptor md : beanInfo.getMethodDescriptors()) {
-            if (md.getName().startsWith("is") && md.getMethod().getParameterTypes().length == 0
-                    && (md.getMethod().getReturnType().equals(boolean.class)
-                    || md.getMethod().getReturnType().equals(Boolean.class))) {
-                methodNamesMap.put(md.getName(), md.getMethod());
+            if (md.getMethod().getParameterTypes().length != 0) {
+                continue;
             }
-            if (md.getName().startsWith("get") && md.getMethod().getParameterTypes().length == 0) {
+            if (isRecord || md.getName().startsWith("get")
+                    || md.getName().startsWith("is") && (md.getMethod().getReturnType().equals(boolean.class)
+                    || md.getMethod().getReturnType().equals(Boolean.class))) {
                 methodNamesMap.put(md.getName(), md.getMethod());
             }
         }
