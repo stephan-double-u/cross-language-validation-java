@@ -48,8 +48,8 @@ public class Foo {
     // getter, setter etc. omitted
 }
 ```
-If you prefer working with POJOs, this could be done in another class as well, e.g. in a class where you collect 
-all rules for all corresponding classes:
+If you prefer working with POJOs or Records, this could be done in another class as well, e.g. in a class where you 
+collect all rules for all corresponding classes:
 ```java
 public class Rules {
     public static final ValidationRules<Foo> FOO = new ValidationRules<>(Foo.class);
