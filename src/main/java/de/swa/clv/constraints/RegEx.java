@@ -13,15 +13,13 @@ import static de.swa.clv.json.JsonUtil.asArray;
 import static de.swa.clv.json.JsonUtil.asKey;
 import static de.swa.clv.json.JsonUtil.quoted;
 
-public class RegEx extends ConstraintRoot {
+public abstract class RegEx extends ConstraintRoot {
 
     private static final Logger log = LoggerFactory.getLogger(RegEx.class);
 
-    private static final String TYPE = "REGEX_ANY";
-
     private final List<Pattern> patterns;
 
-    private RegEx(String... regex) {
+    RegEx(String... regex) {
         super();
         setObjectValues(Arrays.asList(regex));
         patterns = Arrays.stream(regex)
@@ -42,11 +40,30 @@ public class RegEx extends ConstraintRoot {
      *
      * @param regex the regular expressions one of which must match the element
      */
-    public static RegEx any(final String... regex) {
+    public static RegExAny any(final String... regex) {
         if (Arrays.asList(regex).contains(null)) {
             throw new IllegalArgumentException(NULL_VALUE_ERR_MESSAGE);
         }
-        return new RegEx(regex);
+        return new RegExAny(regex);
+    }
+
+    /**
+     * The element that should be validated must not match any of the given regular expressions.
+     * <p/>
+     * Supported types are:
+     * <ul>
+     * <li>{@code String} (string is evaluated)</li>
+     * <li>{@code Enum<?>} (name of the enumeration is evaluated)</li>
+     * </ul>
+     * <p/>
+     *
+     * @param regex the regular expressions one of which must match the element
+     */
+    public static RegExNone none(final String... regex) {
+        if (Arrays.asList(regex).contains(null)) {
+            throw new IllegalArgumentException(NULL_VALUE_ERR_MESSAGE);
+        }
+        return new RegExNone(regex);
     }
 
     @Override
@@ -66,12 +83,15 @@ public class RegEx extends ConstraintRoot {
         if (!isSupportedType(object.getClass())) {
             throw new IllegalArgumentException("Unsupported type: " + object.getClass());
         }
-        return patterns.stream()
-                .peek(pattern -> log.debug("'" + object.toString() + (pattern.matcher(object.toString()).find()
-                        ? "' does" : "' does NOT") +" match regex '" + pattern + "'"))
+        boolean typeIsRegExAny = getType().equals(RegExAny.TYPE);
+        Boolean match = patterns.stream()
+                .peek(pattern -> log.debug("'" + object + (pattern.matcher(object.toString()).find()
+                        ? "' does" : "' does NOT") + " match regex '" + pattern + "'"))
                 .map(pattern -> pattern.matcher(object.toString()).find())
                 .filter(found -> found)
-                .findFirst().orElse(false);
+                .findFirst()
+                .orElse(false);
+        return typeIsRegExAny ? match : !match;
     }
 
     @Override
@@ -80,11 +100,7 @@ public class RegEx extends ConstraintRoot {
         List<String> regExWithDoubledBackslashes = getValues().stream()
                 .map(regEx -> ((String) regEx).replaceAll("\\\\", "\\\\\\\\"))
                 .toList();
-        return asKey("type") + quoted(TYPE) + "," + asKey("values") + asArray((List) regExWithDoubledBackslashes);
+        return asKey("type") + quoted(getType()) + "," + asKey("values") + asArray((List) regExWithDoubledBackslashes);
     }
 
-    @Override
-    public String getType() {
-        return TYPE;
-    }
 }

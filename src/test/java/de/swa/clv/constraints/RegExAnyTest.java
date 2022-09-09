@@ -7,9 +7,9 @@ import static de.swa.clv.test.Util.doubleQuote;
 import static java.lang.Boolean.TRUE;
 import static org.junit.Assert.*;
 
-public class RegExTest {
+public class RegExAnyTest {
 
-    private static RegEx regEx = RegEx.any("bar", "(?i)[o]{2}", "^[0-7]+$", "\\p{N}");
+    private static RegExAny regEx = RegEx.any("bar", "(?i)[o]{2}", "^[0-7]+$", "\\p{N}");
 
     @Test
     public void exceptionIfRegExIsNull() {
