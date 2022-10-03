@@ -208,20 +208,14 @@ public class Validator {
         INSTANCE.validateProperty(property, typeClass); // TODO? optional here
     }
 
+    // Finds all rules with either no permissions or with matching permissions and with matching conditions
     private List<ValidationRule> getMatchingRules(List<ValidationRule> validationRules, Object object,
             UserPermissions userPermissions) {
-        // find all rules with matching permission and matching conditions
-        List<ValidationRule> matchingRules = validationRules.stream()
-                .filter(rule -> rule.getPermissions().validate(userPermissions.getValues()))
+        return validationRules.stream()
+                .filter(rule -> rule.getPermissions() == NO_PERMISSIONS
+                        ||rule.getPermissions().validate(userPermissions.getValues()))
                 .filter(rule -> allConstraintsAreMet(rule.getConditionsTopGroup(), object))
                 .toList();
-        // find all default rules (w/o any permission) with matching conditions
-        if (matchingRules.isEmpty())
-            matchingRules = validationRules.stream()
-                    .filter(rule -> rule.getPermissions() == NO_PERMISSIONS)
-                    .filter(rule -> allConstraintsAreMet(rule.getConditionsTopGroup(), object))
-                    .toList();
-        return matchingRules;
     }
 
     /**

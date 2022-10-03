@@ -2,7 +2,7 @@ package de.swa.clv.constraints;
 
 import de.swa.clv.Validator;
 import de.swa.clv.test.Util;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -10,7 +10,7 @@ import java.util.Date;
 
 import static de.swa.clv.constraints.ConstraintRoot.EMPTY_VALUES_ERR_MESSAGE;
 import static de.swa.clv.constraints.ConstraintRoot.NULL_VALUE_ERR_MESSAGE;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class EqualsNoneRefTest {
 

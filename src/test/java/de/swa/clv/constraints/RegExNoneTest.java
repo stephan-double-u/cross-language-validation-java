@@ -1,11 +1,11 @@
 package de.swa.clv.constraints;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static de.swa.clv.constraints.ConstraintRoot.NULL_VALUE_ERR_MESSAGE;
 import static de.swa.clv.test.Util.doubleQuote;
 import static java.lang.Boolean.TRUE;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RegExNoneTest {
 
@@ -18,9 +18,10 @@ public class RegExNoneTest {
         assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void unsupportedType() {
-        regEx.validate(TRUE, null);
+        assertThrows(IllegalArgumentException.class,
+                () -> regEx.validate(TRUE, null));
     }
 
     @Test

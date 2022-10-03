@@ -1,14 +1,12 @@
 package de.swa.clv.json;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.sql.JDBCType;
 import java.time.LocalDate;
 import java.util.Arrays;
 
-import static org.junit.Assert
-
-.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class JsonUtilTest {
 

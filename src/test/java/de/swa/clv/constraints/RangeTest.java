@@ -1,7 +1,7 @@
 package de.swa.clv.constraints;
 
 import de.swa.clv.test.Util;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -9,9 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 
-import static org.junit.Assert
-
-.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RangeTest {
 

@@ -2,14 +2,14 @@ package de.swa.clv;
 
 import de.swa.clv.constraints.*;
 import de.swa.clv.test.Util;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import static de.swa.clv.ValidationRules.SCHEMA_VERSION;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ValidationRulesTest {
 

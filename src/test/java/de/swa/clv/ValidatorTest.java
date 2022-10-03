@@ -1,14 +1,20 @@
 package de.swa.clv;
 
 import de.swa.clv.constraints.*;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 public class ValidatorTest {
 
@@ -61,9 +67,10 @@ public class ValidatorTest {
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void validateProperty_notexisting() {
-        Validator.instance().validateProperty("notexisting", ClassUnderTest.class);
+        assertThrows(IllegalArgumentException.class,
+                () -> Validator.instance().validateProperty("notexisting", ClassUnderTest.class));
     }
 
 
@@ -96,7 +103,7 @@ public class ValidatorTest {
 
 
     private ValidationRules<ClassUnderTest> classUnderTestRules;
-    @Before
+    @BeforeEach
     public void before() {
         classUnderTestRules = new ValidationRules<>(ClassUnderTest.class);
         classUnderTestRules.mandatory("stringProp", Condition.of("utilDate", Equals.notNull()))
@@ -395,7 +402,7 @@ public class ValidatorTest {
                 Equals.anyRef("subClassArrayProp[1].integerListProp[*]#distinct"),
                 condition);
         final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
-        assertTrue(errors.toString(), errors.isEmpty());
+        assertTrue(errors.isEmpty(), errors.toString());
     }
 
     @Test
@@ -424,54 +431,78 @@ public class ValidatorTest {
         assertEquals(Arrays.asList("error.validation.update.equals_any.classundertest.stringProp"), errors);
     }
 
-    @Test
-    public void validateUpdateRules_complexStateTransitions() {
+    static Stream<Arguments> valueProvider() {
+        ClassUnderTest originlOne = new ClassUnderTest(null, SomeEnum.ONE);
+        ClassUnderTest originlTwo = new ClassUnderTest(null, SomeEnum.TWO);
+        ClassUnderTest originlThree = new ClassUnderTest(null, SomeEnum.THREE);
+        ClassUnderTest originlFour = new ClassUnderTest(null, SomeEnum.FOUR);
+        ClassUnderTest modifiedOne = new ClassUnderTest(null, SomeEnum.ONE);
+        ClassUnderTest modifiedTwo = new ClassUnderTest(null, SomeEnum.TWO);
+        ClassUnderTest modifiedThree = new ClassUnderTest(null, SomeEnum.THREE);
+        ClassUnderTest modifiedFour = new ClassUnderTest(null, SomeEnum.FOUR);
+        UserPermissions trainee = UserPermissions.of("TRAINEE");
+        UserPermissions expert = UserPermissions.of("EXPERT");
+        UserPermissions manager = UserPermissions.of("MANAGER");
+        String errorPrefix = "error.validation.update.equals_any.classundertest.enumProp";
+        return Stream.of(
+                arguments(originlOne, modifiedTwo, trainee, List.of()),
+                arguments(originlOne, modifiedThree, trainee, List.of()),
+                arguments(originlOne, modifiedFour, trainee, List.of(errorPrefix + "#1")),
+                arguments(originlTwo, modifiedFour, trainee, List.of()),
+                arguments(originlThree, modifiedFour, trainee, List.of()),
+                arguments(originlTwo, modifiedOne, trainee, List.of(errorPrefix + "#2")),
+                arguments(originlFour, modifiedOne, trainee, List.of(errorPrefix + "#3")),
+
+                arguments(originlOne, modifiedTwo, expert, List.of()),
+                arguments(originlOne, modifiedThree, expert, List.of()),
+                arguments(originlOne, modifiedFour, expert, List.of(errorPrefix + "#1")),
+                arguments(originlTwo, modifiedFour, expert, List.of()),
+                arguments(originlThree, modifiedFour, expert, List.of()),
+                arguments(originlTwo, modifiedOne, expert, List.of(errorPrefix + "#2")),
+                arguments(originlFour, modifiedOne, expert, List.of()),
+
+                arguments(originlOne, modifiedTwo, manager, List.of()),
+                arguments(originlOne, modifiedThree, manager, List.of()),
+                arguments(originlOne, modifiedFour, manager, List.of()),
+                arguments(originlTwo, modifiedFour, manager, List.of()),
+                arguments(originlThree, modifiedFour, manager, List.of()),
+                arguments(originlTwo, modifiedOne, manager, List.of()),
+                arguments(originlFour, modifiedOne, manager, List.of()));
+    }
+
+    @ParameterizedTest
+    @MethodSource("valueProvider")
+    public void validateUpdateRules_complexStateTransitions(ClassUnderTest original, ClassUnderTest modified,
+            UserPermissions userPermissions, List<String> expectedErrors) {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         // everyone: ONE -> [TWO, THREE] resp. [TWO, THREE] -> FOUR
         // EXPERT: additionally FOUR -> ONE
         // MANAGER: may set any value
         // Note: the rule for MANAGER could be simplified as content(!) rule w/o Condition.of
-        rules.update("enumProp", Equals.any(ValidationTesting.SomeEnum.values()),
-                Permissions.any("MANAGER"),
-                Condition.of("enumProp",  Equals.any(ValidationTesting.SomeEnum.values())));
         rules.update("enumProp", Equals.any("TWO", "THREE"),
-                Condition.of("enumProp",  Equals.any("ONE")));
+                        Permissions.none("MANAGER"),
+                        Condition.of("enumProp",  Equals.any("ONE")))
+                .errorCodeControl(UseType.AS_SUFFIX, "#1");
         rules.update("enumProp", Equals.any("FOUR"),
-                Condition.of("enumProp",  Equals.any("TWO", "THREE")));
+                        Permissions.none("MANAGER"),
+                        Condition.of("enumProp",  Equals.any("TWO", "THREE")))
+                .errorCodeControl(UseType.AS_SUFFIX, "#2");
         rules.update("enumProp", Equals.any("FOUR"),
-                Condition.of("enumProp",  Equals.any("FOUR")));
-        rules.update("enumProp", Equals.any("ONE", "FOUR"),
-                Permissions.any("EXPERT"),
-                Condition.of("enumProp",  Equals.any("FOUR")));
-
-        ClassUnderTest originalONE = new ClassUnderTest(null, SomeEnum.ONE);
-        ClassUnderTest originalTWO = new ClassUnderTest(null, SomeEnum.TWO);
-        ClassUnderTest originalFOUR = new ClassUnderTest(null, SomeEnum.FOUR);
-        ClassUnderTest modifiedONE = new ClassUnderTest(null, SomeEnum.ONE);
-        ClassUnderTest modifiedTWO = new ClassUnderTest(null, SomeEnum.TWO);
-        ClassUnderTest modifiedFOUR = new ClassUnderTest(null, SomeEnum.FOUR);
+                        Permissions.none("MANAGER", "EXPERT"),
+                        Condition.of("enumProp",  Equals.any("FOUR")))
+                .errorCodeControl(UseType.AS_SUFFIX, "#3");
+        rules.update("enumProp", Equals.any("ONE"),
+                        Permissions.any("EXPERT"),
+                        Condition.of("enumProp",  Equals.any("FOUR")))
+                .errorCodeControl(UseType.AS_SUFFIX, "#4");
+        rules.update("enumProp", Equals.any(ValidationTesting.SomeEnum.values()),
+                        Permissions.any("MANAGER"),
+                        Condition.of("enumProp",  Equals.any(ValidationTesting.SomeEnum.values())))
+                .errorCodeControl(UseType.AS_SUFFIX, "#5");
 
         List<String> errors;
-        errors = Validator.instance().validateUpdateRules(originalONE, modifiedFOUR, UserPermissions.of("MANAGER"), rules);
-        assertTrue(errors.isEmpty());
-        errors = Validator.instance().validateUpdateRules(originalFOUR, modifiedONE, UserPermissions.of("MANAGER"), rules);
-        assertTrue(errors.isEmpty());
-        errors = Validator.instance().validateUpdateRules(originalTWO, modifiedFOUR, UserPermissions.of("MANAGER"), rules);
-        assertTrue(errors.isEmpty());
-
-        errors = Validator.instance().validateUpdateRules(originalONE, modifiedFOUR, UserPermissions.of("EXPERT"), rules);
-        assertEquals(List.of("error.validation.update.equals_any.classundertest.enumProp"), errors);
-        errors = Validator.instance().validateUpdateRules(originalFOUR, modifiedONE, UserPermissions.of("EXPERT"), rules);
-        assertTrue(errors.isEmpty());
-        errors = Validator.instance().validateUpdateRules(originalTWO, modifiedFOUR, UserPermissions.of("EXPERT"), rules);
-        assertTrue(errors.isEmpty());
-
-        errors = Validator.instance().validateUpdateRules(originalONE, modifiedFOUR, UserPermissions.of("TRAINEE"), rules);
-        assertEquals(List.of("error.validation.update.equals_any.classundertest.enumProp"), errors);
-        errors = Validator.instance().validateUpdateRules(originalFOUR, modifiedONE, UserPermissions.of("TRAINEE"), rules);
-        assertEquals(List.of("error.validation.update.equals_any.classundertest.enumProp"), errors);
-        errors = Validator.instance().validateUpdateRules(originalTWO, modifiedFOUR, UserPermissions.of("TRAINEE"), rules);
-        assertTrue(errors.isEmpty());
+        errors = Validator.instance().validateUpdateRules(original, modified, userPermissions, rules);
+        assertEquals(expectedErrors, errors);
     }
 
     @Test
@@ -530,7 +561,7 @@ public class ValidatorTest {
     record Record(String aString, int aInt) {
     }
 
-    class ClassUnderTest extends BaseClass implements Identifiable<Integer> {
+    static class ClassUnderTest extends BaseClass implements Identifiable<Integer> {
         private String stringProp;
         private SomeEnum enumProp;
         private Date utilDate = Date.from(LocalDate.of(2020, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());

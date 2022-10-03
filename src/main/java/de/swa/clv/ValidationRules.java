@@ -19,7 +19,7 @@ import static de.swa.clv.json.JsonUtil.*;
  */
 public class ValidationRules<T> {
 
-    public static final String SCHEMA_VERSION = "0.7";
+    public static final String SCHEMA_VERSION = "0.8";
     public static final ConstraintRoot NO_CONSTRAINT = Equals.none("");
     @SuppressWarnings("squid:S3878")
     public static final Permissions NO_PERMISSIONS = Permissions.any(new String[0]);
