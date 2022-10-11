@@ -155,7 +155,7 @@ public class Validator {
                         rule.getErrorCodeControl(), property)).toList();
     }
 
-    private String buildErrorMessage(String defaultMessagePrefix, ConstraintRoot constraint, String typeJsonKey,
+    private String buildErrorMessage(String defaultMessagePrefix, Constraint constraint, String typeJsonKey,
             ErrorCodeControl errorCodeControl, String property) {
         String constraintTypePart = constraint != null ? constraint.getType().toLowerCase() + "." : "";
         String defaultErrorMessage = defaultMessagePrefix + constraintTypePart + typeJsonKey + "." + property;
@@ -472,7 +472,7 @@ public class Validator {
                 .orElseGet(() -> null);
         String pureProperty = constraintProperty.split("#")[0];
         List<String> propertiesToCheck = inflatePropertyIfIndexed(pureProperty, object);
-        ConstraintRoot propertyConstraint = propConstraint.constraint();
+        Constraint propertyConstraint = propConstraint.constraint();
         if (aggregateFunction != null) {
             switch (aggregateFunction) {
             case sum -> {

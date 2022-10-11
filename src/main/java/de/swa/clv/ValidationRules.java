@@ -20,7 +20,7 @@ import static de.swa.clv.json.JsonUtil.*;
 public class ValidationRules<T> {
 
     public static final String SCHEMA_VERSION = "0.8";
-    public static final ConstraintRoot NO_CONSTRAINT = Equals.none("");
+    public static final Constraint NO_CONSTRAINT = Equals.none("");
     @SuppressWarnings("squid:S3878")
     public static final Permissions NO_PERMISSIONS = Permissions.any(new String[0]);
     public static final ConditionsTopGroup NO_CONDITIONS_TOP_GROUP = ConditionsTopGroup.AND();
@@ -256,7 +256,7 @@ public class ValidationRules<T> {
      * @param property       the property name
      * @param constraint the constraint
      */
-    public ValidationRule content(final String property, final ConstraintRoot constraint) {
+    public ValidationRule content(final String property, final Constraint constraint) {
         return content(property, constraint, NO_PERMISSIONS, NO_CONDITIONS_TOP_GROUP);
     }
 
@@ -267,22 +267,22 @@ public class ValidationRules<T> {
      * @param constraint the constraint
      * @param propConstraint the property constraint
      */
-    public ValidationRule content(final String property, final ConstraintRoot constraint,
+    public ValidationRule content(final String property, final Constraint constraint,
             final PropConstraint propConstraint) {
         return content(property, constraint, NO_PERMISSIONS, ConditionsGroup.AND(propConstraint));
     }
 
-    public ValidationRule content(final String property, final ConstraintRoot constraint,
+    public ValidationRule content(final String property, final Constraint constraint,
             final ConditionsAndGroup conditionsAndGroup) {
         return content(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup));
     }
 
-    public ValidationRule content(final String property, final ConstraintRoot constraint,
+    public ValidationRule content(final String property, final Constraint constraint,
             final ConditionsOrGroup conditionsOrGroup) {
         return content(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup));
     }
 
-    public ValidationRule content(final String property, final ConstraintRoot constraint,
+    public ValidationRule content(final String property, final Constraint constraint,
             final ConditionsTopGroup topGroup) {
         return content(property, constraint, NO_PERMISSIONS, topGroup);
     }
@@ -293,7 +293,7 @@ public class ValidationRules<T> {
      * @param constraint the constraint
      * @param permissions the permissions
      */
-    public ValidationRule content(final String property, final ConstraintRoot constraint, final Permissions permissions) {
+    public ValidationRule content(final String property, final Constraint constraint, final Permissions permissions) {
         return content(property, constraint, permissions, NO_CONDITIONS_TOP_GROUP);
     }
 
@@ -307,69 +307,69 @@ public class ValidationRules<T> {
      * @param permissions permissions that restrict the validity of the rule.
      * @param propConstraint one or more property related conditions that restrict the validity of the rule.
      */
-    public ValidationRule content(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public ValidationRule content(final String property, final Constraint constraint, final Permissions permissions,
                         final PropConstraint propConstraint) {
         return content(property, constraint, permissions, ConditionsGroup.AND(propConstraint));
     }
 
-    public ValidationRule content(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public ValidationRule content(final String property, final Constraint constraint, final Permissions permissions,
                         final ConditionsAndGroup constraintsAndGroup) {
         return content(property, constraint, permissions, ConditionsTopGroup.OR(constraintsAndGroup));
     }
 
-    public ValidationRule content(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public ValidationRule content(final String property, final Constraint constraint, final Permissions permissions,
                         final ConditionsOrGroup constraintsOrGroups) {
         return content(property, constraint, permissions, ConditionsTopGroup.AND(constraintsOrGroups));
     }
 
-    public ValidationRule content(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public ValidationRule content(final String property, final Constraint constraint, final Permissions permissions,
                         final ConditionsTopGroup topGroup) {
         return addPropertyConditions(property, constraint, permissions, topGroup,
                 contentRulesMap.getOrInit(property), true);
     }
 
 
-    public ValidationRule update(final String property, final ConstraintRoot constraint,
+    public ValidationRule update(final String property, final Constraint constraint,
             final PropConstraint propConstraint) {
         return update(property, constraint, NO_PERMISSIONS, ConditionsGroup.AND(propConstraint));
     }
 
-    public ValidationRule update(final String property, final ConstraintRoot constraint,
+    public ValidationRule update(final String property, final Constraint constraint,
                        final ConditionsAndGroup conditionsAndGroup) {
         return update(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup));
     }
 
-    public ValidationRule update(final String property, final ConstraintRoot constraint,
+    public ValidationRule update(final String property, final Constraint constraint,
                        final ConditionsOrGroup conditionsOrGroup) {
         return update(property, constraint, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup));
     }
 
-    public ValidationRule update(final String property, final ConstraintRoot constraint, final ConditionsTopGroup topGroup) {
+    public ValidationRule update(final String property, final Constraint constraint, final ConditionsTopGroup topGroup) {
         return update(property, constraint, NO_PERMISSIONS, topGroup);
     }
 
-    public ValidationRule update(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public ValidationRule update(final String property, final Constraint constraint, final Permissions permissions,
             final PropConstraint propConstraint) {
         return update(property, constraint, permissions, ConditionsGroup.AND(propConstraint));
     }
 
-    public ValidationRule update(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public ValidationRule update(final String property, final Constraint constraint, final Permissions permissions,
                        final ConditionsAndGroup conditionsAndGroup) {
         return update(property, constraint, permissions, ConditionsTopGroup.OR(conditionsAndGroup));
     }
 
-    public ValidationRule update(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public ValidationRule update(final String property, final Constraint constraint, final Permissions permissions,
                        final ConditionsOrGroup conditionsOrGroup) {
         return update(property, constraint, permissions, ConditionsTopGroup.AND(conditionsOrGroup));
     }
 
-    public ValidationRule update(final String property, final ConstraintRoot constraint, final Permissions permissions,
+    public ValidationRule update(final String property, final Constraint constraint, final Permissions permissions,
             final ConditionsTopGroup topGroup) {
         return addPropertyConditions(property, constraint, permissions, topGroup,
                 updateRulesMap.getOrInit(property), true);
     }
 
-    public ValidationRule addPropertyConditions(final String property, final ConstraintRoot constraint,
+    public ValidationRule addPropertyConditions(final String property, final Constraint constraint,
             final Permissions permissions, final ConditionsTopGroup topGroup,
             List<ValidationRule> validationRuleList,
             boolean isAggregateFunctionAllowed) {
@@ -424,7 +424,7 @@ public class ValidationRules<T> {
                                                        Permissions newPermissions) {
         // Flatten all permission values
         final Set<String> existingPerms = existingPermissions.stream()
-                .map(ConstraintRoot::getValues)
+                .map(Constraint::getValues)
                 .flatMap(Collection::stream)
                 .map(Object::toString)
                 .collect(Collectors.toSet());
@@ -452,7 +452,7 @@ public class ValidationRules<T> {
         validateConstraint(propConstraint.property(), propConstraint.constraint());
     }
 
-    private void validateConstraint(final String property, final ConstraintRoot constraint) {
+    private void validateConstraint(final String property, final Constraint constraint) {
         if (property == null || constraint == null) {
             throw new IllegalArgumentException("Arguments must not be null");
         }

@@ -14,7 +14,7 @@ import static de.swa.clv.json.JsonUtil.quoted;
 /*
  * Implementation note: The class is named {@code Dates} (with {@code s}) to avoid name clash with {@linkplain Date}.
  */
-public abstract class Dates extends ConstraintRoot {
+public abstract class Dates extends Constraint {
 
     private static final Logger log = LoggerFactory.getLogger(Dates.class);
 

@@ -8,8 +8,8 @@ import java.math.BigInteger;
 import java.sql.JDBCType;
 import java.time.LocalDate;
 
-import static de.swa.clv.constraints.ConstraintRoot.EMPTY_VALUES_ERR_MESSAGE;
-import static de.swa.clv.constraints.ConstraintRoot.NULL_VALUE_ERR_MESSAGE;
+import static de.swa.clv.constraints.Constraint.EMPTY_VALUES_ERR_MESSAGE;
+import static de.swa.clv.constraints.Constraint.NULL_VALUE_ERR_MESSAGE;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class EqualsAnyTest {

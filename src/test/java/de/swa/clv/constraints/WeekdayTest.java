@@ -1,6 +1,5 @@
 package de.swa.clv.constraints;
 
-import de.swa.clv.test.Util;
 import org.junit.jupiter.api.Test;
 
 import java.time.DayOfWeek;
@@ -9,8 +8,8 @@ import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 
-import static de.swa.clv.constraints.ConstraintRoot.EMPTY_VALUES_ERR_MESSAGE;
-import static de.swa.clv.constraints.ConstraintRoot.NULL_VALUE_ERR_MESSAGE;
+import static de.swa.clv.constraints.Constraint.EMPTY_VALUES_ERR_MESSAGE;
+import static de.swa.clv.constraints.Constraint.NULL_VALUE_ERR_MESSAGE;
 import static java.time.DayOfWeek.*;
 import static java.time.DayOfWeek.MONDAY;
 import static org.junit.jupiter.api.Assertions.*;

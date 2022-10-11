@@ -1,12 +1,11 @@
 package de.swa.clv.constraints;
 
-import de.swa.clv.test.Util;
 import org.junit.jupiter.api.Test;
 
 import java.sql.JDBCType;
 import java.time.LocalDate;
 
-import static de.swa.clv.constraints.ConstraintRoot.NULL_VALUE_ERR_MESSAGE;
+import static de.swa.clv.constraints.Constraint.NULL_VALUE_ERR_MESSAGE;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class EqualsNoneTest {

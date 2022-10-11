@@ -13,7 +13,7 @@ import static de.swa.clv.json.JsonUtil.asArray;
 import static de.swa.clv.json.JsonUtil.asKey;
 import static de.swa.clv.json.JsonUtil.quoted;
 
-public abstract class RegEx extends ConstraintRoot {
+public abstract class RegEx extends Constraint {
 
     private static final Logger log = LoggerFactory.getLogger(RegEx.class);
 

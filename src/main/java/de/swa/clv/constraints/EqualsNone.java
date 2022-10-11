@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 
-public class EqualsNone extends EqualsRoot {
+public class EqualsNone extends Equals {
 
     private static final Logger log = LoggerFactory.getLogger(EqualsNone.class);
 
@@ -45,7 +45,7 @@ public class EqualsNone extends EqualsRoot {
         }
         final boolean match = getValues().stream()
                 .skip(1)
-                .anyMatch(value -> EqualsRoot.equals(objectToValidate, value));
+                .anyMatch(value -> Equals.equals(objectToValidate, value));
         log.debug("'{}' does{}" + " equals one of {}{}", objectToValidate, (match ? "" : " not"), getValues(),
                 (match ? " (but should not)" : ""));
         return !match;

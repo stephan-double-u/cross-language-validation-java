@@ -5,7 +5,7 @@ import java.io.Serializable;
 import static de.swa.clv.json.JsonUtil.asKey;
 import static de.swa.clv.json.JsonUtil.quoted;
 
-public class EqualsNotNull extends EqualsRoot {
+public class EqualsNotNull extends Equals {
 
     EqualsNotNull() {
     }

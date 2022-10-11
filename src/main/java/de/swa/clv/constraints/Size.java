@@ -8,7 +8,7 @@ import java.util.Map;
 import static de.swa.clv.json.JsonUtil.asKey;
 import static de.swa.clv.json.JsonUtil.quoted;
 
-public class Size extends ConstraintRoot {
+public class Size extends Constraint {
 
     private static final String TYPE = "SIZE";
 

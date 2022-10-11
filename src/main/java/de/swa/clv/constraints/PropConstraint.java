@@ -4,7 +4,7 @@ import static de.swa.clv.json.JsonUtil.*;
 
 import de.swa.clv.json.JsonSerializable;
 
-public record PropConstraint (String property, ConstraintRoot constraint) implements JsonSerializable {
+public record PropConstraint (String property, Constraint constraint) implements JsonSerializable {
 
     @Override
     public String serializeToJson() {

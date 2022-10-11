@@ -11,13 +11,13 @@ import static de.swa.clv.json.JsonUtil.asObject;
 public class ValidationRule {
 
     private String property;
-    private final ConstraintRoot constraint;
+    private final Constraint constraint;
     private final Permissions permissions;
     private final ConditionsTopGroup conditionsTopGroup;
     private ErrorCodeControl errorCodeControl;
     private boolean doNotSerialize = false;
 
-    public ValidationRule(String property, ConstraintRoot constraint, Permissions permissions,
+    public ValidationRule(String property, Constraint constraint, Permissions permissions,
             ConditionsTopGroup conditionsTopGroup) {
         this.property = property;
         this.constraint = constraint;
@@ -29,7 +29,7 @@ public class ValidationRule {
         return property;
     }
 
-    public ConstraintRoot getConstraint() {
+    public Constraint getConstraint() {
         return constraint;
     }
 

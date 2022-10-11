@@ -4,7 +4,7 @@
 
     <groupId>de.swa</groupId>
     <artifactId>cross-language-validation</artifactId>
-    <version>0.8.1</version>
+    <version>0.8.2</version>
     <packaging>jar</packaging>
 
     <licenses>
@@ -83,6 +83,23 @@
                 <executions>
                     <execution>
                         <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <doclint>none</doclint>
+                    <source>17</source>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadoc</id>
                         <goals>
                             <goal>jar</goal>
                         </goals>

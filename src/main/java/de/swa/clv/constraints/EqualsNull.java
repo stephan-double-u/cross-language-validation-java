@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 import static de.swa.clv.json.JsonUtil.*;
 
-public class EqualsNull extends EqualsRoot {
+public class EqualsNull extends Equals {
 
     EqualsNull() {
     }

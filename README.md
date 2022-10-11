@@ -2,19 +2,21 @@
 
 # Cross Language Validation Java 
 
-This library implements the server side part of the
+This library implements the producer part and the validator part of the &#10169;
 [Cross Language Validation Schema](https://github.com/stephan-double-u/cross-language-validation-schema), 
-i.e. it contains:
-- an rich API to define the different kinds of validation rules that are specified by that schema.
-- a validator that checks the validation rules against the relevant objects.
-- a serializer that produces a JSON representation of the defined validation rules according to that schema.
+i.e. it provides:
+- a rich API to define all kinds of validation rules that are specified by that schema
+- a validator that checks the validation rules against the relevant objects
+- a serializer that produces the JSON representation of the validation rules according to that schema.
+
+The requirements for an implementation of that schema are described in the schema documentation.
 
 ## Maven
 ### pom.xml
     <dependency>
       <groupId>de.swa</groupId>
       <artifactId>cross-language-validation</artifactId>
-      <version>0.8.1</version>
+      <version>0.8.2</version>
     </dependency>
 
 ### settings.xml
@@ -31,41 +33,55 @@ Note: `<REMOVE>` must be removed from the public read access token:
     </servers>
 
 ## Documentation
+The examples used in this documentation are based on the example objects described in &#10169;
+[schema dokumentation](https://github.com/stephan-double-u/cross-language-validation-schema#example-objects).
+
 ### Defining validation rules
-Validation rules for a class of type _T_ are defined by creating a static object of type _ValidationRules_ where the
-_Class_ object of type _T_ is the constructor argument. The different kinds of rules are then defined in a _static 
-initializer block_.
+Validation rules for a class or record of type _T_ are defined by creating a static object of type _ValidationRules_ 
+where the _Class_ object of type _T_ is the constructor argument. The different kinds of rules are then defined in 
+a _static initializer block_ with on of the numerous variants of the methods `mandatory(⋯)`, `immutable(⋯)`, 
+`content(⋯)` resp. `update(⋯)`.
 
-For an example class _Foo_ this could be done within the class itself:
-
-```java
-public class Foo {
-    public static final ValidationRules<Foo> RULES = new ValidationRules<>(Foo.class);
-    static {
-        RULES.mandatory("fooProperty");
-    }
-    private String someProperty;
-    // getter, setter etc. omitted
-}
-```
-If you prefer working with POJOs or Records, this could be done in another class as well, e.g. in a class where you 
-collect all rules for all corresponding classes:
+> For an example class _Article_ this could be done within the class itself:
+>
+> ```java
+> public class Article {
+>     public static final ValidationRules<Foo> RULES = new ValidationRules<>(Article.class);
+>     static {
+>         RULES.mandatory("name");
+>     }
+>     private String name;
+>     // getter, setter etc. omitted
+> }
+> ```
+If you prefer working with POJOs, this could be done in a separate class as well, e.g. in a class where you 
+collect all rules for all classes resp. records which have validation rules:
 ```java
 public class Rules {
-    public static final ValidationRules<Foo> FOO = new ValidationRules<>(Foo.class);
+    public static final ValidationRules<Article> ARTICLE_RULES = new ValidationRules<>(Article.class);
     static {
-        FOO.mandatory("fooProperty");
+        ARTICLE_RULES.mandatory("name");
     }
-    public static final ValidationRules<Bar> BAR = new ValidationRules<>(Bar.class);
+    public static final ValidationRules<MedicalSet> MEDICAL_SET_RULES = new ValidationRules<>(MedicalSet.class);
     static {
-        BAR.immutable("barProperty");
+        MEDICAL_SET_RULES.immutable("id");
     }
 }
 ```
+In all the following examples the `static` parts are omitted for the sake of compactness.
+
 #### Mandatory rules
-TODO
+Validation rule for mandatory properties are defined with one of the `mandatory(⋯)` methods. The methods have 1 to 3
+arguments
+- the 1st required argument is the name of the property that should be mandatory, e.g.
+  > `ARTICLE_RULES.mandatory("name");`
+- the optional next argument is of type `Permissions`,Permissions.any(java.lang.Enum<?>...) e.g.
+  > `ARTICLE_RULES.mandatory("name", Permissions.any("EXPERT"));`
+  > `ARTICLE_RULES.mandatory("name", Permissions.all("EXPERT"));`
+  > `ARTICLE_RULES.mandatory("name", Permissions.none("EXPERT"));`
+- the optional next argument is of type `Permissions`
 ```java
-   RULES.mandatory("name");
+   ARTICLE_RULES.mandatory("name");
 ```
 #### Immutable rules
 TODO

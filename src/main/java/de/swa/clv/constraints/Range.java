@@ -10,7 +10,7 @@ import java.util.Arrays;
 import static de.swa.clv.json.JsonUtil.asKey;
 import static de.swa.clv.json.JsonUtil.quoted;
 
-public class Range extends ConstraintRoot {
+public class Range extends Constraint {
 
     private static final String TYPE = "RANGE";
 
@@ -38,7 +38,7 @@ public class Range extends ConstraintRoot {
     }
 
     /**
-     * The value of the property that should be validated against this constraint must be <= {@code maxValue}.
+     * The value of the property that should be validated against this constraint must be &lt;= {@code maxValue}.
      * <p/>
      * Supported types are:
      * <ul>

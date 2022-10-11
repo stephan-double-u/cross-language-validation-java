@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ValidationRuleTest {
 
-    ConstraintRoot someConstraint = Equals.any("FOO");
+    Constraint someConstraint = Equals.any("FOO");
     Permissions somePermissions = Permissions.all("BAR");
     ConditionsTopGroup someTopGroup = ConditionsTopGroup.AND(
             ConditionsGroup.OR(Condition.of("prop", Equals.none("ZOO")))

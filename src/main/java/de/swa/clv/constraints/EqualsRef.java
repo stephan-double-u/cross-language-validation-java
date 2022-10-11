@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public abstract class EqualsRef extends EqualsRoot {
+public abstract class EqualsRef extends Equals {
 
     private static final Logger log = LoggerFactory.getLogger(EqualsRef.class);
 
@@ -22,7 +22,7 @@ public abstract class EqualsRef extends EqualsRoot {
     @Override
     public void validateValuesOrFail(final Class<?> typeClass, final Class<?> propertyType) {
          getValues().stream()
-                 .skip(1)
+                 .skip(1) // boolean nullEqualsTrue
                  .filter(Objects::nonNull)
                  .forEach(refProperty  -> validateValueOrFail(typeClass, propertyType, (String) refProperty));
     }
@@ -74,7 +74,7 @@ public abstract class EqualsRef extends EqualsRoot {
         } else {
             equals = propertiesToCheck.stream()
                     .map(property -> Validator.instance().getPropertyResultObject(property, constraintObject))
-                    .map(referencedValue -> EqualsRoot.equals(valueToValidate, referencedValue))
+                    .map(referencedValue -> Equals.equals(valueToValidate, referencedValue))
                     .filter(e -> e)
                     .findFirst().orElse(false);
 
