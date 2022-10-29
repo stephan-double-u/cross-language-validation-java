@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -35,13 +36,29 @@ public abstract class Dates extends Constraint {
     public void validateValuesOrFail(final Class<?> ignore, final Class<?> ignoreToo) {
         final Integer minDays = (Integer) getValues().get(0);
         final Integer maxDays = (Integer) getValues().get(1);
-        if (!getType().equals(Period.DAYS_TOKEN)
+        if (!getToken().equals(Period.DAYS_TOKEN)
                 && (minDays != null && minDays < 0 || maxDays != null && maxDays < 0)) {
             throw new IllegalArgumentException("'minDays' and 'maxDays' values must not be < 0");
         }
         if (minDays != null && maxDays != null && minDays > maxDays) {
             throw new IllegalArgumentException("'minDays' value must not be greater than 'maxDays' value");
         }
+    }
+
+    LocalDateTime getAsLocalDateTime(Object dateObject) {
+        LocalDateTime localDateTime;
+        if (dateObject instanceof LocalDateTime date) {
+            localDateTime = date;
+        } else if (dateObject instanceof LocalDate date) {
+            localDateTime = date.atTime(0, 0);
+        } else if (dateObject instanceof Calendar date) {
+            localDateTime = LocalDateTime.ofInstant(date.toInstant(), date.getTimeZone().toZoneId());
+        } else if (dateObject instanceof Date date) {
+            localDateTime = LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+        } else {
+            throw new IllegalArgumentException("Unsupported type: " + dateObject.getClass());
+        }
+        return localDateTime;
     }
 
     @Override
@@ -53,7 +70,7 @@ public abstract class Dates extends Constraint {
         Integer maxDays = (Integer) getValues().get(1);
         // WTF? -> swap positive 'past days' values into matching negative values for easier validation
         // e.g. Past.minMaxDays(1,3) is the same as Period.minMaxDays(-3,-1)
-        if (getType().equals(Past.DAYS_TOKEN)) {
+        if (getToken().equals(Past.DAYS_TOKEN)) {
             Integer minDaysCopy = minDays;
             minDays = maxDays != null ? -1 * maxDays : null;
             maxDays = minDaysCopy != null ? -1 * minDaysCopy : null;
@@ -70,7 +87,7 @@ public abstract class Dates extends Constraint {
         } else {
             throw new IllegalArgumentException("Unsupported type: " + dateObject.getClass());
         }
-        log.debug("Date '{}' is {}({}, {}): {}", dateObject, getType(), minDays, maxDays, match);
+        log.debug("Date '{}' is {}({}, {}): {}", dateObject, getToken(), minDays, maxDays, match);
         return match;
     }
 
@@ -127,7 +144,7 @@ public abstract class Dates extends Constraint {
         String minJson = min != null ? asKey("min") + min : "";
         String maxJson = max != null ? asKey("max") + max : "";
         String seperator = min != null && max != null ? "," : "";
-        return asKey("type") + quoted(getType()) + "," + minJson + seperator + maxJson;
+        return asKey("type") + quoted(getToken()) + "," + minJson + seperator + maxJson;
     }
 
 }

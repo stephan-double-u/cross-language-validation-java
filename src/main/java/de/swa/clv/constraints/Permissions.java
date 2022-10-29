@@ -110,7 +110,7 @@ public abstract class Permissions extends Constraint {
         if (getValues().isEmpty()) {
             return "";
         }
-        return asKey("permissions") + asObject(asKey("type") + quoted(getType()) + "," + asKey("values") + asArray(getValues()));
+        return asKey("permissions") + asObject(asKey("type") + quoted(getToken()) + "," + asKey("values") + asArray(getValues()));
     }
 
 }

@@ -35,7 +35,7 @@ public class Size extends Constraint {
      */
     public static Size min(final int minSize) {
         final Size constraint = new Size();
-        constraint.setObjectValues(Arrays.asList(Integer.valueOf(minSize), null));
+        constraint.setValues(Arrays.asList(Integer.valueOf(minSize), null));
         constraint.validateValuesOrFail(null, null);
         return constraint;
     }
@@ -60,7 +60,7 @@ public class Size extends Constraint {
      */
     public static Size max(final int maxSize) {
         final Size constraint = new Size();
-        constraint.setObjectValues(Arrays.asList(null, Integer.valueOf(maxSize)));
+        constraint.setValues(Arrays.asList(null, Integer.valueOf(maxSize)));
         constraint.validateValuesOrFail(null, null);
         return constraint;
     }
@@ -87,7 +87,7 @@ public class Size extends Constraint {
      */
     public static Size minMax(final int minSize, final int maxSize) {
         final Size constraint = new Size();
-        constraint.setObjectValues(Arrays.asList(Integer.valueOf(minSize), Integer.valueOf(maxSize)));
+        constraint.setValues(Arrays.asList(Integer.valueOf(minSize), Integer.valueOf(maxSize)));
         constraint.validateValuesOrFail(null, null);
         return constraint;
     }
@@ -146,7 +146,7 @@ public class Size extends Constraint {
     }
 
     @Override
-    public String getType() {
+    public String getToken() {
         return TYPE;
     }
 }

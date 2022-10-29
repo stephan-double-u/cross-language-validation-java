@@ -13,6 +13,7 @@ import java.beans.Introspector;
 import java.beans.MethodDescriptor;
 import java.lang.reflect.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -157,7 +158,7 @@ public class Validator {
 
     private String buildErrorMessage(String defaultMessagePrefix, Constraint constraint, String typeJsonKey,
             ErrorCodeControl errorCodeControl, String property) {
-        String constraintTypePart = constraint != null ? constraint.getType().toLowerCase() + "." : "";
+        String constraintTypePart = constraint != null ? constraint.getToken().toLowerCase() + "." : "";
         String defaultErrorMessage = defaultMessagePrefix + constraintTypePart + typeJsonKey + "." + property;
         return applyErrorCodeControl(errorCodeControl, defaultErrorMessage);
     }

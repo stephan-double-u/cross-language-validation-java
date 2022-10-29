@@ -11,11 +11,11 @@ public class Future extends Dates {
     private static final String DAYS_TOKEN = "FUTURE_DAYS";
 
     private Future(final List<Object> values) {
-        setObjectValues(values);
+        setValues(values);
     }
 
     @Override
-    public String getType() {
+    public String getToken() {
         return DAYS_TOKEN;
     }
 

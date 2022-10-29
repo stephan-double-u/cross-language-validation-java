@@ -11,7 +11,7 @@ public class EqualsNotNull extends Equals {
     }
 
     @Override
-    public String getType() {
+    public String getToken() {
         return "EQUALS_NOT_NULL";
     }
 
@@ -30,7 +30,7 @@ public class EqualsNotNull extends Equals {
 
     @Override
     public String serializeToJson() {
-        return asKey("type") + quoted(getType());
+        return asKey("type") + quoted(getToken());
     }
 
 }

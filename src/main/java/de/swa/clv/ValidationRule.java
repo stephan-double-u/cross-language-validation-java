@@ -1,8 +1,7 @@
-package de.swa.clv.constraints;
+package de.swa.clv;
 
-import de.swa.clv.ErrorCodeControl;
-import de.swa.clv.UseType;
-import de.swa.clv.ValidationRules;
+import de.swa.clv.constraints.Constraint;
+import de.swa.clv.constraints.Permissions;
 import de.swa.clv.groups.ConditionsTopGroup;
 
 import static de.swa.clv.json.JsonUtil.asKey;

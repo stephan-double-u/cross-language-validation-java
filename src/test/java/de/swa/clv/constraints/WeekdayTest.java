@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -104,26 +105,23 @@ public class WeekdayTest {
     @Test
     public void validateDateToFalse() {
         Weekday weekday = Weekday.any(MONDAY, THURSDAY, WEDNESDAY, THURSDAY, FRIDAY, SUNDAY);
-        Calendar cal = Calendar.getInstance();
-        cal.set(2022, Calendar.JANUARY, 1);
-        Date date = new Date();
-        date.setTime(cal.getTimeInMillis());
+        Date date = Date.from(LocalDate.of(2022, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());
         assertFalse(weekday.validate(date, null));
     }
 
     @Test
     public void serializeWeekdaysAny() {
-        Weekday weekday = Weekday.any(DayOfWeek.values());
+        Weekday any = Weekday.any(DayOfWeek.values());
         assertEquals("""
                 "type":"WEEKDAY_ANY","days":["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]""",
-                weekday.serializeToJson());
+                any.serializeToJson());
     }
 
     @Test
     public void serializeWeekdaysAnyOrNull() {
-        Weekday weekday = Weekday.anyOrNull(MONDAY, SUNDAY);
+        Weekday anyOrNull = Weekday.anyOrNull(MONDAY, SUNDAY);
         assertEquals("""
-                "type":"WEEKDAY_ANY","days":["MONDAY","SUNDAY"],"nullEqualsTo":true""", weekday.serializeToJson());
+                "type":"WEEKDAY_ANY","days":["MONDAY","SUNDAY"],"nullEqualsTo":true""", anyOrNull.serializeToJson());
     }
 
 }

@@ -557,6 +557,40 @@ public class ValidatorTest {
                 errors);
     }
 
+
+    @Test
+    public void validate_content_LocalDate_QuarterAny() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.content("localDateNewYear", Quarter.any(3, 1));
+        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void validate_content_LocalDate_QuarterAny_fail() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.content("localDateNewYear", Quarter.any(2, 4));
+        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertEquals(List.of("error.validation.content.quarter_any.classundertest.localDateNewYear"), errors);
+    }
+
+    @Test
+    public void validate_content_LocalDate_QuarterAnyRef() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.content("localDateNewYear", Quarter.anyRef("id", "subClassProp.integerListProp[*]"));
+        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void validate_content_LocalDate_QuarterAnyRef_fail() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.content("localDateNewYear", Quarter.anyRef("subClassProp.integerListProp[1/1]"));
+        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertEquals(List.of("error.validation.content.quarter_any_ref.classundertest.localDateNewYear"), errors);
+    }
+
+
     record Record(String aString, int aInt) {
     }
 
@@ -564,6 +598,7 @@ public class ValidatorTest {
         private String stringProp;
         private SomeEnum enumProp;
         private Date utilDate = Date.from(LocalDate.of(2020, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        private LocalDate localDateNewYear = LocalDate.of(2022, 1, 1);
         private final SubClass subClassProp = new SubClass("a1", new String[] { "b1", "c1" },
                 Arrays.asList("d1", "e1", "f1"), Arrays.asList(1, 2, 3));
         private final SubClass[] subClassArrayProp = {
@@ -614,6 +649,10 @@ public class ValidatorTest {
             this.utilDate = utilDate;
         }
 
+        public LocalDate getLocalDateNewYear() {
+            return localDateNewYear;
+        }
+
         public float[] getFloatArray() {
             return floatArray;
         }
@@ -634,7 +673,8 @@ public class ValidatorTest {
         private final List<Integer> integerListProp;
 
 
-        public SubClass(String stringProp, String[] stringArrayProp, List<String> stringListProp, List<Integer> integerListProp) {
+        public SubClass(String stringProp, String[] stringArrayProp, List<String> stringListProp,
+                List<Integer> integerListProp) {
             this.stringProp = stringProp;
             this.stringArrayProp = stringArrayProp;
             this.stringListProp = stringListProp;

@@ -21,7 +21,7 @@ public abstract class RegEx extends Constraint {
 
     RegEx(String... regex) {
         super();
-        setObjectValues(Arrays.asList(regex));
+        setValues(Arrays.asList(regex));
         patterns = Arrays.stream(regex)
                 .filter(Objects::nonNull)
                 .map(Pattern::compile)
@@ -83,7 +83,7 @@ public abstract class RegEx extends Constraint {
         if (!isSupportedType(object.getClass())) {
             throw new IllegalArgumentException("Unsupported type: " + object.getClass());
         }
-        boolean typeIsRegExAny = getType().equals(RegExAny.TYPE);
+        boolean typeIsRegExAny = getToken().equals(RegExAny.TYPE);
         Boolean match = patterns.stream()
                 .peek(pattern -> log.debug("'" + object + (pattern.matcher(object.toString()).find()
                         ? "' does" : "' does NOT") + " match regex '" + pattern + "'"))
@@ -100,7 +100,7 @@ public abstract class RegEx extends Constraint {
         List<String> regExWithDoubledBackslashes = getValues().stream()
                 .map(regEx -> ((String) regEx).replaceAll("\\\\", "\\\\\\\\"))
                 .toList();
-        return asKey("type") + quoted(getType()) + "," + asKey("values") + asArray((List) regExWithDoubledBackslashes);
+        return asKey("type") + quoted(getToken()) + "," + asKey("values") + asArray((List) regExWithDoubledBackslashes);
     }
 
 }

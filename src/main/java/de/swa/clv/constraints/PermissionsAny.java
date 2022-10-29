@@ -11,17 +11,18 @@ public class PermissionsAny extends Permissions {
     private static final Logger log = LoggerFactory.getLogger(PermissionsAny.class);
 
     PermissionsAny(final String... values) {
-        setObjectValues(Arrays.asList((Object[]) values));
+        setValues(Arrays.asList((Object[]) values));
     }
 
     @Override
-    public String getType() {
+    public String getToken() {
         return "ANY";
     }
 
     @Override
     public boolean validate(final List<Object> userPermissions) {
-        final boolean match = getValues().stream().anyMatch(userPermissions::contains);
+        final boolean match = getValues().stream()
+                .anyMatch(userPermissions::contains);
         log.debug("'" + userPermissions + "' does" + (match ? "" : " NOT") + " equals any of " + getValues());
         return match;
     }

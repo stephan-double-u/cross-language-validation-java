@@ -12,39 +12,42 @@ public class EqualsAny extends Equals {
     public static final String TOKEN = "EQUALS_ANY";
 
     EqualsAny(final boolean nullEqualsTrue, String... values) {
-        setObjectValues(getValuesWithAllowFlagAsObjectList(nullEqualsTrue, values));
+        setNullEqualsTrue(nullEqualsTrue);
+        setValues(getValuesAsObjectList(values));
     }
 
     EqualsAny(final boolean nullEqualsTrue, final Enum<?>... values) {
-        setObjectValues(getValuesWithAllowFlagAsObjectList(nullEqualsTrue, values));
+        setNullEqualsTrue(nullEqualsTrue);
+        setValues(getValuesAsObjectList(values));
     }
 
     EqualsAny(final boolean nullEqualsTrue, final Number... values) {
-        setObjectValues(getValuesWithAllowFlagAsObjectList(nullEqualsTrue, values));
+        setNullEqualsTrue(nullEqualsTrue);
+        setValues(getValuesAsObjectList(values));
     }
 
     EqualsAny(final boolean nullEqualsTrue, final Boolean... values) {
-        setObjectValues(getValuesWithAllowFlagAsObjectList(nullEqualsTrue, values));
+        setNullEqualsTrue(nullEqualsTrue);
+        setValues(getValuesAsObjectList(values));
     }
 
     EqualsAny(final boolean nullEqualsTrue, final LocalDate... values) {
-        setObjectValues(getValuesWithAllowFlagAsObjectList(nullEqualsTrue, values));
+        setNullEqualsTrue(nullEqualsTrue);
+        setValues(getValuesAsObjectList(values));
     }
 
     @Override
-    public String getType() {
+    public String getToken() {
         return TOKEN;
     }
 
     @Override
     public boolean validate(final Object objectToValidate, final Object notRelevant) {
-        final Boolean nullEqualsTrue = (Boolean) getValues().get(0);
         if (objectToValidate == null) {
-            log.debug("'Null object equals to {}", nullEqualsTrue);
-            return nullEqualsTrue;
+            log.debug("'Null object equals to {}", doesNullEqualsTrue());
+            return doesNullEqualsTrue();
         }
         final boolean match = getValues().stream()
-                .skip(1)
                 .anyMatch(value -> Equals.equals(objectToValidate, value));
         log.debug("'{}' does{}" + " equals one of {}", objectToValidate, (match ? "" : " NOT"), getValues());
         return match;

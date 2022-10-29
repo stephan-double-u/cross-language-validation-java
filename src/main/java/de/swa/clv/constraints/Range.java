@@ -105,7 +105,7 @@ public class Range extends Constraint {
 
     private static <T extends Number & Comparable<T>> Range newRange(Object minValue, Object maxValue) {
         final Range constraint = new Range();
-        constraint.setObjectValues(Arrays.asList(minValue, maxValue));
+        constraint.setValues(Arrays.asList(minValue, maxValue));
         constraint.validateValuesOrFail(null, null);
         return constraint;
     }
@@ -199,7 +199,7 @@ public class Range extends Constraint {
     }
 
     @Override
-    public String getType() {
+    public String getToken() {
         return TYPE;
     }
 }

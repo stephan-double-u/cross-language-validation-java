@@ -11,11 +11,11 @@ public class Period extends Dates {
     public static final String DAYS_TOKEN = "PERIOD_DAYS";
 
     private Period(final List<Object> values) {
-        setObjectValues(values);
+        setValues(values);
     }
 
     @Override
-    public String getType() {
+    public String getToken() {
         return DAYS_TOKEN;
     }
 
