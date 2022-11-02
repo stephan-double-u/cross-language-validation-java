@@ -11,11 +11,11 @@ public class PermissionsAll extends Permissions {
     private static final Logger log = LoggerFactory.getLogger(PermissionsAll.class);
 
     PermissionsAll(final String... values) {
-        setObjectValues(Arrays.asList((Object[]) values));
+        setValues(Arrays.asList((Object[]) values));
     }
 
     @Override
-    public String getType() {
+    public String getToken() {
         return "ALL";
     }
 

@@ -20,7 +20,7 @@ public class RegExAny extends RegEx {
     }
 
     @Override
-    public String getType() {
+    public String getToken() {
         return TYPE;
     }
 }

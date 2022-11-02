@@ -36,7 +36,7 @@ public class SchemaValidationTest {
 
             // show the validation errors
             if (validationResult.isEmpty()) {
-                System.out.println("There is no validation errors");
+                System.out.println("Good: no validation errors!");
             } else {
                 validationResult.forEach(vm -> System.out.println(vm.getMessage()));
             }

@@ -10,24 +10,23 @@ public class EqualsNoneRef extends EqualsRef {
     public static final String TOKEN = "EQUALS_NONE_REF";
 
     EqualsNoneRef(final boolean nullEqualsTrue, String... values) {
-        setObjectValues(getValuesWithAllowFlagAsObjectList(nullEqualsTrue, values));
+        setNullEqualsTrue(nullEqualsTrue);
+        setValues(getValuesAsObjectList(values));
     }
 
     @Override
-    public String getType() {
+    public String getToken() {
         return TOKEN;
     }
 
     @Override
     public boolean validate(final Object valueToValidate, final Object constraintObject) {
-        final Boolean nullEqualsTrue = (Boolean) getValues().get(0);
         if (valueToValidate == null) {
-            log.debug("'Null object equals to {}", nullEqualsTrue);
-            return nullEqualsTrue;
+            log.debug("'Null object equals to {}", doesNullEqualsTrue());
+            return doesNullEqualsTrue();
         }
         return !getValues().stream()
-                .skip(1)
-                .map(refProperty -> validateRefProperty((String) refProperty, valueToValidate, constraintObject))
+                .map(refProperty -> validateReferencedProperty((String) refProperty, valueToValidate, constraintObject))
                 .filter(e -> e)
                 .findFirst().orElse(false);
     }

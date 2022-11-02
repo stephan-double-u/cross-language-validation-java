@@ -4,6 +4,7 @@ import de.swa.clv.constraints.*;
 import de.swa.clv.test.Util;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -114,6 +115,17 @@ public class ValidationRulesTest {
     }
 
     @Test
+    public void content_localDate_quarterAny() {
+        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
+        try {
+            rules.content("localDateProp", Quarter.any(2, 4));
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
+    }
+
+
+    @Test
     public void doNotSerializeForAllRuleTypesForAllButOneRule() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
             rules.mandatory("stringProp").doNotSerialize();
@@ -208,6 +220,7 @@ public class ValidationRulesTest {
         private final List<? super Integer> supInteger = new ArrayList<>();
         private final List<Integer> integerList = new ArrayList<>();
         private final List<UUID> uuidList = new ArrayList<>();
+        private final LocalDate localDateProp = LocalDate.of(2022, 12, 31);
         public String getStringProp() {
             return stringProp;
         }
@@ -227,6 +240,9 @@ public class ValidationRulesTest {
             return uuidList;
         }
         public List<Integer> getIntegerList() {return integerList;}
+        public LocalDate getLocalDateProp() {
+            return localDateProp;
+        }
     }
 
     class ClassTwo {

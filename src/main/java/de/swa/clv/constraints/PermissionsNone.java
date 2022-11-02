@@ -11,17 +11,18 @@ public class PermissionsNone extends Permissions {
     private static final Logger log = LoggerFactory.getLogger(PermissionsNone.class);
 
     PermissionsNone(final String... values) {
-        setObjectValues(Arrays.asList((Object[]) values));
+        setValues(Arrays.asList((Object[]) values));
     }
 
     @Override
-    public String getType() {
+    public String getToken() {
         return "NONE";
     }
 
     @Override
     public boolean validate(final List<Object> userPermissions) {
-        final boolean match = getValues().stream().anyMatch(userPermissions::contains);
+        final boolean match = getValues().stream()
+                .anyMatch(userPermissions::contains);
         log.debug("'" + userPermissions + "' does" + (!match ? "" : " NOT") + " equals none of " + getValues());
         return !match;
     }

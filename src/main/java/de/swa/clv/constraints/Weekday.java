@@ -20,11 +20,12 @@ public class Weekday extends Dates {
     public static final String TOKEN = "WEEKDAY_ANY";
 
     private Weekday(final boolean nullEqualsTrue, final DayOfWeek ... days) {
-        setObjectValues(getValuesWithAllowFlagAsObjectList(nullEqualsTrue, days));
+        setNullEqualsTrue(nullEqualsTrue);
+        setValues(getValuesAsObjectList(days));
     }
 
     @Override
-    public String getType() {
+    public String getToken() {
         return TOKEN;
     }
 
@@ -45,10 +46,9 @@ public class Weekday extends Dates {
 
     @Override
     public boolean validate(final Object objectToValidate, final Object ignored) {
-        final Boolean nullEqualsTrue = (Boolean) getValues().get(0);
         if (objectToValidate == null) {
-            log.debug("'Null object equals to {}", nullEqualsTrue);
-            return nullEqualsTrue;
+            log.debug("'Null object equals to {}", doesNullEqualsTrue());
+            return doesNullEqualsTrue();
         }
         final boolean match;
         if (objectToValidate instanceof LocalDate date) {
@@ -68,14 +68,12 @@ public class Weekday extends Dates {
         } else {
             throw new IllegalArgumentException("Unsupported type: " + objectToValidate.getClass());
         }
-        log.debug("Date '{}' is {} {}: {}", objectToValidate, getType(), getValues(), match);
+        log.debug("Date '{}' is {} {}: {}", objectToValidate, getToken(), getValues(), match);
         return match;
     }
 
     private boolean validate(final Integer dateDaysOfWeek) {
         return getValues().stream()
-                .skip(1)
-                .filter(Objects::nonNull)
                 .map(v -> ((DayOfWeek) v).getValue())
                 .filter(dayOfWeek -> Objects.equals(dayOfWeek, dateDaysOfWeek))
                 .map(found -> true)
@@ -84,22 +82,13 @@ public class Weekday extends Dates {
 
     @Override
     public String serializeToJson() {
-        String nullEqualsTrueJson = "";
-        Boolean nullEqualsTo = (Boolean) getValues().get(0);
+        String nullEqualsToJson = "";
         // Serialize "nullEqualsTo" key only for non-default value 'true',
-        if (nullEqualsTo.equals(Boolean.TRUE)) {
-            nullEqualsTrueJson = "," + asKey("nullEqualsTo") + nullEqualsTo;
+        if (doesNullEqualsTrue()) {
+            nullEqualsToJson = "," + asKey("nullEqualsTo") + true;
         }
-        String valuesJson = "," + asKey("days") + asArray(getValues().subList(1, getValues().size()));
-        return asKey("type") + quoted(getType()) + valuesJson + nullEqualsTrueJson;
+        String valuesJson = "," + asKey("values") + asArray(getValues());
+        return asKey("type") + quoted(getToken()) + valuesJson + nullEqualsToJson;
     }
-
-//    @Override
-//    public String serializeToJsonx() {
-//        String valuesJson = getValues().stream()
-//                .map(v -> quoted("" + v))
-//                .collect(Collectors.joining(","));
-//        return asKey("type") + quoted(getType()) + "," + asKey("days") + asArray(valuesJson) ;
-//    }
 
 }

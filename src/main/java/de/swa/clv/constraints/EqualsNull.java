@@ -10,7 +10,7 @@ public class EqualsNull extends Equals {
     }
 
     @Override
-    public String getType() {
+    public String getToken() {
         return "EQUALS_NULL";
     }
 
@@ -29,7 +29,7 @@ public class EqualsNull extends Equals {
 
     @Override
     public String serializeToJson() {
-        return asKey("type") + quoted(getType());
+        return asKey("type") + quoted(getToken());
     }
 
 }

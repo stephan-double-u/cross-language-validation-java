@@ -4,6 +4,9 @@ import de.swa.clv.constraints.*;
 
 import java.util.List;
 
+/**
+ * Important: Enum permissions are compared by names during validation!
+ */
 public class UserPermissions {
 
     private final List<Object> values;
@@ -11,13 +14,6 @@ public class UserPermissions {
     private UserPermissions(final String... values) {
         this.values = Permissions.any(values).getValues();
     }
-
-    /**
-     * Important: Enum permissions are compared by names during validation!
-     *
-     * @param values the permissions, {@code null} values are not allowed
-     * @return a {@code UserPermissions} object that holds the permissions
-     */
 
     private UserPermissions(final Enum<?>... values) {
         this.values = Permissions.any(values).getValues();

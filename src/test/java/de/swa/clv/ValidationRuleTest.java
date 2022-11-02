@@ -1,8 +1,13 @@
-package de.swa.clv.constraints;
+package de.swa.clv;
 
 import de.swa.clv.ErrorCodeControl;
 import de.swa.clv.UseType;
+import de.swa.clv.ValidationRule;
 import de.swa.clv.ValidationRules;
+import de.swa.clv.constraints.Condition;
+import de.swa.clv.constraints.Constraint;
+import de.swa.clv.constraints.Equals;
+import de.swa.clv.constraints.Permissions;
 import de.swa.clv.groups.ConditionsGroup;
 import de.swa.clv.groups.ConditionsTopGroup;
 import de.swa.clv.test.Util;

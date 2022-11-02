@@ -11,11 +11,11 @@ public class Past extends Dates {
     public static final String DAYS_TOKEN = "PAST_DAYS";
 
     private Past(final List<Object> values) {
-        setObjectValues(values);
+        setValues(values);
     }
 
     @Override
-    public String getType() {
+    public String getToken() {
         return DAYS_TOKEN;
     }
 

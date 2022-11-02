@@ -1,6 +1,5 @@
 package de.swa.clv;
 
-import de.swa.clv.constraints.ValidationRule;
 import de.swa.clv.json.JsonSerializable;
 
 import java.util.*;

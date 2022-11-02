@@ -13,13 +13,16 @@ public abstract class Constraint implements JsonSerializable {
     public static final String EMPTY_VALUES_ERR_MESSAGE = "Provide at least one value";
     public static final String NUMBERS_TYPE_ERR_MESSAGE = "Numbers must have same type";
 
-    // Holds constraint specific values
+    // holds constraint specific values
     private List<Object> values;
+
+    // defines if a null object should be evaluated to true or false
+    private boolean nullEqualsTrue = false;
 
     Constraint() {
     }
 
-    public abstract String getType();
+    public abstract String getToken();
 
     /**
      * Checks if the class is supported by the constraint.
@@ -53,6 +56,14 @@ public abstract class Constraint implements JsonSerializable {
     public void validateValuesOrFail(final Class<?> typeClass, final Class<?> propertyType) {
     }
 
+    public boolean doesNullEqualsTrue() {
+        return nullEqualsTrue;
+    }
+
+    public void setNullEqualsTrue(boolean nullEqualsTrue) {
+        this.nullEqualsTrue = nullEqualsTrue;
+    }
+
     /**
      * Gets the constraint related values.
      *
@@ -67,7 +78,7 @@ public abstract class Constraint implements JsonSerializable {
      *
      * @param values the constraint related values
      */
-    void setObjectValues(final List<Object> values) {
+    void setValues(final List<Object> values) {
         this.values = Collections.unmodifiableList(values);
     }
 
@@ -80,10 +91,22 @@ public abstract class Constraint implements JsonSerializable {
         }
     }
 
+    List<Object> getValuesAsObjectList(Object[] values) {
+        return new ArrayList<>(Arrays.asList(values));
+    }
+
     List<Object> getValuesWithAllowFlagAsObjectList(boolean nullEqualsTrue, Object[] values) {
         List<Object> list = new ArrayList<>(Arrays.asList(values));
         list.add(0, nullEqualsTrue);
         return list;
     }
+
+    static void assertNumbersHaveSameType(Number[] values) {
+        Class<? extends Number> numberClass = values[0].getClass();
+        if (!Arrays.stream(values).allMatch(v -> numberClass == v.getClass())) {
+            throw new IllegalArgumentException(NUMBERS_TYPE_ERR_MESSAGE);
+        }
+    }
+
 
 }
