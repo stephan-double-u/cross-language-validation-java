@@ -16,7 +16,7 @@ The requirements for an implementation of that schema are described in the schem
     <dependency>
       <groupId>de.swa</groupId>
       <artifactId>cross-language-validation</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.1</version>
     </dependency>
 
 ### settings.xml
