@@ -113,7 +113,7 @@ public class WeekdayTest {
     public void serializeWeekdaysAny() {
         Weekday any = Weekday.any(DayOfWeek.values());
         assertEquals("""
-                "type":"WEEKDAY_ANY","days":["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]""",
+                "type":"WEEKDAY_ANY","values":["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]""",
                 any.serializeToJson());
     }
 
@@ -121,7 +121,7 @@ public class WeekdayTest {
     public void serializeWeekdaysAnyOrNull() {
         Weekday anyOrNull = Weekday.anyOrNull(MONDAY, SUNDAY);
         assertEquals("""
-                "type":"WEEKDAY_ANY","days":["MONDAY","SUNDAY"],"nullEqualsTo":true""", anyOrNull.serializeToJson());
+                "type":"WEEKDAY_ANY","values":["MONDAY","SUNDAY"],"nullEqualsTo":true""", anyOrNull.serializeToJson());
     }
 
 }

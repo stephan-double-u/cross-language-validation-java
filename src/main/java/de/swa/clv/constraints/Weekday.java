@@ -87,7 +87,7 @@ public class Weekday extends Dates {
         if (doesNullEqualsTrue()) {
             nullEqualsToJson = "," + asKey("nullEqualsTo") + true;
         }
-        String valuesJson = "," + asKey("days") + asArray(getValues());
+        String valuesJson = "," + asKey("values") + asArray(getValues());
         return asKey("type") + quoted(getToken()) + valuesJson + nullEqualsToJson;
     }
 
