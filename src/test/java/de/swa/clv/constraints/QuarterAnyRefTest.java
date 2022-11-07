@@ -17,8 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class QuarterAnyRefTest {
 
-    public record Foo(int quarter, List<Integer> integerList, String aString) {}
-    static Foo foo = new Foo(1, List.of(-1, 42, 666, 1), "bar");
+    public record Foo(long quarter, List<Long> integerList, String aString) {}
+    static Foo foo = new Foo(1, List.of(-1L, 42L, 666L, 1L), "bar");
 
     @Test
     public void anyValuesMustNotBeNull() {
@@ -56,7 +56,7 @@ public class QuarterAnyRefTest {
         QuarterAnyRef anyRef = Quarter.anyRef("aString");
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> anyRef.validateValuesOrFail(foo.getClass(), null));
-        assertEquals("Type of referenced property is class java.lang.String but must be class java.lang.Integer",
+        assertEquals("Type of referenced property is class java.lang.String but must be class java.lang.Number",
                 ex.getMessage());
     }
 

@@ -21,7 +21,7 @@ public abstract class RegEx extends Constraint {
 
     RegEx(String... regex) {
         super();
-        setValues(Arrays.asList(regex));
+        setValues(List.of(regex));
         patterns = Arrays.stream(regex)
                 .filter(Objects::nonNull)
                 .map(Pattern::compile)
@@ -91,7 +91,7 @@ public abstract class RegEx extends Constraint {
                 .filter(found -> found)
                 .findFirst()
                 .orElse(false);
-        return typeIsRegExAny ? match : !match;
+        return typeIsRegExAny == match;
     }
 
     @Override

@@ -8,7 +8,7 @@ import static de.swa.clv.json.JsonUtil.asKey;
 import static de.swa.clv.json.JsonUtil.asObject;
 import static de.swa.clv.json.JsonUtil.quoted;
 
-public abstract class Permissions extends Constraint {
+public abstract class Permissions extends ConstraintRoot {
 
     Permissions() {
     }

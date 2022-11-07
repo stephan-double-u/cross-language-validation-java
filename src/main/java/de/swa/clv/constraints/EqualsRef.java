@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public abstract class EqualsRef extends Equals  implements ReferenceProperties {
+public abstract class EqualsRef extends Equals implements ReferenceProperties {
 
     private static final Logger log = LoggerFactory.getLogger(EqualsRef.class);
 
@@ -29,7 +29,7 @@ public abstract class EqualsRef extends Equals  implements ReferenceProperties {
 
     @Override
     public boolean validateReferencedValue(Object objectToValidate, Object value) {
-        return Equals.equals(objectToValidate, value);
+        return Equals.equalsUntyped(objectToValidate, value);
     }
 
 }

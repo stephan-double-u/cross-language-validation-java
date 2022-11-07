@@ -137,7 +137,7 @@ public abstract class Equals extends Constraint {
         return new EqualsNoneRef(true, values);
     }
 
-    public static EqualsNoneRef noneRefNotNull(final String... values) {
+    public static EqualsNoneRef noneRefNorNull(final String... values) {
         assertValuesAndSizeOk(values);
         return new EqualsNoneRef(false, values);
     }
@@ -155,30 +155,36 @@ public abstract class Equals extends Constraint {
     }
 
     /**
-     * Enums should be compared based on their names, e.g. Enum.FOO should be equal to "FOO" and vice versa.
+     * Enums are compared based on their names, e.g. Enum.FOO is considered equal to "FOO" and vice versa.
+     * Numbers are compared numerically, i.e. e.g. {@code equalsUntyped(1e1, BigInteger.TEN)} is considered equal.
      *
-     * @param objectToValidate the 1st object to compare
-     * @param value the 2nd object to compare
-     * @return {@code true} if the objects (resp. their names for enums) are equal, otherwise  {@code false}
+     * @param o1 the 1st object to compare
+     * @param o2 the 2nd object to compare
+     * @return {@code true} if the objects are considered equal, otherwise  {@code false}
      */
-    static boolean equals(Object objectToValidate, Object value) {
-        if (objectToValidate == null && value == null) {
+    static boolean equalsUntyped(Object o1, Object o2) {
+        if (o1 == null && o2 == null) {
             return true;
         }
-        if (objectToValidate == null || value == null) {
+        if (o1 == null || o2 == null) {
             return false;
         }
-        if (Enum.class.isAssignableFrom(objectToValidate.getClass())) {
-            objectToValidate = ((Enum<?>) objectToValidate).name();
+        if (Enum.class.isAssignableFrom(o1.getClass())) {
+            o1 = ((Enum<?>) o1).name();
         }
-        if (Enum.class.isAssignableFrom(value.getClass())) {
-            value = ((Enum<?>) value).name();
+        if (Enum.class.isAssignableFrom(o2.getClass())) {
+            o2 = ((Enum<?>) o2).name();
         }
-        if (objectToValidate instanceof BigDecimal) {
-            return new BigDecimal(objectToValidate.toString()).equals(new BigDecimal(value.toString()));
+        if (Number.class.isAssignableFrom(o1.getClass())
+                && Number.class.isAssignableFrom(o2.getClass())) {
+            return equalsUntyped((Number) o1, (Number) o2);
         } else {
-            return objectToValidate.equals(value);
+            return Objects.equals(o1, o2);
         }
+    }
+
+    private static boolean equalsUntyped(Number n1, Number n2) {
+        return new BigDecimal(n1.toString()).compareTo(new BigDecimal(n2.toString())) == 0;
     }
 
     @Override

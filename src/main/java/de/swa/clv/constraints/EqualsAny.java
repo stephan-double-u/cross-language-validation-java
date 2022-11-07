@@ -48,7 +48,7 @@ public class EqualsAny extends Equals {
             return doesNullEqualsTrue();
         }
         final boolean match = getValues().stream()
-                .anyMatch(value -> Equals.equals(objectToValidate, value));
+                .anyMatch(value -> Equals.equalsUntyped(objectToValidate, value));
         log.debug("'{}' does{}" + " equals one of {}", objectToValidate, (match ? "" : " NOT"), getValues());
         return match;
     }

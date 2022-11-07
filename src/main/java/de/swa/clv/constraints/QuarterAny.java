@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.temporal.IsoFields;
-import java.util.List;
 
 /**
  * Constraint to express expectations for date quarters.
@@ -42,7 +41,7 @@ public class QuarterAny extends Quarter {
         Integer dateQuarter = dateAsLocalDateTime.get(IsoFields.QUARTER_OF_YEAR);
 
         final boolean match = getValues().stream()
-                .anyMatch(value -> Equals.equals(dateQuarter, value));
+                .anyMatch(value -> Equals.equalsUntyped(dateQuarter, value));
         log.debug("'{}' is{}" + " within one quarter of {}", dateToValidate, (match ? "" : " NOT"), getValues());
         return match;
     }

@@ -49,7 +49,7 @@ public class EqualsNoneRefTest {
 
     @Test
     public void validateNoneRefNorNullVsNull() {
-        EqualsNoneRef constraint = Equals.noneRefNotNull("bar.stringProp");
+        EqualsNoneRef constraint = Equals.noneRefNorNull("bar.stringProp");
         assertFalse(constraint.validate(null, foo));
     }
 

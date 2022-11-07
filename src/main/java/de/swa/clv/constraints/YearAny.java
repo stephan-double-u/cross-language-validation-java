@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
-import java.time.temporal.IsoFields;
 
 /**
  * Constraint to express expectations about the year of a date property.
@@ -40,7 +39,7 @@ public class YearAny extends Year {
         LocalDateTime dateAsLocalDateTime = getAsLocalDateTime(dateToValidate);
 
         final boolean match = getValues().stream()
-                .anyMatch(value -> Equals.equals(dateAsLocalDateTime.getYear(), value));
+                .anyMatch(value -> Equals.equalsUntyped(dateAsLocalDateTime.getYear(), value));
         log.debug("'{}' is{}" + " within one year of {}", dateToValidate, (match ? "" : " NOT"), getValues());
         return match;
     }

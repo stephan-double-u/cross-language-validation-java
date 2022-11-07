@@ -2,6 +2,7 @@ package de.swa.clv.constraints;
 
 import de.swa.clv.AggregateFunction;
 import de.swa.clv.Validator;
+import de.swa.clv.util.TypeHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +21,11 @@ public interface ReferenceProperties {
 
     private void validateRefTypeOrFail(Class<?> typeClass, Class<?> propertyType, String refProperty) {
         Class<?> valueRefType = getRefType(typeClass, refProperty);
-        if (valueRefType != propertyType) {
+        final Class<?> wrappedClass = (valueRefType.isPrimitive())
+                ? TypeHelper.PRIMITIVE_TO_WRAPPER_TYPES.get(valueRefType) : valueRefType;
+
+        if (Number.class.isAssignableFrom(wrappedClass) && !Number.class.isAssignableFrom(propertyType)
+            || !Number.class.isAssignableFrom(wrappedClass) && wrappedClass != propertyType) {
             throw new IllegalArgumentException("Type of referenced property is " + valueRefType +
                     " but must be " + propertyType);
         }

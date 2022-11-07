@@ -396,46 +396,6 @@ public class ValidationRules<T> {
         return newValidationRule;
     }
 
-    //TODO remove permanently if decision is made that permission validation makes no sense
-    private void validatePermissions(Set<Permissions> permissionsMap, Permissions permissions, String propertyToLog) {
-        permissions.validateValuesOrFail(null, null);
-        // Check if any permissions are 'not unique';
-        // e.g. Perm.any(A,B), followed by Perm.any(C,B) -> constraints for B is not unique
-        if (permissions == NO_PERMISSIONS) {
-            if (permissionsMap.contains(permissions)) {
-                throw new IllegalArgumentException(String.format("Validation rules for property '%s' " +
-                        "(w/o permissions) are already defined.", propertyToLog));
-            }
-        } else {
-            if(permissions.getValues().isEmpty()) {
-                throw new IllegalArgumentException(String.format("Permissions for property '%s' must not be empty.",
-                        propertyToLog));
-            }
-            Optional<String> nonUniquePermission = checkPermissionUniqueness(permissionsMap, permissions);
-            if (nonUniquePermission.isPresent()) {
-                throw new IllegalArgumentException(String.format("Validation rules for property '%s' and permission " +
-                                "'%s' are already defined.",
-                        propertyToLog, nonUniquePermission.get()));
-            }
-        }
-    }
-
-    private Optional<String> checkPermissionUniqueness(Set<Permissions> existingPermissions,
-                                                       Permissions newPermissions) {
-        // Flatten all permission values
-        final Set<String> existingPerms = existingPermissions.stream()
-                .map(Constraint::getValues)
-                .flatMap(Collection::stream)
-                .map(Object::toString)
-                .collect(Collectors.toSet());
-        // Search for permission that is already defined
-        final Set<String> newPermissionsAsSet = newPermissions.getValues().stream()
-                .map(Object::toString)
-                .collect(Collectors.toSet());
-        existingPerms.retainAll(newPermissionsAsSet);
-        return existingPerms.stream().findFirst();
-    }
-
     private void validatePropertyAndConditions(String property, ConditionsTopGroup topGroup) {
         Validator.instance().validateProperty(property, typeClass);
         for (final ConditionsGroup group : topGroup.getConstraintsSubGroups()) {

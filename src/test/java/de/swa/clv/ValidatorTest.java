@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 public class ValidatorTest {
+    public static final LocalDate A_LOCAL_DATE = LocalDate.of(2022, 1, 1);
 
     /*
      * Testing validateProperty
@@ -532,12 +533,14 @@ public class ValidatorTest {
     public void validateRecord_ok() {
         ValidationRules<Record> rules = new ValidationRules<>(Record.class);
         rules.mandatory("aString");
-        rules.immutable("aInt", Condition.of("aString", Equals.null_()));
+        rules.immutable("aLong", Condition.of("aString", Equals.null_()));
+        rules.content("aLocalDate", Quarter.anyRef("aLong"));
 
-        Record record1 = new Record("foo", 1);
-        Record record2 = new Record("foo", 2);
+        Record record1 = new Record("foo", 1, A_LOCAL_DATE);
+        Record record2 = new Record("foo", 2, A_LOCAL_DATE);
         List<String> errors = Validator.instance().validateMandatoryRules(record1, rules);
         errors.addAll(Validator.instance().validateImmutableRules(record1, record2, rules));
+        errors.addAll(Validator.instance().validateContentRules(record1, rules));
 
         assertEquals(0, errors.size());
     }
@@ -546,14 +549,15 @@ public class ValidatorTest {
     public void validateRecord_2errors() {
         ValidationRules<Record> rules = new ValidationRules<>(Record.class);
         rules.mandatory("aString");
-        rules.immutable("aInt", Condition.of("aString", Equals.null_()));
+        rules.immutable("aLong", Condition.of("aString", Equals.null_()));
 
-        Record record1 = new Record(null, 1);
+        Record record1 = new Record(null, 1, A_LOCAL_DATE);
         List<String> errors = Validator.instance().validateMandatoryRules(record1, rules);
         errors.addAll(Validator.instance().validateContentRules(record1, rules));
-        errors.addAll(Validator.instance().validateImmutableRules(record1, new Record(null, 2), rules));
+        Record record2 = new Record(null, 2, A_LOCAL_DATE);
+        errors.addAll(Validator.instance().validateImmutableRules(record1, record2, rules));
 
-        assertEquals(List.of("error.validation.mandatory.record.aString", "error.validation.immutable.record.aInt"),
+        assertEquals(List.of("error.validation.mandatory.record.aString", "error.validation.immutable.record.aLong"),
                 errors);
     }
 
@@ -591,14 +595,14 @@ public class ValidatorTest {
     }
 
 
-    record Record(String aString, int aInt) {
+    record Record(String aString, long aLong, LocalDate aLocalDate) {
     }
 
     static class ClassUnderTest extends BaseClass implements Identifiable<Integer> {
         private String stringProp;
         private SomeEnum enumProp;
         private Date utilDate = Date.from(LocalDate.of(2020, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());
-        private LocalDate localDateNewYear = LocalDate.of(2022, 1, 1);
+        private LocalDate localDateNewYear = A_LOCAL_DATE;
         private final SubClass subClassProp = new SubClass("a1", new String[] { "b1", "c1" },
                 Arrays.asList("d1", "e1", "f1"), Arrays.asList(1, 2, 3));
         private final SubClass[] subClassArrayProp = {
