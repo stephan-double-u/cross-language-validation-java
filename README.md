@@ -14,43 +14,16 @@ The requirements for an implementation of that schema are described in the schem
 The implementation supports defining validation rules for `Records` and therefore requires at least _Java 17_. 
 
 ## Maven
-Until this artifact is available on Maven Central, it can be used in 2 ways:
-- either by downloading the artifact from GitHub
-- or by using building it with [JitPack](https://jitpack.io/)
+Until this artifact is available on Maven Central, it can be used with by building it with 
+[JitPack](https://jitpack.io/).
 
-### Download artifacts from GitHub
-Add this `repository` and `dependency` to the `pom.xml` file.
+Add the `repository jitpack.io` and the `dependency cross-language-validation-java` to the `pom.xml` file.
 
     <repositories>
       <repository>
-        <id>github</id>
-        <url>https://maven.pkg.github.com/stephan-double-u/cross-language-validation-java</url>
+        <id>central</id>
+        <url>https://repo.maven.apache.org/maven2</url>
       </repository>
-    </repositories>
-
-    <dependencies>
-      <dependency>
-        <groupId>de.swa</groupId>
-        <artifactId>cross-language-validation</artifactId>
-        <version>0.9.2</version>
-      </dependency>
-    </dependencies>
-
-Add this `server` to the `settings.xml` file.<br>
-Note: `<REMOVE>` must be removed from the public read access token.
-
-    <servers>
-      <server>
-        <id>github</id>
-        <username>stephan-double-u</username>
-        <password>ghp_<REMOVE>OakGskz7Fv8r328l92rjTJAWKKiQOa2p80sA</password>
-      </server>
-    </servers>
-
-### Build with JitPack
-Add this `repository` and `dependency` to the `pom.xml` file.
-
-    <repositories>
       <repository>
         <id>jitpack.io</id>
         <url>https://jitpack.io</url>
