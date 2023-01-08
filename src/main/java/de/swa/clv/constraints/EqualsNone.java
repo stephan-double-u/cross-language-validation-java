@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 
-public class EqualsNone extends Equals {
+class EqualsNone extends Equals implements IsCreateConstraint, IsUpdateConstraint {
 
     private static final Logger log = LoggerFactory.getLogger(EqualsNone.class);
 

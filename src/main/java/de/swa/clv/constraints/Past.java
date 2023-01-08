@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Constraint to express expectations for past dates.
  */
-public class Past extends Dates {
+public class Past extends Dates implements IsCreateConstraint, IsUpdateConstraint {
 
     public static final String DAYS_TOKEN = "PAST_DAYS";
 

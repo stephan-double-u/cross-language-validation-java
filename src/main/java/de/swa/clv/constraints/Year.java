@@ -33,13 +33,7 @@ public abstract class Year extends Dates {
 
     @Override
     public String serializeToJson() {
-        String nullEqualsToJson = "";
-        // Serialize "nullEqualsTo" key only for non-default values,
-        if (doesNullEqualsTrue()) {
-            nullEqualsToJson = "," + asKey("nullEqualsTo") + true;
-        }
-        String valuesJson = "," + asKey("values") + asArray(getValues());
-        return asKey("type") + quoted(getToken()) + valuesJson + nullEqualsToJson;
+        return serializeToJsonAsValuesArray();
     }
 
 }

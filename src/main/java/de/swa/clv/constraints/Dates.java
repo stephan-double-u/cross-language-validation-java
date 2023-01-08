@@ -9,13 +9,12 @@ import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 
-import static de.swa.clv.json.JsonUtil.asKey;
-import static de.swa.clv.json.JsonUtil.quoted;
+import static de.swa.clv.json.JsonUtil.*;
 
 /*
  * Implementation note: The class is named {@code Dates} (with {@code s}) to avoid name clash with {@linkplain Date}.
  */
-public abstract class Dates extends Constraint {
+abstract class Dates extends Constraint {
 
     private static final Logger log = LoggerFactory.getLogger(Dates.class);
 
@@ -145,6 +144,17 @@ public abstract class Dates extends Constraint {
         String maxJson = max != null ? asKey("max") + max : "";
         String seperator = min != null && max != null ? "," : "";
         return asKey("type") + quoted(getToken()) + "," + minJson + seperator + maxJson;
+    }
+
+    String serializeToJsonAsValuesArray() {
+        String nullEqualsToJson = "";
+        // Serialize "nullEqualsTo" key only for non-default values,
+        if (doesNullEqualsTrue()) {
+            nullEqualsToJson = "," + asKey("nullEqualsTo") + true;
+        }
+        String refTargetJson = serializeRefTargetKeyValuePairForReferenceProperties();
+        String valuesJson = "," + asKey("values") + asArray(getValues());
+        return asKey("type") + quoted(getToken()) + valuesJson + nullEqualsToJson + refTargetJson;
     }
 
 }

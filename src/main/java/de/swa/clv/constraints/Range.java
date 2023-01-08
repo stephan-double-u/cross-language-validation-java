@@ -10,12 +10,18 @@ import java.util.Arrays;
 import static de.swa.clv.json.JsonUtil.asKey;
 import static de.swa.clv.json.JsonUtil.quoted;
 
-public class Range extends Constraint {
+public class Range extends Constraint implements IsCreateConstraint, IsUpdateConstraint {
 
     private static final String TYPE = "RANGE";
 
-    public static final long SAVE_INTEGER_MAX = (1L << 53) -1;
-    public static final long SAVE_INTEGER_MIN = -((1L << 53) - 1);
+    /**
+     * The constant represents the maximum safe integer in JavaScript, i.e. 2^53 – 1.
+     */
+    public static final long MAX_SAVE_INTEGER_JAVASCRIPT = (1L << 53) -1;
+    /**
+     * The constant represents the minimum safe integer in JavaScript, i.e. -(2^53 - 1).
+     */
+    public static final long MIN_SAVE_INTEGER_JAVASCRIPT = -((1L << 53) - 1);
 
     private Range() {
     }

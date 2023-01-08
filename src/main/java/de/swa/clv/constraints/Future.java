@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Constraint to express expectations for future dates.
  */
-public class Future extends Dates {
+public class Future extends Dates implements IsCreateConstraint, IsUpdateConstraint {
 
     private static final String DAYS_TOKEN = "FUTURE_DAYS";
 

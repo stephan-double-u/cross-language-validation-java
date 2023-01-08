@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 import static de.swa.clv.json.JsonUtil.*;
 
-public class RegExNone extends RegEx {
+class RegExNone extends RegEx implements IsCreateConstraint, IsUpdateConstraint {
 
     static final String TYPE = "REGEX_NONE";
 

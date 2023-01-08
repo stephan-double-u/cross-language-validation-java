@@ -213,8 +213,9 @@ public abstract class Equals extends Constraint {
                 && (getToken().equals(EqualsNone.TOKEN) || getToken().equals(EqualsNoneRef.TOKEN))) {
             nullEqualsToJson = "," + asKey("nullEqualsTo") + doesNullEqualsTrue();
         }
+        String refTargetJson = serializeRefTargetKeyValuePairForReferenceProperties();
         String valuesJson = "," + asKey("values") + asArray(getValues());
-        return asKey("type") + quoted(getToken()) + valuesJson + nullEqualsToJson;
+        return asKey("type") + quoted(getToken()) + valuesJson + nullEqualsToJson + refTargetJson;
     }
 
 }

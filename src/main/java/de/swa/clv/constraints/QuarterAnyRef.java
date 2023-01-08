@@ -7,7 +7,8 @@ import java.time.temporal.IsoFields;
  * Constraint to express the expectation that a date must be in at least one of the quarters given by the values of the
  * listed properties.
  */
-public class QuarterAnyRef extends Quarter implements ReferenceProperties {
+public class QuarterAnyRef extends DatesRef implements IsCreateConstraint, IsUpdateConstraint,
+        ReferenceProperties<QuarterAnyRef> {
 
     public static final String TOKEN = "QUARTER_ANY_REF";
 
@@ -44,4 +45,22 @@ public class QuarterAnyRef extends Quarter implements ReferenceProperties {
         Integer dateQuarter = dateAsLocalDateTime.get(IsoFields.QUARTER_OF_YEAR);
         return Equals.equalsUntyped(dateQuarter, value);
     }
+
+    @Override
+    public QuarterAnyRef ofUpdate() {
+        setOfUpdate(true);
+        return this;
+    }
+
+    @Override
+    public QuarterAnyRef ofCurrent() {
+        setOfCurrent(true);
+        return this;
+    }
+
+    @Override
+    public String serializeToJson() {
+        return serializeToJsonAsValuesArray();
+    }
+
 }

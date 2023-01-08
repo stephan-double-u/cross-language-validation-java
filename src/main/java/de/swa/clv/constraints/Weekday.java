@@ -13,7 +13,7 @@ import static de.swa.clv.json.JsonUtil.*;
 /**
  * Constraint to express expectations for date periods.
  */
-public class Weekday extends Dates {
+public class Weekday extends Dates implements IsCreateConstraint, IsUpdateConstraint {
 
     private static final Logger log = LoggerFactory.getLogger(Weekday.class);
 

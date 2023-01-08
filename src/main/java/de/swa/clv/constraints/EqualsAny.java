@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 
-public class EqualsAny extends Equals {
+class EqualsAny extends Equals implements IsCreateConstraint, IsUpdateConstraint {
 
     private static final Logger log = LoggerFactory.getLogger(EqualsAny.class);
 

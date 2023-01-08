@@ -59,7 +59,7 @@ public class ValidationTesting {
                         ConditionsGroup.AND(
                                 Condition.of("someInt", Range.minMax(1, 999)),
                                 Condition.of("someInt", Range.min(1).max(999)),
-                                Condition.of("someLong", Range.max(Range.SAVE_INTEGER_MAX)),
+                                Condition.of("someLong", Range.max(Range.MAX_SAVE_INTEGER_JAVASCRIPT)),
                                 Condition.of("aBoolean", Equals.any(TRUE)),
                                 Condition.of("someInt", Equals.notNull()),
                                 Condition.of("id", Equals.none(-1, 123456789))),
@@ -79,7 +79,7 @@ public class ValidationTesting {
                         Condition.of("status", Equals.notNull())
                 ));
 
-        final PropConstraint a = Condition.of("someString", Size.minMax(1, 100));
+        final ConditionConstraint a = Condition.of("someString", Size.minMax(1, 100));
 
         rules.immutable("id");
         rules.immutable("status", Permissions.any(Perms.aaa), a);
@@ -94,7 +94,6 @@ public class ValidationTesting {
         rules.content("someString", Equals.anyRef("articleList[0].name"));
         rules.content("id", Equals.any(101, 202, 303),
                 ConditionsGroup.AND(a, a, a, a));
-        //TODO List<ContentConstraints>!?: status == "foo" if other == 1 OR status == "bar" if other == 2
 
         // For validation of 'state-transitions' multiple rules per property are needed.
         // Rules are evaluated in definition sequence, first rules with matching permission, last rules w/o permissions

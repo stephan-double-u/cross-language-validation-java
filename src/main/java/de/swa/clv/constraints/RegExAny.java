@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 import static de.swa.clv.json.JsonUtil.*;
 
-public class RegExAny extends RegEx {
+class RegExAny extends RegEx implements IsCreateConstraint, IsUpdateConstraint {
 
     static final String TYPE = "REGEX_ANY";
 

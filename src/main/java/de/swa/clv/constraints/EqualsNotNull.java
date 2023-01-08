@@ -5,7 +5,7 @@ import java.io.Serializable;
 import static de.swa.clv.json.JsonUtil.asKey;
 import static de.swa.clv.json.JsonUtil.quoted;
 
-public class EqualsNotNull extends Equals {
+class EqualsNotNull extends Equals implements IsCreateConstraint, IsUpdateConstraint {
 
     EqualsNotNull() {
     }
@@ -20,7 +20,7 @@ public class EqualsNotNull extends Equals {
      */
     @Override
     public boolean isSupportedType(Class<?> clazz) {
-        return super.isSupportedType(clazz) || clazz instanceof Serializable;
+        return true;
     }
 
     @Override

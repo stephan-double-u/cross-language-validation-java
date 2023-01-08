@@ -14,34 +14,34 @@ import static de.swa.clv.constraints.Constraint.EMPTY_VALUES_ERR_MESSAGE;
 import static de.swa.clv.constraints.Constraint.NULL_VALUE_ERR_MESSAGE;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class YearAnyRefTest {
+class YearAnyRefTest {
 
     public record Foo(int year, List<Integer> integerList, String aString) {}
     static Foo foo = new Foo(2000, List.of(2010, 2020, 2030), "bar");
 
     @Test
-    public void anyValuesMustNotBeNull() {
+    void anyValuesMustNotBeNull() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 Year::anyRef);
         assertEquals(EMPTY_VALUES_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void anyValuesMustNotContainNulls() {
+    void anyValuesMustNotContainNulls() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Year.anyRef("", null));
         assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void anyOrNullValuesMustNotContainNulls() {
+    void anyOrNullValuesMustNotContainNulls() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Year.anyRefOrNull("", null));
         assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void unsupportedType() {
+    void unsupportedType() {
         YearAnyRef anyRef = Year.anyRef("year");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("year", Foo.class);
@@ -51,7 +51,7 @@ public class YearAnyRefTest {
     }
 
     @Test
-    public void unsupportedReferencedType() {
+    void unsupportedReferencedType() {
         YearAnyRef anyRef = Year.anyRef("aString");
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> anyRef.validateValuesOrFail(foo.getClass(), null));
@@ -60,19 +60,19 @@ public class YearAnyRefTest {
     }
 
     @Test
-    public void validateNullObjectToFalse() {
+    void validateNullObjectToFalse() {
         YearAnyRef any = Year.anyRef("whatever");
         assertFalse(any.validate(null, null));
     }
 
     @Test
-    public void validateNullObjectToTrue() {
+    void validateNullObjectToTrue() {
         YearAnyRef anyRef = Year.anyRefOrNull("whatever");
         assertTrue(anyRef.validate(null, null));
     }
 
     @Test
-    public void validateLocalDateToTrue() {
+    void validateLocalDateToTrue() {
         YearAnyRef anyRef = Year.anyRef("integerList[*]", "year");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("year", Foo.class);
@@ -80,7 +80,7 @@ public class YearAnyRefTest {
     }
 
     @Test
-    public void validateLocalDateToFalse() {
+    void validateLocalDateToFalse() {
         YearAnyRef anyRef = Year.anyRef("integerList[0-2]");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("year", Foo.class);
@@ -88,7 +88,7 @@ public class YearAnyRefTest {
     }
 
     @Test
-    public void validateLocalDateTimeToTrue() {
+    void validateLocalDateTimeToTrue() {
         YearAnyRef anyRef = Year.anyRef("integerList[*]", "year");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("year", Foo.class);
@@ -104,7 +104,7 @@ public class YearAnyRefTest {
     }
 
     @Test
-    public void validateCalenderToTrue() {
+    void validateCalenderToTrue() {
         YearAnyRef anyRef = Year.anyRef("integerList[*]", "year");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("year", Foo.class);
@@ -114,7 +114,7 @@ public class YearAnyRefTest {
     }
 
     @Test
-    public void validateCalenderToFalse() {
+    void validateCalenderToFalse() {
         YearAnyRef anyRef = Year.anyRef("integerList[0-2]");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("year", Foo.class);
@@ -124,7 +124,7 @@ public class YearAnyRefTest {
     }
 
     @Test
-    public void validateUtilDateToTrue() {
+    void validateUtilDateToTrue() {
         YearAnyRef anyRef = Year.anyRef("integerList[*]", "year");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("year", Foo.class);
@@ -133,7 +133,7 @@ public class YearAnyRefTest {
     }
 
     @Test
-    public void validateUtilDateToFalse() {
+    void validateUtilDateToFalse() {
         YearAnyRef anyRef = Year.anyRef("integerList[0-2]");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("year", Foo.class);
@@ -142,7 +142,7 @@ public class YearAnyRefTest {
     }
 
     @Test
-    public void serializeYearsAnyRef() {
+    void serializeYearsAnyRef() {
         YearAnyRef anyRef = Year.anyRef("foo", "bar");
         assertEquals("""
                 "type":"YEAR_ANY_REF","values":["foo","bar"]""",
@@ -150,10 +150,26 @@ public class YearAnyRefTest {
     }
 
     @Test
-    public void serializeYearsAnyRefOrNull() {
+    void serializeYearsAnyRefOrNull() {
         YearAnyRef anyRef = Year.anyRefOrNull("foo", "bar");
         assertEquals("""
                 "type":"YEAR_ANY_REF","values":["foo","bar"],"nullEqualsTo":true""",
+                anyRef.serializeToJson());
+    }
+
+    @Test
+    void serializeYearsAnyRef_ofUpdate() {
+        YearAnyRef anyRef = Year.anyRef("foo", "bar").ofUpdate();
+        assertEquals("""
+                "type":"YEAR_ANY_REF","values":["foo","bar"],"refTarget":"UPDATE_ENTITY\"""",
+                anyRef.serializeToJson());
+    }
+
+    @Test
+    void serializeYearsAnyRef_ofCurrent() {
+        YearAnyRef anyRef = Year.anyRef("foo", "bar").ofCurrent();
+        assertEquals("""
+                "type":"YEAR_ANY_REF","values":["foo","bar"],"refTarget":"CURRENT_ENTITY\"""",
                 anyRef.serializeToJson());
     }
 
