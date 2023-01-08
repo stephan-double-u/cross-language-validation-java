@@ -158,4 +158,20 @@ public class QuarterAnyRefTest {
                 anyRef.serializeToJson());
     }
 
+    @Test
+    public void serializeQuartersAnyRef_ofUpdate() {
+        QuarterAnyRef anyRef = Quarter.anyRef("foo", "bar").ofUpdate();
+        assertEquals("""
+                "type":"QUARTER_ANY_REF","values":["foo","bar"],"refTarget":"UPDATE_ENTITY\"""",
+                anyRef.serializeToJson());
+    }
+
+    @Test
+    public void serializeQuartersAnyRef_ofCurrent() {
+        QuarterAnyRef anyRef = Quarter.anyRef("foo", "bar").ofCurrent();
+        assertEquals("""
+                "type":"QUARTER_ANY_REF","values":["foo","bar"],"refTarget":"CURRENT_ENTITY\"""",
+                anyRef.serializeToJson());
+    }
+
 }

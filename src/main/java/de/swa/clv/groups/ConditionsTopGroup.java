@@ -13,16 +13,16 @@ public class ConditionsTopGroup implements JsonSerializable {
     private final LogicalOperator logicalOperator;
     private final ConditionsGroup[] conditionsGroups;
 
-    private ConditionsTopGroup(final LogicalOperator logicalOperator, final ConditionsGroup... conditionsGroups) {
+    private ConditionsTopGroup(LogicalOperator logicalOperator, ConditionsGroup... conditionsGroups) {
         this.logicalOperator = logicalOperator;
         this.conditionsGroups = conditionsGroups;
     }
 
-    public static ConditionsTopGroup AND(final ConditionsGroup... conditionsGroups) {
+    public static ConditionsTopGroup AND(ConditionsGroup... conditionsGroups) {
         return new ConditionsTopGroup(LogicalOperator.AND, conditionsGroups);
     }
 
-    public static ConditionsTopGroup OR(final ConditionsGroup... conditionsGroups) {
+    public static ConditionsTopGroup OR(ConditionsGroup... conditionsGroups) {
         return new ConditionsTopGroup(LogicalOperator.OR, conditionsGroups);
     }
 
@@ -30,7 +30,7 @@ public class ConditionsTopGroup implements JsonSerializable {
         return logicalOperator;
     }
 
-    public ConditionsGroup[] getConstraintsSubGroups() {
+    public ConditionsGroup[] getConditionsGroups() {
         return conditionsGroups;
     }
 
@@ -41,8 +41,8 @@ public class ConditionsTopGroup implements JsonSerializable {
         }
         if (conditionsGroups.length == 1) {
             ConditionsGroup singleSubGroup = conditionsGroups[0];
-            if (singleSubGroup.propConstraints.length == 1) {
-                return asKey("condition") + singleSubGroup.propConstraints[0].serializeToJson();
+            if (singleSubGroup.constraints.length == 1) {
+                return asKey("condition") + singleSubGroup.constraints[0].serializeToJson();
             } else {
                 return asKey("conditionsGroup") + singleSubGroup.serializeToJson();
             }

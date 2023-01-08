@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-public class ValidatorTest {
+class ValidatorTest {
     public static final LocalDate A_LOCAL_DATE = LocalDate.of(2022, 1, 1);
 
     /*
@@ -23,7 +23,7 @@ public class ValidatorTest {
      */
 
     @Test
-    public void validateProperty_simplePropertyInherited() {
+    void validateProperty_simplePropertyInherited() {
         try {
             Validator.instance().validateProperty("id", ClassUnderTest.class);
         } catch (IllegalArgumentException e) {
@@ -32,7 +32,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validateProperty_simpleProperty() {
+    void validateProperty_simpleProperty() {
         try {
             Validator.instance().validateProperty("stringProp", ClassUnderTest.class);
         } catch (IllegalArgumentException e) {
@@ -41,7 +41,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validateProperty_nestedProperty() {
+    void validateProperty_nestedProperty() {
         try {
             Validator.instance().validateProperty("subClassProp.stringProp", ClassUnderTest.class);
         } catch (IllegalArgumentException e) {
@@ -50,7 +50,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validateProperty_nestedIndexedArrayProperty() {
+    void validateProperty_nestedIndexedArrayProperty() {
         try {
             Validator.instance().validateProperty("subClassProp.stringArrayProp[0]", ClassUnderTest.class);
         } catch (IllegalArgumentException e) {
@@ -59,7 +59,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validateProperty_indexedArrayIndexedListProperty() {
+    void validateProperty_indexedArrayIndexedListProperty() {
         try {
             Validator.instance().validateProperty("subClassArrayProp[0].stringListProp[999]", ClassUnderTest.class);
         } catch (IllegalArgumentException e) {
@@ -68,14 +68,14 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validateProperty_notexisting() {
+    void validateProperty_notexisting() {
         assertThrows(IllegalArgumentException.class,
                 () -> Validator.instance().validateProperty("notexisting", ClassUnderTest.class));
     }
 
 
     @Test
-    public void inflateIndexedProperty_starAndIncrement() {
+    void inflateIndexedProperty_starAndIncrement() {
         List<String> expected = Arrays.asList(
                 "subClassArrayProp[0].stringArrayProp[2]",
                 "subClassArrayProp[0].stringArrayProp[4]",
@@ -87,7 +87,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void inflateIndexedProperty_listAndRange() {
+    void inflateIndexedProperty_listAndRange() {
         List<String> expected = Arrays.asList(
                 "subClassArrayProp[2].stringListProp[7]",
                 "subClassArrayProp[2].stringListProp[8]",
@@ -104,7 +104,7 @@ public class ValidatorTest {
 
     private ValidationRules<ClassUnderTest> classUnderTestRules;
     @BeforeEach
-    public void before() {
+    void before() {
         classUnderTestRules = new ValidationRules<>(ClassUnderTest.class);
         classUnderTestRules.mandatory("stringProp", Condition.of("utilDate", Equals.notNull()))
                 .errorCodeControl(UseType.AS_SUFFIX, "#1st");
@@ -117,7 +117,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validate_mandatory_errorCode_suffix() {
+    void validate_mandatory_errorCode_suffix() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.mandatory("stringProp")
                 .errorCodeControl(UseType.AS_SUFFIX, "#suffix");
@@ -127,7 +127,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validate_mandatory_errorCode_replacement() {
+    void validate_mandatory_errorCode_replacement() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.mandatory("stringProp")
                 .errorCodeControl(UseType.AS_REPLACEMENT, "errorCode123");
@@ -137,7 +137,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validate_mandatory_functionNotAllowed() {
+    void validate_mandatory_functionNotAllowed() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> rules.mandatory("subClassArrayProp[*]#distinct", Permissions.any("ONE")));
@@ -146,7 +146,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validate_immmutable_functionNotAllowed() {
+    void validate_immmutable_functionNotAllowed() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> rules.immutable("subClassArrayProp[*]#distinct", Permissions.any("ONE")));
@@ -155,7 +155,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validate_permissions_string_vs_string() {
+    void validate_permissions_string_vs_string() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.mandatory("stringProp", Permissions.any("ONE"));
         ClassUnderTest object = new ClassUnderTest(null, null);
@@ -164,7 +164,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validate_permissions_enum_vs_string() {
+    void validate_permissions_enum_vs_string() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.mandatory("stringProp", Permissions.any(SomeEnum.ONE));
         ClassUnderTest object = new ClassUnderTest(null, null);
@@ -173,7 +173,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validate_permissions_string_vs_enum() {
+    void validate_permissions_string_vs_enum() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.mandatory("stringProp", Permissions.any("ONE"));
         ClassUnderTest object = new ClassUnderTest(null, null);
@@ -182,7 +182,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validate_permissions_enum_vs_enum() {
+    void validate_permissions_enum_vs_enum() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.mandatory("stringProp", Permissions.any(SomeEnum.ONE));
         ClassUnderTest object = new ClassUnderTest(null, null);
@@ -191,14 +191,14 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validateMandatoryRules_true() {
+    void validateMandatoryRules_true() {
         ClassUnderTest object = new ClassUnderTest("someString", null);
         List<String> errors = Validator.instance().validateMandatoryRules(object, classUnderTestRules);
-        assertTrue(errors.isEmpty());
+        assertTrue(errors.isEmpty(), errors.toString());
     }
 
     @Test
-    public void validateMandatoryRules_false() {
+    void validateMandatoryRules_false() {
         ClassUnderTest object = new ClassUnderTest(null, SomeEnum.ONE);
         List<String> errors = Validator.instance().validateMandatoryRules(object, classUnderTestRules);
         assertEquals(List.of(
@@ -207,44 +207,44 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validateMandatoryRules_star() {
+    void validateMandatoryRules_star() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.mandatory("subClassArrayProp[*].stringProp");
-        final List<String> errors = Validator.instance().validateMandatoryRules(new ClassUnderTest(), rules);
-        assertTrue(errors.isEmpty());
+        List<String> errors = Validator.instance().validateMandatoryRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty(), errors.toString());
     }
 
     @Test
-    public void validateMandatoryRules_starFail() {
+    void validateMandatoryRules_starFail() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.mandatory("subClassArrayProp[*].stringProp");
 
         ClassUnderTest classUnderTest = new ClassUnderTest();
         classUnderTest.subClassArrayProp[0].stringProp = null;
 
-        final List<String> errors = Validator.instance().validateMandatoryRules(classUnderTest, rules);
+        List<String> errors = Validator.instance().validateMandatoryRules(classUnderTest, rules);
         assertEquals(List.of("error.validation.mandatory.classundertest.subClassArrayProp[*].stringProp"), errors);
     }
 
 
     @Test
-    public void validateImmutableRules_sameEnums() {
+    void validateImmutableRules_sameEnums() {
         ClassUnderTest original = new ClassUnderTest("someString", SomeEnum.ONE);
         ClassUnderTest modified1 = new ClassUnderTest("otherString", SomeEnum.ONE);
         List<String> errors = Validator.instance().validateImmutableRules(original, modified1, classUnderTestRules);
-        assertTrue(errors.isEmpty());
+        assertTrue(errors.isEmpty(), errors.toString());
     }
 
     @Test
-    public void validateImmutableRules_nullVsNull() {
+    void validateImmutableRules_nullVsNull() {
         ClassUnderTest original = new ClassUnderTest("someString", null);
         ClassUnderTest modified1 = new ClassUnderTest("otherString", null);
         List<String> errors = Validator.instance().validateImmutableRules(original, modified1, classUnderTestRules);
-        assertTrue(errors.isEmpty());
+        assertTrue(errors.isEmpty(), errors.toString());
     }
 
     @Test
-    public void validateImmutableRules_differentEnums() {
+    void validateImmutableRules_differentEnums() {
         ClassUnderTest original = new ClassUnderTest(null, SomeEnum.ONE);
         ClassUnderTest modified1 = new ClassUnderTest(null, SomeEnum.TWO);
         List<String> errors = Validator.instance().validateImmutableRules(original, modified1, classUnderTestRules);
@@ -254,7 +254,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validateImmutableRules_enumVsNull() {
+    void validateImmutableRules_enumVsNull() {
         ClassUnderTest original = new ClassUnderTest("someString", SomeEnum.ONE);
         ClassUnderTest modified1 = new ClassUnderTest("otherString", null);
         List<String> errors = Validator.instance().validateImmutableRules(original, modified1, classUnderTestRules);
@@ -262,151 +262,161 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validateImmutableRules_nullVsEnum() {
+    void validateImmutableRules_nullVsEnum() {
         ClassUnderTest original = new ClassUnderTest("someString", null);
         ClassUnderTest modified1 = new ClassUnderTest("otherString", SomeEnum.TWO);
         List<String> errors = Validator.instance().validateImmutableRules(original, modified1, classUnderTestRules);
-        assertEquals(Arrays.asList("error.validation.immutable.classundertest.enumProp#1st"), errors);
+        assertEquals(List.of("error.validation.immutable.classundertest.enumProp#1st"), errors);
     }
 
     @Test
-    public void validateImmutableRules_star() {
-        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
-        rules.mandatory("subClassArrayProp[*].stringProp");
-        final List<String> errors = Validator.instance().validateImmutableRules(new ClassUnderTest(), new ClassUnderTest(), rules);
-        assertTrue(errors.isEmpty());
-    }
-
-    @Test
-    public void validateImmutableRules_starFail() {
+    void validateImmutableRules_star() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.immutable("subClassArrayProp[*].stringProp");
+        List<String> errors = Validator.instance().validateImmutableRules(
+                new ClassUnderTest(), new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty(), errors.toString());
+        assertEquals(1, rules.getImmutableRulesKeys().size());
+    }
 
+    @Test
+    void validateImmutableRules_starFail() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.immutable("subClassArrayProp[*].stringProp");
         ClassUnderTest modifiedObject = new ClassUnderTest();
         modifiedObject.subClassArrayProp[1].stringProp = "modified";
-
-        final List<String> errors = Validator.instance().validateImmutableRules(new ClassUnderTest(), modifiedObject, rules);
+        List<String> errors = Validator.instance().validateImmutableRules(new ClassUnderTest(), modifiedObject, rules);
         assertEquals(List.of("error.validation.immutable.classundertest.subClassArrayProp[*].stringProp"), errors);
     }
 
     @Test
-    public void validateImmutableRules_utilDate() {
+    void validateImmutableRules_utilDate() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.immutable("utilDate");
-
-        final List<String> errors = Validator.instance().validateImmutableRules(new ClassUnderTest(), new ClassUnderTest(), rules);
-        assertTrue(errors.isEmpty());
+        List<String> errors = Validator.instance().validateImmutableRules(new ClassUnderTest(), new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty(), errors.toString());
+        assertEquals(1, rules.getImmutableRulesKeys().size());
     }
 
     @Test
-    public void validateImmutableRules_utilDateFail() {
+    void validateImmutableRules_utilDateFail() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.immutable("utilDate");
-
         ClassUnderTest modifiedObject = new ClassUnderTest();
-        modifiedObject.setUtilDate(Date.from(LocalDate.of(2020, 1, 2 ).atStartOfDay(ZoneId.systemDefault()).toInstant()));
-
-        final List<String> errors = Validator.instance().validateImmutableRules(new ClassUnderTest(), modifiedObject, rules);
+        modifiedObject.setUtilDate(Date.from(LocalDate.of(2020, 1, 2 )
+                .atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        List<String> errors = Validator.instance().validateImmutableRules(new ClassUnderTest(), modifiedObject, rules);
         assertEquals(List.of("error.validation.immutable.classundertest.utilDate"), errors);
     }
 
 
     @Test
-    public void validateContentRules_nestedIndexed() {
+    void validateContentRules_nestedIndexed() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.content("subClassArrayProp[*].stringArrayProp[0-2]", Equals.any("b2", "b3", "c2", "c3", "d2", "d3"));
-        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
-        assertTrue(errors.isEmpty());
+        List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty(), errors.toString());
+        assertEquals(1, rules.getContentRulesKeys().size());
     }
 
     @Test
-    public void validateContentRules_sum_integer_Range() {
+    void validateContentRules_sum_integer_Range() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.content("subClassArrayProp[*].integerListProp[0-2]#sum", Range.minMax(1, 12));
-        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
-        assertTrue(errors.isEmpty());
+        List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty(), errors.toString());
+        assertEquals(1, rules.getContentRulesKeys().size());
     }
 
     @Test
-    public void validateContentRules_sum_float_Range() {
+    void validateContentRules_sum_float_Range() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.content("floatArray[*]#sum", Range.minMax(6.66f, 6.66f));
-        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
-        assertTrue(errors.isEmpty());
+        List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty(), errors.toString());
+        assertEquals(1, rules.getContentRulesKeys().size());
     }
 
     @Test
-    public void validateContentRules_integer_sum_RegEx() {
+    void validateContentRules_integer_sum_RegEx() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.content("subClassArrayProp[*].integerListProp[0-2]#sum", RegEx.any("^[0-9]+$"));
-        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
-        assertTrue(errors.isEmpty());
+        List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty(), errors.toString());
     }
 
     @Test
-    public void validateContentRules_integer_sum_EqualsAny() {
+    void validateContentRules_integer_sum_EqualsAny() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.content("subClassArrayProp[*].integerListProp[0-2]#sum", Equals.any(12));
-        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
-        assertTrue(errors.isEmpty());
+        List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty(), errors.toString());
+        assertEquals(1, rules.getContentRulesKeys().size());
     }
 
     @Test
-    public void validateContentRules_integer_distinct_EqualsAny_true() {
+    void validateContentRules_integer_distinct_EqualsAny_true() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.content("subClassArrayProp[0].integerListProp[*]#distinct", Equals.any(true));
-        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
-        assertTrue(errors.isEmpty());
+        List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty(), errors.toString());
+        assertEquals(1, rules.getContentRulesKeys().size());
     }
 
     @Test
-    public void validateContentRules_emptyArray_distinct_EqualsAny_true() {
+    void validateContentRules_emptyArray_distinct_EqualsAny_true() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.content("emptyStringArray[*]#distinct", Equals.any(true));
-        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
-        assertTrue(errors.isEmpty());
+        List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty(), errors.toString());
+        assertEquals(1, rules.getContentRulesKeys().size());
     }
 
     @Test
-    public void validateContentRules_nullArray_distinct_EqualsAny_true() {
+    void validateContentRules_nullArray_distinct_EqualsAny_true() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.content("nullStringArray[*]#distinct", Equals.any(true));
-        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
-        assertTrue(errors.isEmpty());
+        List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty(), errors.toString());
+        assertEquals(1, rules.getContentRulesKeys().size());
     }
 
     @Test
-    public void validateContentRules_sumEverywhere() {
-        PropConstraint condition = Condition.of("subClassArrayProp[*].integerListProp[*]#sum",
+    void validateContentRules_sumEverywhere() {
+        ConditionConstraint condition = Condition.of("subClassArrayProp[*].integerListProp[*]#sum",
                 Equals.any(12));
         // this assures, that Equals.anyRef below is validated at all!
-        assertTrue(Validator.instance().constraintIsMet(condition, new ClassUnderTest()));
+        ClassUnderTest entity = new ClassUnderTest();
+        assertTrue(Validator.instance().conditionIsMet(condition, entity, entity));
 
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.content("subClassArrayProp[0].integerListProp[*]#sum",
                 Equals.anyRef("subClassArrayProp[1].integerListProp[*]#sum"),
                 condition);
-        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
-        assertTrue(errors.isEmpty());
+        List<String> errors = Validator.instance().validateContentRules(entity, rules);
+        assertTrue(errors.isEmpty(), errors.toString());
+        assertEquals(1, rules.getContentRulesKeys().size());
     }
 
     @Test
-    public void validateContentRules_distinctEverywhere() {
-        PropConstraint condition = Condition.of("subClassArrayProp[0].integerListProp[*]#distinct",
+    void validateContentRules_distinctEverywhere() {
+        ConditionConstraint condition = Condition.of("subClassArrayProp[0].integerListProp[*]#distinct",
                 Equals.any(true));
         // this assures, that Equals.anyRef below is validated at all!
-        assertTrue(Validator.instance().constraintIsMet(condition, new ClassUnderTest()));
+        ClassUnderTest entity = new ClassUnderTest();
+        assertTrue(Validator.instance().conditionIsMet(condition, entity, entity));
 
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.content("subClassArrayProp[0].integerListProp[*]#distinct",
                 Equals.anyRef("subClassArrayProp[1].integerListProp[*]#distinct"),
                 condition);
-        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        List<String> errors = Validator.instance().validateContentRules(entity, rules);
         assertTrue(errors.isEmpty(), errors.toString());
+        assertEquals(1, rules.getContentRulesKeys().size());
     }
 
     @Test
-    public void validateUpdateRules_ok() {
+    void validateUpdateRules_ok() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.update("stringProp", Equals.any("FOO"), Condition.of("stringProp",
                 Equals.any("BAR", "ZOO")));
@@ -414,12 +424,12 @@ public class ValidatorTest {
         ClassUnderTest modifiedObject = new ClassUnderTest("FOO", null);
         ClassUnderTest originalObject = new ClassUnderTest("ZOO", null);
 
-        final List<String> errors = Validator.instance().validateUpdateRules(originalObject, modifiedObject, rules);
-        assertTrue(errors.isEmpty());
+        List<String> errors = Validator.instance().validateUpdateRules(originalObject, modifiedObject, rules);
+        assertTrue(errors.isEmpty(), errors.toString());
     }
 
     @Test
-    public void validateUpdateRules_nok() {
+    void validateUpdateRules_nok() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.update("stringProp", Equals.any("XYZ"), Condition.of("stringProp",
                 Equals.any("BAR", "ZOO")));
@@ -427,15 +437,15 @@ public class ValidatorTest {
         ClassUnderTest modifiedObject = new ClassUnderTest("FOO", null);
         ClassUnderTest originalObject = new ClassUnderTest("ZOO", null);
 
-        final List<String> errors = Validator.instance().validateUpdateRules(originalObject, modifiedObject, rules);
+        List<String> errors = Validator.instance().validateUpdateRules(originalObject, modifiedObject, rules);
         assertEquals(Arrays.asList("error.validation.update.equals_any.classundertest.stringProp"), errors);
     }
 
-    static Stream<Arguments> valueProvider() {
-        ClassUnderTest originlOne = new ClassUnderTest(null, SomeEnum.ONE);
-        ClassUnderTest originlTwo = new ClassUnderTest(null, SomeEnum.TWO);
-        ClassUnderTest originlThree = new ClassUnderTest(null, SomeEnum.THREE);
-        ClassUnderTest originlFour = new ClassUnderTest(null, SomeEnum.FOUR);
+    static Stream<Arguments> complexStateTransitionsValueProvider() {
+        ClassUnderTest originalOne = new ClassUnderTest(null, SomeEnum.ONE);
+        ClassUnderTest originalTwo = new ClassUnderTest(null, SomeEnum.TWO);
+        ClassUnderTest originalThree = new ClassUnderTest(null, SomeEnum.THREE);
+        ClassUnderTest originalFour = new ClassUnderTest(null, SomeEnum.FOUR);
         ClassUnderTest modifiedOne = new ClassUnderTest(null, SomeEnum.ONE);
         ClassUnderTest modifiedTwo = new ClassUnderTest(null, SomeEnum.TWO);
         ClassUnderTest modifiedThree = new ClassUnderTest(null, SomeEnum.THREE);
@@ -445,34 +455,34 @@ public class ValidatorTest {
         UserPermissions manager = UserPermissions.of("MANAGER");
         String errorPrefix = "error.validation.update.equals_any.classundertest.enumProp";
         return Stream.of(
-                arguments(originlOne, modifiedTwo, trainee, List.of()),
-                arguments(originlOne, modifiedThree, trainee, List.of()),
-                arguments(originlOne, modifiedFour, trainee, List.of(errorPrefix + "#1")),
-                arguments(originlTwo, modifiedFour, trainee, List.of()),
-                arguments(originlThree, modifiedFour, trainee, List.of()),
-                arguments(originlTwo, modifiedOne, trainee, List.of(errorPrefix + "#2")),
-                arguments(originlFour, modifiedOne, trainee, List.of(errorPrefix + "#3")),
+                arguments(originalOne, modifiedTwo, trainee, List.of()),
+                arguments(originalOne, modifiedThree, trainee, List.of()),
+                arguments(originalOne, modifiedFour, trainee, List.of(errorPrefix + "#1")),
+                arguments(originalTwo, modifiedFour, trainee, List.of()),
+                arguments(originalThree, modifiedFour, trainee, List.of()),
+                arguments(originalTwo, modifiedOne, trainee, List.of(errorPrefix + "#2")),
+                arguments(originalFour, modifiedOne, trainee, List.of(errorPrefix + "#3")),
 
-                arguments(originlOne, modifiedTwo, expert, List.of()),
-                arguments(originlOne, modifiedThree, expert, List.of()),
-                arguments(originlOne, modifiedFour, expert, List.of(errorPrefix + "#1")),
-                arguments(originlTwo, modifiedFour, expert, List.of()),
-                arguments(originlThree, modifiedFour, expert, List.of()),
-                arguments(originlTwo, modifiedOne, expert, List.of(errorPrefix + "#2")),
-                arguments(originlFour, modifiedOne, expert, List.of()),
+                arguments(originalOne, modifiedTwo, expert, List.of()),
+                arguments(originalOne, modifiedThree, expert, List.of()),
+                arguments(originalOne, modifiedFour, expert, List.of(errorPrefix + "#1")),
+                arguments(originalTwo, modifiedFour, expert, List.of()),
+                arguments(originalThree, modifiedFour, expert, List.of()),
+                arguments(originalTwo, modifiedOne, expert, List.of(errorPrefix + "#2")),
+                arguments(originalFour, modifiedOne, expert, List.of()),
 
-                arguments(originlOne, modifiedTwo, manager, List.of()),
-                arguments(originlOne, modifiedThree, manager, List.of()),
-                arguments(originlOne, modifiedFour, manager, List.of()),
-                arguments(originlTwo, modifiedFour, manager, List.of()),
-                arguments(originlThree, modifiedFour, manager, List.of()),
-                arguments(originlTwo, modifiedOne, manager, List.of()),
-                arguments(originlFour, modifiedOne, manager, List.of()));
+                arguments(originalOne, modifiedTwo, manager, List.of()),
+                arguments(originalOne, modifiedThree, manager, List.of()),
+                arguments(originalOne, modifiedFour, manager, List.of()),
+                arguments(originalTwo, modifiedFour, manager, List.of()),
+                arguments(originalThree, modifiedFour, manager, List.of()),
+                arguments(originalTwo, modifiedOne, manager, List.of()),
+                arguments(originalFour, modifiedOne, manager, List.of()));
     }
 
     @ParameterizedTest
-    @MethodSource("valueProvider")
-    public void validateUpdateRules_complexStateTransitions(ClassUnderTest original, ClassUnderTest modified,
+    @MethodSource("complexStateTransitionsValueProvider")
+    void validateUpdateRules_complexStateTransitions(ClassUnderTest original, ClassUnderTest modified,
             UserPermissions userPermissions, List<String> expectedErrors) {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         // everyone: ONE -> [TWO, THREE] resp. [TWO, THREE] -> FOUR
@@ -506,7 +516,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void aggregateFunction_propertyNotIndexed() {
+    void aggregateFunction_propertyNotIndexed() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Validator.instance().validateAndGetTerminalAggregateFunctionIfExist("foo.bar#sum"));
         assertEquals("Aggregate functions are only allowed for indexed properties: foo.bar#sum",
@@ -514,7 +524,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void aggregateFunction_tooManyMarkers() {
+    void aggregateFunction_tooManyMarkers() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Validator.instance().validateAndGetTerminalAggregateFunctionIfExist("foo[*].#bar#sum"));
         assertEquals("Property must not contain more then one aggregate function markers (#): foo[*].#bar#sum",
@@ -522,7 +532,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void aggregateFunction_unknown() {
+    void aggregateFunction_unknown() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Validator.instance().validateAndGetTerminalAggregateFunctionIfExist("foo[*]#avg"));
         assertEquals("Property contains unknown aggregate function: foo[*]#avg",
@@ -530,14 +540,14 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validateRecord_ok() {
+    void validateRecord_ok() {
         ValidationRules<Record> rules = new ValidationRules<>(Record.class);
-        rules.mandatory("aString");
-        rules.immutable("aLong", Condition.of("aString", Equals.null_()));
+        rules.mandatory("aString", Condition.of("aString", Equals.anyRef("aString")));
+        rules.immutable("aLong", Condition.of("aString", Equals.anyRef("aString")));
         rules.content("aLocalDate", Quarter.anyRef("aLong"));
 
         Record record1 = new Record("foo", 1, A_LOCAL_DATE);
-        Record record2 = new Record("foo", 2, A_LOCAL_DATE);
+        Record record2 = new Record("foo", 1, A_LOCAL_DATE);
         List<String> errors = Validator.instance().validateMandatoryRules(record1, rules);
         errors.addAll(Validator.instance().validateImmutableRules(record1, record2, rules));
         errors.addAll(Validator.instance().validateContentRules(record1, rules));
@@ -546,7 +556,7 @@ public class ValidatorTest {
     }
 
     @Test
-    public void validateRecord_2errors() {
+    void validateRecord_2errors() {
         ValidationRules<Record> rules = new ValidationRules<>(Record.class);
         rules.mandatory("aString");
         rules.immutable("aLong", Condition.of("aString", Equals.null_()));
@@ -563,35 +573,299 @@ public class ValidatorTest {
 
 
     @Test
-    public void validate_content_LocalDate_QuarterAny() {
+    void validate_content_LocalDate_QuarterAny() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.content("localDateNewYear", Quarter.any(3, 1));
-        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
-        assertTrue(errors.isEmpty());
+        List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty(), errors.toString());
     }
 
     @Test
-    public void validate_content_LocalDate_QuarterAny_fail() {
+    void validate_content_LocalDate_QuarterAny_fail() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.content("localDateNewYear", Quarter.any(2, 4));
-        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
         assertEquals(List.of("error.validation.content.quarter_any.classundertest.localDateNewYear"), errors);
     }
 
     @Test
-    public void validate_content_LocalDate_QuarterAnyRef() {
+    void validate_content_LocalDate_QuarterAnyRef() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.content("localDateNewYear", Quarter.anyRef("id", "subClassProp.integerListProp[*]"));
-        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
-        assertTrue(errors.isEmpty());
+        List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        assertTrue(errors.isEmpty(), errors.toString());
     }
 
     @Test
-    public void validate_content_LocalDate_QuarterAnyRef_fail() {
+    void validate_content_LocalDate_QuarterAnyRef_fail() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.content("localDateNewYear", Quarter.anyRef("subClassProp.integerListProp[1/1]"));
-        final List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
+        List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
         assertEquals(List.of("error.validation.content.quarter_any_ref.classundertest.localDateNewYear"), errors);
+    }
+
+    /*
+     * Testing ofUpdate() and ofCurrent()
+     */
+    
+    @Test
+    void mandatoryRuleConditionConstraint_ofUpdate() {
+        ValidationRules<Record> rules = new ValidationRules<>(Record.class);
+        assertThrows(IllegalArgumentException.class,
+            () -> rules.mandatory("aString",
+                    Condition.of("aString", Equals.anyRef("aString").ofUpdate())));
+    }
+
+    @Test
+    void mandatoryRuleConditionConstraint_ofCurrent() {
+        ValidationRules<Record> rules = new ValidationRules<>(Record.class);
+        assertThrows(IllegalArgumentException.class,
+            () -> rules.mandatory("aString",
+                    Condition.of("aString", Equals.anyRef("aString").ofCurrent())));
+    }
+
+    @Test
+    void contentRulePropertyConstraint_ofUpdate() {
+        ValidationRules<Record> rules = new ValidationRules<>(Record.class);
+        assertThrows(IllegalArgumentException.class,
+            () -> rules.content("aString", 
+                    Equals.anyRef("aString").ofUpdate(),
+                    Condition.of("aString", Equals.anyRef("aString"))));
+    }
+
+    @Test
+    void contentRulePropertyConstraint_ofCurrent() {
+        ValidationRules<Record> rules = new ValidationRules<>(Record.class);
+        assertThrows(IllegalArgumentException.class,
+            () -> rules.content("aString", 
+                    Equals.anyRef("aString").ofCurrent(),
+                    Condition.of("aString", Equals.anyRef("aString"))));
+    }
+
+    @Test
+    void contentRuleConditionConstraint_ofUpdate() {
+        ValidationRules<Record> rules = new ValidationRules<>(Record.class);
+        assertThrows(IllegalArgumentException.class,
+            () -> rules.content("aString", 
+                    Equals.anyRef("aString"),
+                    Condition.of("aString", Equals.anyRef("aString").ofUpdate())));
+    }
+
+    @Test
+    void contentRuleConditionConstraint_ofCurrent() {
+        ValidationRules<Record> rules = new ValidationRules<>(Record.class);
+        assertThrows(IllegalArgumentException.class,
+            () -> rules.content("aString", 
+                    Equals.anyRef("aString"),
+                    Condition.of("aString", Equals.anyRef("aString").ofCurrent())));
+    }
+
+    @Test
+    void immutableRuleConditionConstraint_ofUpdate() {
+        ValidationRules<Record> rules = new ValidationRules<>(Record.class);
+        rules.immutable("aString", 
+                Condition.of("aString", Equals.anyRef("aString").ofUpdate()));
+        assertTrue(true);
+    }
+
+    @Test
+    void immutableRuleConditionConstraint_ofCurrent() {
+        ValidationRules<Record> rules = new ValidationRules<>(Record.class);
+        assertThrows(IllegalArgumentException.class,
+            () -> rules.immutable("aString", 
+                    Condition.of("aString", Equals.anyRef("aString").ofCurrent())));
+    }
+
+    @Test
+    void updateRulePropertyConstraint_ofUpdate() {
+        ValidationRules<Record> rules = new ValidationRules<>(Record.class);
+        assertThrows(IllegalArgumentException.class,
+                () -> rules.update("aString",
+                        Equals.anyRef("aString").ofUpdate(),
+                        Condition.of("aString", Equals.anyRef("aString"))));
+    }
+
+    @Test
+    void updateRulePropertyConstraint_ofCurrent() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.update("stringProp", 
+                Equals.anyRef("stringProp").ofCurrent(),
+                Condition.of("enumProp", Equals.null_())); //TODO ConditionContraints doch optional!
+
+        ClassUnderTest modifiedObject = new ClassUnderTest("FOO", null);
+        ClassUnderTest originalObject = new ClassUnderTest("ZOO", null);
+
+        List<String> errors = Validator.instance().validateUpdateRules(originalObject, modifiedObject, rules);
+        assertEquals(List.of("error.validation.update.equals_any_ref.classundertest.stringProp"), errors);
+    }
+
+    @Test
+    void updateRuleConditionConstraint_ofUpdate() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.update("stringProp", 
+                Equals.any("BAR"),
+                Condition.of("stringProp", Equals.noneRef("stringProp").ofUpdate()));
+
+        ClassUnderTest editedEntity = new ClassUnderTest("FOO", null);
+        ClassUnderTest currentEntity = new ClassUnderTest("ZOO", null);
+
+        List<String> errors = Validator.instance().validateUpdateRules(currentEntity, editedEntity, rules);
+        assertEquals(List.of("error.validation.update.equals_any.classundertest.stringProp"), errors);
+    }
+
+    @Test
+    void updateRuleConditionConstraint_ofCurrent() {
+        ValidationRules<Record> rules = new ValidationRules<>(Record.class);
+        assertThrows(IllegalArgumentException.class,
+                () -> rules.update("aString", Equals.anyRef("aString"),
+                        Condition.of("aString", Equals.anyRef("aString").ofCurrent())));
+    }
+
+
+    @Test
+    void validateValueComparerConstraint_sumUnchangedTrue() {
+        ClassUnderTest thisEntity = new ClassUnderTest();
+        thisEntity.setFloatArray(new float[] {1.11f, 2.22f, 3.33f});
+        ClassUnderTest thatEntity = new ClassUnderTest();
+        thatEntity.setFloatArray(new float[] {4.44f, 2.22f});
+        boolean valid = Validator.instance().validateValueComparerConstraint("floatArray[*]",
+                AggregateFunction.sum, Value.unchanged(), thisEntity, thatEntity);
+        assertTrue(valid);
+    }
+
+    @Test
+    void validateValueComparerConstraint_sumUnchangedFalse() {
+        ClassUnderTest thisEntity = new ClassUnderTest();
+        thisEntity.setFloatArray(new float[] {1.11f, 2.22f, 3.33f});
+        ClassUnderTest thatEntity = new ClassUnderTest();
+        thatEntity.setFloatArray(new float[] {1.11f, 2.22f, 3.34f});
+        boolean valid = Validator.instance().validateValueComparerConstraint("floatArray[*]",
+                AggregateFunction.sum, Value.unchanged(), thisEntity, thatEntity);
+        assertFalse(valid);
+    }
+
+    @Test
+    void validateValueComparerConstraint_sumChangedTrue() {
+        ClassUnderTest thisEntity = new ClassUnderTest();
+        thisEntity.setFloatArray(new float[] {1.11f, 2.22f, 3.33f});
+        ClassUnderTest thatEntity = new ClassUnderTest();
+        thatEntity.setFloatArray(new float[] {1.11f, 2.22f, 3.34f});
+        boolean valid = Validator.instance().validateValueComparerConstraint("floatArray[*]",
+                AggregateFunction.sum, Value.changed(), thisEntity, thatEntity);
+        assertTrue(valid);
+    }
+
+    @Test
+    void validateValueComparerConstraint_sumChangedFalse() {
+        ClassUnderTest thisEntity = new ClassUnderTest();
+        thisEntity.setFloatArray(new float[] {1.11f, 2.22f, 3.33f});
+        ClassUnderTest thatEntity = new ClassUnderTest();
+        thatEntity.setFloatArray(new float[] {4.44f, 2.22f});
+        boolean valid = Validator.instance().validateValueComparerConstraint("floatArray[*]",
+                AggregateFunction.sum, Value.changed(), thisEntity, thatEntity);
+        assertFalse(valid);
+    }
+
+    @Test
+    void validateValueComparerConstraint_distinctUnchangedTrue() {
+        ClassUnderTest thisEntity = new ClassUnderTest();
+        thisEntity.setFloatArray(new float[] {1.11f, 2.22f, 3.33f}); // distinct = true
+        ClassUnderTest thatEntity = new ClassUnderTest();
+        thatEntity.setFloatArray(new float[] {3.33f, 2.22f}); // distinct = true
+        boolean valid = Validator.instance().validateValueComparerConstraint("floatArray[*]",
+                AggregateFunction.distinct, Value.unchanged(), thisEntity, thatEntity);
+        assertTrue(valid);
+    }
+
+    @Test
+    void validateValueComparerConstraint_distinctUnchangedFalse() {
+        ClassUnderTest thisEntity = new ClassUnderTest();
+        thisEntity.setFloatArray(new float[] {1.11f, 2.22f, 3.33f}); // distinct = true
+        ClassUnderTest thatEntity = new ClassUnderTest();
+        thatEntity.setFloatArray(new float[] {2.22f, 2.22f}); // distinct = false
+        boolean valid = Validator.instance().validateValueComparerConstraint("floatArray[*]",
+                AggregateFunction.distinct, Value.unchanged(), thisEntity, thatEntity);
+        assertFalse(valid);
+    }
+
+    @Test
+    void validateValueComparerConstraint_distinctChangedTrue() {
+        ClassUnderTest thisEntity = new ClassUnderTest();
+        thisEntity.setFloatArray(new float[] {1.11f, 1.11f}); // distinct = false
+        ClassUnderTest thatEntity = new ClassUnderTest();
+        thatEntity.setFloatArray(new float[] {1.11f, 2.22f}); // distinct = true
+        boolean valid = Validator.instance().validateValueComparerConstraint("floatArray[*]",
+                AggregateFunction.distinct, Value.changed(), thisEntity, thatEntity);
+        assertTrue(valid);
+    }
+
+    @Test
+    void validateValueComparerConstraint_distinctChangedFalse() {
+        ClassUnderTest thisEntity = new ClassUnderTest();
+        thisEntity.setFloatArray(new float[] {1.11f, 2.22f}); // distinct = true
+        ClassUnderTest thatEntity = new ClassUnderTest();
+        thatEntity.setFloatArray(new float[] {2.22f, 3.33f}); // distinct = true
+        boolean valid = Validator.instance().validateValueComparerConstraint("floatArray[*]",
+                AggregateFunction.distinct, Value.changed(), thisEntity, thatEntity);
+        assertFalse(valid);
+    }
+
+    @Test
+    void validateValueComparerConstraint_unchangedTrue() {
+        ClassUnderTest thisEntity = new ClassUnderTest();
+        thisEntity.setFloatArray(new float[] {1.11f, 2.22f});
+        ClassUnderTest thatEntity = new ClassUnderTest();
+        thatEntity.setFloatArray(new float[] {1.11f, 2.22f});
+        boolean valid = Validator.instance().validateValueComparerConstraint("floatArray[*]",
+                null, Value.unchanged(), thisEntity, thatEntity);
+        assertTrue(valid);
+    }
+
+    @Test
+    void validateValueComparerConstraint_unchangedFalse() {
+        ClassUnderTest thisEntity = new ClassUnderTest();
+        thisEntity.setFloatArray(new float[] {1.11f, 2.22f});
+        ClassUnderTest thatEntity = new ClassUnderTest();
+        thatEntity.setFloatArray(new float[] {1.11f});
+        boolean valid = Validator.instance().validateValueComparerConstraint("floatArray[*]",
+                null, Value.unchanged(), thisEntity, thatEntity);
+        assertFalse(valid);
+    }
+
+    @Test
+    void validateValueComparerConstraint_changedTrue() {
+        ClassUnderTest thisEntity = new ClassUnderTest();
+        thisEntity.setFloatArray(new float[] {1.11f, 2.22f});
+        ClassUnderTest thatEntity = new ClassUnderTest();
+        thatEntity.setFloatArray(new float[] {1.11f, 2.22f});
+        boolean valid = Validator.instance().validateValueComparerConstraint("floatArray[*]",
+                null, Value.unchanged(), thisEntity, thatEntity);
+        assertTrue(valid);
+    }
+
+    @Test
+    void validateValueComparerConstraint_changedFalse() {
+        ClassUnderTest thisEntity = new ClassUnderTest();
+        thisEntity.setFloatArray(new float[] {1.11f, 2.22f});
+        ClassUnderTest thatEntity = new ClassUnderTest();
+        thatEntity.setFloatArray(new float[] {2.22f, 1.11f});
+        boolean valid = Validator.instance().validateValueComparerConstraint("floatArray[*]",
+                null, Value.unchanged(), thisEntity, thatEntity);
+        assertFalse(valid);
+    }
+
+    @Test
+    void validateValueComparerConstraint_unchangedArrayTrue() {
+        ClassUnderTest thisEntity = new ClassUnderTest();
+        thisEntity.setFloatArray(new float[] {1.11f, 2.22f});
+        ClassUnderTest thatEntity = new ClassUnderTest();
+        thatEntity.setFloatArray(new float[] {1.11f, 2.22f});
+        // Validating caches the getter method!
+        Validator.instance().validateProperty("floatArray", ClassUnderTest.class);
+
+        boolean valid = Validator.instance().validateValueComparerConstraint("floatArray",
+                null, Value.unchanged(), thisEntity, thatEntity);
+        assertTrue(valid);
     }
 
 
@@ -601,7 +875,8 @@ public class ValidatorTest {
     static class ClassUnderTest extends BaseClass implements Identifiable<Integer> {
         private String stringProp;
         private SomeEnum enumProp;
-        private Date utilDate = Date.from(LocalDate.of(2020, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        private Date utilDate = Date.from(LocalDate.of(2020, 1, 1)
+                .atStartOfDay(ZoneId.systemDefault()).toInstant());
         private LocalDate localDateNewYear = A_LOCAL_DATE;
         private final SubClass subClassProp = new SubClass("a1", new String[] { "b1", "c1" },
                 Arrays.asList("d1", "e1", "f1"), Arrays.asList(1, 2, 3));
@@ -610,7 +885,7 @@ public class ValidatorTest {
                         Arrays.asList(1, 2, 3)),
                 new SubClass("a3", new String[] { "b3", "c3", "d3" }, Arrays.asList("e3", "f3", "g3", "h3"),
                         Arrays.asList(1, 2, 3)) };
-        private final float[] floatArray = new float[] {1.11f, 2.22f, 3.33f};
+        private float[] floatArray = new float[] {1.11f, 2.22f, 3.33f};
         private String[] emptyStringArray = new String[] {};
         private String[] nullStringArray = null;
 
@@ -649,7 +924,7 @@ public class ValidatorTest {
             return utilDate;
         }
 
-        public void setUtilDate(Date utilDate) {
+        void setUtilDate(Date utilDate) {
             this.utilDate = utilDate;
         }
 
@@ -659,6 +934,10 @@ public class ValidatorTest {
 
         public float[] getFloatArray() {
             return floatArray;
+        }
+
+        public void setFloatArray(float[] floatArray) {
+            this.floatArray = floatArray;
         }
 
         public String[] getEmptyStringArray() {

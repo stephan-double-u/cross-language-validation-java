@@ -6,7 +6,8 @@ import java.time.LocalDateTime;
  * Constraint to express the expectation that a date year must equal at least one of the years given by the values of
  * the listed properties.
  */
-public class YearAnyRef extends Quarter implements ReferenceProperties {
+public class YearAnyRef extends DatesRef implements IsCreateConstraint, IsUpdateConstraint,
+        ReferenceProperties<YearAnyRef> {
 
     public static final String TOKEN = "YEAR_ANY_REF";
 
@@ -42,4 +43,22 @@ public class YearAnyRef extends Quarter implements ReferenceProperties {
         LocalDateTime dateAsLocalDateTime = getAsLocalDateTime(dateToValidate);
         return Equals.equalsUntyped(dateAsLocalDateTime.getYear(), value);
     }
+
+    @Override
+    public YearAnyRef ofUpdate() {
+        setOfUpdate(true);
+        return this;
+    }
+
+    @Override
+    public YearAnyRef ofCurrent() {
+        setOfCurrent(true);
+        return this;
+    }
+
+    @Override
+    public String serializeToJson() {
+        return serializeToJsonAsValuesArray();
+    }
+
 }

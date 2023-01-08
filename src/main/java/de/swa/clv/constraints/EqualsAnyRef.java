@@ -3,7 +3,8 @@ package de.swa.clv.constraints;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class EqualsAnyRef extends EqualsRef {
+public class EqualsAnyRef extends EqualsRef implements IsCreateConstraint, IsUpdateConstraint,
+        ReferenceProperties<EqualsAnyRef> {
 
     private static final Logger log = LoggerFactory.getLogger(EqualsAnyRef.class);
 
@@ -20,6 +21,11 @@ public class EqualsAnyRef extends EqualsRef {
     }
 
     @Override
+    public void validateValuesOrFail(final Class<?> typeClass, final Class<?> propertyType) {
+        validateReferencedTypesOrFail(getValues(), typeClass, propertyType);
+    }
+
+    @Override
     public boolean validate(final Object valueToValidate, final Object constraintObject) {
         if (valueToValidate == null) {
             log.debug("'Null object equals to {}", doesNullEqualsTrue());
@@ -31,4 +37,15 @@ public class EqualsAnyRef extends EqualsRef {
                 .findFirst().orElse(false);
     }
 
+    @Override
+    public EqualsAnyRef ofUpdate() {
+        setOfUpdate(true);
+        return this;
+    }
+
+    @Override
+    public EqualsAnyRef ofCurrent() {
+        setOfCurrent(true);
+        return this;
+    }
 }

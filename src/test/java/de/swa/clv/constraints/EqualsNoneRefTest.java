@@ -156,6 +156,22 @@ public class EqualsNoneRefTest {
                 constraint.serializeToJson());
     }
 
+    @Test
+    public void serializeToJson_ofUpdate() {
+        EqualsNoneRef constraint = Equals.noneRef("bar.stringProp").ofUpdate();
+        assertEquals("""
+                "type":"EQUALS_NONE_REF","values":["bar.stringProp"],"refTarget":"UPDATE_ENTITY\"""",
+                constraint.serializeToJson());
+    }
+
+    @Test
+    public void serializeToJson_ofCurrent() {
+        EqualsNoneRef constraint = Equals.noneRef("bar.stringProp").ofCurrent();
+        assertEquals("""
+                "type":"EQUALS_NONE_REF","values":["bar.stringProp"],"refTarget":"CURRENT_ENTITY\"""",
+                constraint.serializeToJson());
+    }
+
     protected static class Foo {
         private Bar bar;
         private Enum2 enum2Prop;

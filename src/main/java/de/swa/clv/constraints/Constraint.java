@@ -1,11 +1,11 @@
 package de.swa.clv.constraints;
 
-import de.swa.clv.json.JsonSerializable;
-
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+
+import static de.swa.clv.json.JsonUtil.asKey;
+import static de.swa.clv.json.JsonUtil.quoted;
 
 public abstract class Constraint extends ConstraintRoot {
 
@@ -18,14 +18,7 @@ public abstract class Constraint extends ConstraintRoot {
     Constraint() {
     }
 
-    /**
-     * Validates the constraint values and the propertyType.
-     *
-     * @param propertyType TODO
-     * @return {@code true} if the values and propertyType are o.k., {@code false} otherwise
-     */
     @SuppressWarnings("squid:S1172")
-
     public void validateValuesOrFail(final Class<?> typeClass, final Class<?> propertyType) {
     }
 
@@ -63,5 +56,15 @@ public abstract class Constraint extends ConstraintRoot {
         }
     }
 
+    String serializeRefTargetKeyValuePairForReferenceProperties() {
+        if (this instanceof ReferenceProperties<?> refConstraint) {
+            if (refConstraint.isOfCurrent()) {
+                return "," + asKey("refTarget") + quoted("CURRENT_ENTITY");
+            } else if (refConstraint.isOfUpdate()) {
+                return "," + asKey("refTarget") + quoted("UPDATE_ENTITY");
+            }
+        }
+        return "";
+    }
 
 }

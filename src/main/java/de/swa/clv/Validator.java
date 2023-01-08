@@ -13,7 +13,6 @@ import java.beans.Introspector;
 import java.beans.MethodDescriptor;
 import java.lang.reflect.*;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -23,12 +22,12 @@ import static de.swa.clv.ValidationRules.NO_PERMISSIONS;
 @SuppressWarnings("squid:S6204")
 public class Validator {
 
+    private final Logger log = LoggerFactory.getLogger(Validator.class);
+
     public static final String ERR_MSG_RULES_NULL = "rules must not be null";
     public static final String ERR_MSG_PROPERTY_NULL = "property must not be null";
     public static final String ERR_MSG_OBJECT_NULL = "object must not be null";
     public static final String ERR_MSG_USER_PERMISSIONS_NULL = "userPermissions must not be null";
-
-    private final Logger log = LoggerFactory.getLogger(Validator.class);
 
     @SuppressWarnings("squid:S3878")
     private static final UserPermissions NO_USER_PERMISSIONS = UserPermissions.of(new String[0]);
@@ -48,110 +47,106 @@ public class Validator {
         return INSTANCE;
     }
 
-
     public List<String> validateMandatoryRules(final Object object, final ValidationRules<?> rules) {
         return validateMandatoryRules(object, NO_USER_PERMISSIONS, rules);
     }
 
-    public List<String> validateMandatoryRules(final Object object, final UserPermissions userPermissions,
+    public List<String> validateMandatoryRules(final Object editedEntity, final UserPermissions userPermissions,
             final ValidationRules<?> rules) {
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
-        //TODO refactor: use argument rules.getMandatoryConditionsList(property) instead of rules
         return rules.getMandatoryRulesKeys().stream()
-                .flatMap(property -> validateMandatoryPropertyRules(property, object, userPermissions, rules).stream())
+                .flatMap(property -> validateMandatoryPropertyRules(property, editedEntity, userPermissions, rules).stream())
                 .collect(Collectors.toList());
     }
 
-    private List<String> validateMandatoryPropertyRules(final String property, final Object object,
+    private List<String> validateMandatoryPropertyRules(final String property, final Object editedEntity,
             final UserPermissions userPermissions, final ValidationRules<?> rules) {
-        final List<ValidationRule> matchingRules = getMatchingRules(property, object, userPermissions, rules,
-                RulesType.MANDATORY);
+        List<ValidationRule> matchingRules = getMatchingRules(property, editedEntity, editedEntity, userPermissions,
+                rules, RulesType.MANDATORY);
         log.debug("{}.{} IS{} mandatory", rules.getSimpleTypeName(), property, (matchingRules.isEmpty() ? " NOT" : ""));
         return matchingRules.stream()
-                .filter(rule -> !constraintIsMet(Condition.of(property, Equals.notNull()), object))
+                .filter(rule -> !conditionIsMet(Condition.of(property, Equals.notNull()), editedEntity, editedEntity))
                 .map(rule -> buildErrorMessage(defaultMandatoryMessagePrefix, null, rules.getTypeJsonKey(),
                         rule.getErrorCodeControl(), property)).toList();
     }
 
-
-    public List<String> validateImmutableRules(final Object originalObject, final Object modifiedObject,
+    public List<String> validateImmutableRules(final Object currentEntity, final Object editedEntity,
             final ValidationRules<?> rules) {
-        return validateImmutableRules(originalObject, modifiedObject, NO_USER_PERMISSIONS, rules);
+        return validateImmutableRules(currentEntity, editedEntity, NO_USER_PERMISSIONS, rules);
     }
 
-    public List<String> validateImmutableRules(final Object originalObject, final Object modifiedObject,
+    public List<String> validateImmutableRules(final Object currentEntity, final Object editedEntity,
             final UserPermissions userPermissions, final ValidationRules<?> rules) {
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
-        if (originalObject.getClass() != modifiedObject.getClass()) {
-            throw new IllegalArgumentException("originalObject and modifiedObject must have same type");
+        if (currentEntity.getClass() != editedEntity.getClass()) {
+            throw new IllegalArgumentException("currentEntity and editedEntity must have same type");
         }
         return rules.getImmutableRulesKeys().stream()
-                .flatMap(property -> validateImmutablePropertyRules(property, originalObject, modifiedObject,
+                .flatMap(property -> validateImmutablePropertyRules(property, currentEntity, editedEntity,
                         userPermissions, rules).stream())
                 .collect(Collectors.toList());
     }
 
-    private List<String> validateImmutablePropertyRules(final String property, final Object originalObject,
-            final Object modifiedObject, final UserPermissions userPermissions, final ValidationRules<?> rules) {
-        final List<ValidationRule> matchingRules = getMatchingRules(property, originalObject, userPermissions,
+    private List<String> validateImmutablePropertyRules(final String property, final Object currentEntity,
+            final Object editedEntity, final UserPermissions userPermissions, final ValidationRules<?> rules) {
+        List<ValidationRule> matchingRules = getMatchingRules(property, currentEntity, editedEntity, userPermissions,
                 rules, RulesType.IMMUTABLE);
         log.debug("{}.{} IS{} immutable", rules.getSimpleTypeName(), property, (matchingRules.isEmpty() ? " NOT" : ""));
         return matchingRules.stream()
-                .filter(rule -> !propertyValuesEquals(property, originalObject, modifiedObject))
+                .filter(rule -> !conditionIsMet(Condition.of(property, Value.unchanged()), currentEntity, editedEntity))
                 .map(rule -> buildErrorMessage(defaultImmutableMessagePrefix, null, rules.getTypeJsonKey(),
                         rule.getErrorCodeControl(), property)).toList();
     }
 
-
-    public List<String> validateContentRules(final Object object, final ValidationRules<?> rules) {
-        return validateContentRules(object, NO_USER_PERMISSIONS, rules);
+    public List<String> validateContentRules(final Object editedEntity, final ValidationRules<?> rules) {
+        return validateContentRules(editedEntity, NO_USER_PERMISSIONS, rules);
     }
 
-    public List<String> validateContentRules(final Object object, final UserPermissions userPermissions,
+    public List<String> validateContentRules(final Object editedEntity, final UserPermissions userPermissions,
             final ValidationRules<?> rules) {
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
         return rules.getContentRulesKeys().stream()
-                .flatMap(property -> validateContentPropertyRules(property, object, userPermissions, rules).stream())
+                .flatMap(property -> validateContentPropertyRules(property, editedEntity, userPermissions, rules).stream())
                 .collect(Collectors.toList());
     }
 
-    private List<String> validateContentPropertyRules(final String property, final Object object,
+    private List<String> validateContentPropertyRules(final String property, final Object editedEntity,
             final UserPermissions userPermissions, final ValidationRules<?> rules) {
-        List<ValidationRule> matchingRules = getMatchingRules(property, object, userPermissions, rules,
-                RulesType.CONTENT);
-        return validatePropertyRule(property, object, rules.getTypeJsonKey(), matchingRules,
+        List<ValidationRule> matchingRules = getMatchingRules(property, editedEntity, editedEntity, userPermissions,
+                rules, RulesType.CONTENT);
+        return validatePropertyConstraints(property, editedEntity, editedEntity, rules.getTypeJsonKey(), matchingRules,
                 defaultContentMessagePrefix);
     }
 
-    public List<String> validateUpdateRules(final Object originalObject, final Object modifiedObject,
+    public List<String> validateUpdateRules(final Object currentEntity, final Object editedEntity,
             final ValidationRules<?> rules) {
-        return validateUpdateRules(originalObject, modifiedObject, NO_USER_PERMISSIONS, rules);
+        return validateUpdateRules(currentEntity, editedEntity, NO_USER_PERMISSIONS, rules);
     }
 
-    public List<String> validateUpdateRules(final Object originalObject, final Object modifiedObject,
+    public List<String> validateUpdateRules(final Object currentEntity, final Object editedEntity,
             final UserPermissions userPermissions, final ValidationRules<?> rules) {
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
-        if (originalObject.getClass() != modifiedObject.getClass()) {
-            throw new IllegalArgumentException("originalObject and modifiedObject must have same type");
+        if (currentEntity.getClass() != editedEntity.getClass()) {
+            throw new IllegalArgumentException("currentEntity and editedEntity must have same type");
         }
         return rules.getUpdateRulesKeys().stream()
-                .flatMap(property -> validateUpdatePropertyRules(property, originalObject, modifiedObject, userPermissions,
+                .flatMap(property -> validateUpdatePropertyRules(property, currentEntity, editedEntity, userPermissions,
                         rules).stream())
                 .collect(Collectors.toList());
     }
 
-    private List<String> validateUpdatePropertyRules(final String property, final Object originalObject,
-            final Object modifiedObject, final UserPermissions userPermissions, final ValidationRules<?> rules) {
-        List<ValidationRule> matchingRules = getMatchingRules(property, originalObject, userPermissions, rules,
-                RulesType.UPDATE);
-        return validatePropertyRule(property, modifiedObject, rules.getTypeJsonKey(), matchingRules,
+    private List<String> validateUpdatePropertyRules(final String property, final Object currentEntity,
+            final Object editedEntity, final UserPermissions userPermissions, final ValidationRules<?> rules) {
+        List<ValidationRule> matchingRules = getMatchingRules(property, currentEntity, editedEntity, userPermissions,
+                rules, RulesType.UPDATE);
+        return validatePropertyConstraints(property, editedEntity, currentEntity, rules.getTypeJsonKey(), matchingRules,
                 defaultUpdateMessagePrefix);
     }
 
-    private List<String> validatePropertyRule(String property, Object object, String typeJsonKey,
-            List<ValidationRule> rules, String defaultMessagePrefix) {
+    private List<String> validatePropertyConstraints(String property, Object thisEntity, Object thatEntity,
+            String typeJsonKey, List<ValidationRule> rules, String defaultMessagePrefix) {
         return rules.stream()
-                .filter(rule -> !constraintIsMet(Condition.of(property, rule.getConstraint()), object))
+                .filter(rule -> !conditionIsMet(Condition.of(property, rule.getConstraint()), thisEntity, thatEntity))
                 .map(rule -> buildErrorMessage(defaultMessagePrefix, rule.getConstraint(), typeJsonKey,
                         rule.getErrorCodeControl(), property)).toList();
     }
@@ -174,13 +169,15 @@ public class Validator {
         return code;
     }
 
-    private List<ValidationRule> getMatchingRules(final String property, final Object object,
-            final UserPermissions userPermissions, final ValidationRules<?> rules, RulesType rulesType) {
+    private List<ValidationRule> getMatchingRules(final String property, final Object thisEntity,
+            Object thatEntity, final UserPermissions userPermissions, final ValidationRules<?> rules,
+            RulesType rulesType) {
         Objects.requireNonNull(property, ERR_MSG_PROPERTY_NULL);
-        Objects.requireNonNull(object, ERR_MSG_OBJECT_NULL);
+        Objects.requireNonNull(thisEntity, ERR_MSG_OBJECT_NULL);
+        Objects.requireNonNull(thatEntity, ERR_MSG_OBJECT_NULL);
         Objects.requireNonNull(userPermissions, ERR_MSG_USER_PERMISSIONS_NULL);
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
-        validateArguments(property, object, rules);
+        validateArguments(property, thisEntity, thatEntity, rules);
 
         List<ValidationRule> validationRuleList = switch (rulesType) {
             case MANDATORY -> rules.getMandatoryValidationRules(property);
@@ -188,34 +185,39 @@ public class Validator {
             case CONTENT -> rules.getContentValidationRules(property);
             case UPDATE -> rules.getUpdateValidationRules(property);
         };
+
         log.debug("Validate #{} {} rules for {}.{}",
                 validationRuleList.size(), rulesType, rules.getSimpleTypeName(), property);
 
-        List<ValidationRule> matchingRule = getMatchingRules(validationRuleList, object, userPermissions);
+        List<ValidationRule> matchingRule = getMatchingRules(validationRuleList, thisEntity, thatEntity, userPermissions);
 
         log.debug("{}.{} has {} matching {} rules", rules.getSimpleTypeName(), property, matchingRule.size(), rulesType);
         return matchingRule;
     }
 
-    private void validateArguments(final String property, final Object object, final ValidationRules<?> rules) {
+    private void validateArguments(final String property, final Object thisEntity, final Object thatEntity,
+            final ValidationRules<?> rules) {
         if (property.isEmpty()) {
-            throw new IllegalArgumentException("property must not be empty");
+            throw new IllegalArgumentException("Property must not be empty");
         }
-        final Class<?> typeClass = rules.getTypeClass();
-        if (!object.getClass().equals(typeClass)) {
-            throw new IllegalArgumentException("The object type (" + object.getClass()
-                    + ") does not equal the type of the " + typeClass);
+        Class<?> thisEntityClass = thisEntity.getClass();
+        Class<?> thatEntityClass = thatEntity.getClass();
+        Class<?> rulesTypeClass = rules.getTypeClass();
+        if (!thisEntityClass.equals(thatEntity.getClass())
+                || !thisEntityClass.equals(rulesTypeClass)) {
+            throw new IllegalArgumentException("Types must be equal: " + thisEntityClass + " " + thatEntityClass
+                    + ", " + rulesTypeClass);
         }
-        INSTANCE.validateProperty(property, typeClass); // TODO? optional here
+        INSTANCE.validateProperty(property, rulesTypeClass); // TODO? optional here
     }
 
     // Finds all rules with either no permissions or with matching permissions and with matching conditions
-    private List<ValidationRule> getMatchingRules(List<ValidationRule> validationRules, Object object,
-            UserPermissions userPermissions) {
+    private List<ValidationRule> getMatchingRules(List<ValidationRule> validationRules, Object thisEntity,
+            Object thatEntity, UserPermissions userPermissions) {
         return validationRules.stream()
                 .filter(rule -> rule.getPermissions() == NO_PERMISSIONS
-                        ||rule.getPermissions().validate(userPermissions.getValues()))
-                .filter(rule -> allConstraintsAreMet(rule.getConditionsTopGroup(), object))
+                        || rule.getPermissions().validate(userPermissions.getValues()))
+                .filter(rule -> allConditionsAreMet(rule.getConditionsTopGroup(), thisEntity, thatEntity))
                 .toList();
     }
 
@@ -252,7 +254,7 @@ public class Validator {
         String propertyKey = "";
         for (final String propertyPart : propertyParts) {
             GetterInfo getterInfo;
-            if (!IndexedPropertyHelper.getIndexInfo(propertyPart).isPresent()) {
+            if (IndexedPropertyHelper.getIndexInfo(propertyPart).isEmpty()) {
                 // process simple property
                 getterInfo = createGetterInfoForSimpleProperty(propertyPart, propertyPartClass);
             } else {
@@ -426,14 +428,14 @@ public class Validator {
     }
 
     // If groups are ANDed each group must be met, if they are ORed only one must be met.
-    private boolean allConstraintsAreMet(final ConditionsTopGroup topGroup, final Object object) {
-        if (topGroup.getConstraintsSubGroups().length == 0) {
+    private boolean allConditionsAreMet(ConditionsTopGroup topGroup, Object thisEntity, Object thatEntity) {
+        if (topGroup.getConditionsGroups().length == 0) {
             log.debug("No constraints defined -> allConstraintsAreMet = true");
             return true;
         }
-        final LogicalOperator operator = topGroup.getLogicalOperator();
-        for (final ConditionsGroup group : topGroup.getConstraintsSubGroups()) {
-            if (groupConstraintsAreMet(group, object)) {
+        LogicalOperator operator = topGroup.getLogicalOperator();
+        for (ConditionsGroup group : topGroup.getConditionsGroups()) {
+            if (groupConditionsAreMet(group, thisEntity, thatEntity)) {
                 if (operator == LogicalOperator.OR) {
                     return true;
                 }
@@ -447,17 +449,17 @@ public class Validator {
     }
 
     // All constraints of an AndGroup must be true, but only one of an OrGroup!
-    private boolean groupConstraintsAreMet(final ConditionsGroup group, final Object object) {
+    private boolean groupConditionsAreMet(ConditionsGroup group, Object thisEntity, Object thatEntity) {
         if (group instanceof ConditionsAndGroup) {
-            for (final PropConstraint constraint : group.getPropConstraints()) {
-                if (!constraintIsMet(constraint, object)) {
+            for (final ConditionConstraint constraint : group.getConstraints()) {
+                if (!conditionIsMet(constraint, thisEntity, thatEntity)) {
                     return false;
                 }
             }
             return true;
         } else if (group instanceof ConditionsOrGroup) {
-            for (final PropConstraint constraint : group.getPropConstraints()) {
-                if (constraintIsMet(constraint, object)) {
+            for (final ConditionConstraint constraint : group.getConstraints()) {
+                if (conditionIsMet(constraint, thisEntity, thatEntity)) {
                     return true;
                 }
             }
@@ -467,30 +469,98 @@ public class Validator {
         }
     }
 
-    public boolean constraintIsMet(final PropConstraint propConstraint, final Object object) {
-        String constraintProperty = propConstraint.property();
+    public boolean conditionIsMet(ConditionConstraint conditionConstraint, Object thisEntity, Object thatEntity) {
+        String constraintProperty = conditionConstraint.property();
         AggregateFunction aggregateFunction = validateAndGetTerminalAggregateFunctionIfExist(constraintProperty)
                 .orElseGet(() -> null);
         String pureProperty = constraintProperty.split("#")[0];
-        List<String> propertiesToCheck = inflatePropertyIfIndexed(pureProperty, object);
-        Constraint propertyConstraint = propConstraint.constraint();
+        Constraint propertyConstraint = conditionConstraint.constraint();
+
+        if (propertyConstraint instanceof ValueComparer valueComparer) {
+            return validateValueComparerConstraint(pureProperty, aggregateFunction, valueComparer, thisEntity,
+                    thatEntity);
+        } else {
+            return validatePropertyConstraints(pureProperty, aggregateFunction, propertyConstraint, thisEntity,
+                    thatEntity);
+        }
+    }
+
+    /**
+     * Evaluates {@code ValueComparer} constraint (i.e. {@code ValueChanged} and {@code ValueUnchanged}) by comparing
+     * {@code thisEntity} to {@code thatEntity}.
+     * For properties with index definitions (e.g. {@code "amounts[*]"}) the number of elements for both entities must
+     * be the same, except for AggregateFunctions:
+     * Let be given for example {@code "thisEntity.amounts = [1, 2, 3]"} and {@code "thatEntity.amounts = [4, 2]"}.
+     * Then a {@code ValueChanged} constraint for the property {@code "amounts[*]#sum"} is evaluated to {@code true}
+     * because the summed values are equal.
+     *
+     * @param pureProperty the property name without terminal aggregate function suffix
+     * @param aggregateFunction nullable AggregateFunction
+     * @param valueComparer ValueChanged or ValueUnchanged constraint
+     * @param thisEntity the entity that is compared to {@code thatEntity}
+     * @param thatEntity the entity that is compared to {@code thisEntity}
+     * @return {@code true} if the {@code ValueComparer} constraint is evaluated to {@code true}, otherwise
+     * {@code false}
+     */
+    boolean validateValueComparerConstraint(String pureProperty, AggregateFunction aggregateFunction,
+            ValueComparer valueComparer, Object thisEntity, Object thatEntity) {
+        List<String> thisPropertiesToCheck = inflatePropertyIfIndexed(pureProperty, thisEntity);
+        List<String> thatPropertiesToCheck = inflatePropertyIfIndexed(pureProperty, thatEntity);
         if (aggregateFunction != null) {
             switch (aggregateFunction) {
             case sum -> {
-                BigDecimal sum = sumUpPropertyValues(object, propertiesToCheck);
-                return propertyConstraint.validate(sum, object);
+                BigDecimal thisSum = sumUpPropertyValues(thisEntity, thisPropertiesToCheck);
+                BigDecimal thatSum = sumUpPropertyValues(thatEntity, thatPropertiesToCheck);
+                return valueComparer.validate(thisSum, thatSum);
             }
             case distinct -> {
-                Boolean distinct = distinctCheckForPropertyValues(object, propertiesToCheck);
-                return propertyConstraint.validate(distinct, object);
+                Boolean thisDistinct = distinctCheckForPropertyValues(thisEntity, thisPropertiesToCheck);
+                Boolean thatDistinct = distinctCheckForPropertyValues(thatEntity, thatPropertiesToCheck);
+                return valueComparer.validate(thisDistinct, thatDistinct);
+            }
+            default -> throw new IllegalArgumentException("Should not happen. Unsupported: " + aggregateFunction);
+            }
+        }
+        if (thisPropertiesToCheck.size() != thatPropertiesToCheck.size()) {
+            return valueComparer.getToken().equals(Value.TOKEN.VALUE_CHANGED.name());
+        }
+        for (String propertyToCheck : thisPropertiesToCheck) {
+            Object thisValue = getPropertyResultObject(propertyToCheck, thisEntity);
+            Object thatValue = getPropertyResultObject(propertyToCheck, thatEntity);
+            log.debug("Property '{}': this value is '{}', that value is '{}'", propertyToCheck, thisValue,
+                    thatValue);
+            if (!valueComparer.validate(thisValue, thatValue)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean validatePropertyConstraints(String pureProperty, AggregateFunction aggregateFunction,
+            Constraint propertyConstraint, Object thisEntity, Object thatEntity) {
+        List<String> propertiesToCheck = inflatePropertyIfIndexed(pureProperty, thisEntity);
+        Object targetEntity = thisEntity;
+        if (propertyConstraint instanceof ReferenceProperties<?> refConstraint
+                && (refConstraint.isOfUpdate() || refConstraint.isOfCurrent())) {
+            targetEntity = thatEntity;
+        }
+        if (aggregateFunction != null) {
+            switch (aggregateFunction) {
+            case sum -> {
+                BigDecimal sum = sumUpPropertyValues(thisEntity, propertiesToCheck);
+                return propertyConstraint.validate(sum, targetEntity);
+            }
+            case distinct -> {
+                Boolean distinct = distinctCheckForPropertyValues(thisEntity, propertiesToCheck);
+                return propertyConstraint.validate(distinct, targetEntity);
             }
             default -> throw new IllegalArgumentException("Should not happen. Unsupported: " + aggregateFunction);
             }
         } else {
             for (String propertyToCheck : propertiesToCheck) {
-                Object value = getPropertyResultObject(propertyToCheck, object);
-                log.debug("Value of property '{}' is '{}'", constraintProperty, value);
-                if (!propertyConstraint.validate(value, object)) {
+                Object value = getPropertyResultObject(propertyToCheck, thisEntity);
+                log.debug("Value of property '{}' is '{}'", pureProperty, value);
+                if (!propertyConstraint.validate(value, targetEntity)) {
                     return false;
                 }
             }
@@ -523,35 +593,12 @@ public class Validator {
     }
 
     public List<String> inflatePropertyIfIndexed(String property, Object object) {
-        List<String> propertiesToCheck = new ArrayList<>();
-        if (!IndexedPropertyHelper.isIndexedProperty(property)) {
-            propertiesToCheck.add(property);
-        } else {
-            propertiesToCheck = inflateIndexedProperty(property, object);
-        }
-        return propertiesToCheck;
+        return IndexedPropertyHelper.isIndexedProperty(property)
+                ? inflateIndexedProperty(property, object)
+                : List.of(property);
     }
 
-    private boolean propertyValuesEquals(final String property,
-            final Object originalObject,
-            final Object modifiedObject) {
-        List<String> propertiesToCheck = inflatePropertyIfIndexed(property, originalObject);
-        if (propertiesToCheck.size() != inflatePropertyIfIndexed(property, modifiedObject).size()) {
-            return false;
-        }
-        for (String propertyToCheck : propertiesToCheck) {
-            Object originalValue = getPropertyResultObject(propertyToCheck, originalObject);
-            Object modifiedValue = getPropertyResultObject(propertyToCheck, modifiedObject);
-            log.debug("Property '{}': original value is '{}', modified value is '{}'", propertyToCheck, originalValue,
-                    modifiedValue);
-            if (!Objects.equals(originalValue, modifiedValue)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    // Inflate single property with multi-index definitions to multiple properties with single-index definitions, e.g.
+    // Inflates single property with multi-index definitions to multiple properties with single-index definitions, e.g.
     // "foo.bar[0,1].zoo.baz[2-3]" ->
     // ["foo.bar[0].zoo.baz[2]", "foo.bar[0].zoo.baz[3]", "foo.bar[1].zoo.baz[2]", "foo.bar[1].zoo.baz[3]"]
     protected List<String> inflateIndexedProperty(String property, Object object) {
@@ -560,8 +607,9 @@ public class Validator {
         inflatedProperties.add("");
         String delimiter = "";
         for (final String propertyPart : propertyParts) {
-            if (IndexedPropertyHelper.isIndexedProperty(propertyPart)) {
-                final IndexInfo indexInfo = IndexedPropertyHelper.getIndexInfo(propertyPart).get();
+            Optional<IndexInfo> indexInfoOptional = IndexedPropertyHelper.getIndexInfo(propertyPart);
+            if (indexInfoOptional.isPresent()) {
+                final IndexInfo indexInfo = indexInfoOptional.get();
                 String propertyPartName = delimiter + propertyPart.substring(0, propertyPart.indexOf('['));
                 if (indexInfo.indexType() == IndexedPropertyHelper.IndexType.LIST) {
                     inflatedProperties = inflatedProperties.stream()
@@ -745,10 +793,6 @@ public class Validator {
         public String toString() {
             return "GetterInfo [method=" + method + ", returnType=" + returnType + "]";
         }
-    }
-
-    enum RulesType {
-        MANDATORY, IMMUTABLE, CONTENT, UPDATE
     }
 
 }

@@ -53,7 +53,7 @@ public class EqualsAnyRefTest {
 
     @Test
     public void validateString() {
-        EqualsAnyRef constraint = Equals.anyRef("bar.stringProp");
+        EqualsAnyRef constraint = Equals.anyRef("bar.stringProp").ofUpdate();
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("bar.stringProp", Foo.class);
         assertTrue(constraint.validate("baz", foo));
@@ -150,7 +150,24 @@ public class EqualsAnyRefTest {
     @Test
     public void serializeToJson() {
         EqualsAnyRef constraint = Equals.anyRef("bar.stringProp");
-        assertEquals(Util.doubleQuote("'type':'EQUALS_ANY_REF','values':['bar.stringProp']"), constraint.serializeToJson());
+        assertEquals(Util.doubleQuote("'type':'EQUALS_ANY_REF','values':['bar.stringProp']"),
+                constraint.serializeToJson());
+    }
+
+    @Test
+    public void serializeToJson_ofUpdate() {
+        EqualsAnyRef constraint = Equals.anyRef("bar.stringProp").ofUpdate();
+        assertEquals("""
+                "type":"EQUALS_ANY_REF","values":["bar.stringProp"],"refTarget":"UPDATE_ENTITY\"""",
+                constraint.serializeToJson());
+    }
+
+    @Test
+    public void serializeToJson_ofCurrent() {
+        EqualsAnyRef constraint = Equals.anyRef("bar.stringProp").ofCurrent();
+        assertEquals("""
+                "type":"EQUALS_ANY_REF","values":["bar.stringProp"],"refTarget":"CURRENT_ENTITY\"""",
+                constraint.serializeToJson());
     }
 
     protected static class Foo {

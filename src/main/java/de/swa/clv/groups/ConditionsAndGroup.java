@@ -1,11 +1,11 @@
 package de.swa.clv.groups;
 
-import de.swa.clv.constraints.PropConstraint;
+import de.swa.clv.constraints.ConditionConstraint;
 
 public class ConditionsAndGroup extends ConditionsGroup {
 
-    protected ConditionsAndGroup(final PropConstraint... andedPropConstraints) {
-        propConstraints = andedPropConstraints;
+    protected ConditionsAndGroup(final ConditionConstraint... andedConditionConstraints) {
+        constraints = andedConditionConstraints;
     }
 
 }

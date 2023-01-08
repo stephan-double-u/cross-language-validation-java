@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Constraint to express expectations for date periods.
  */
-public class Period extends Dates {
+public class Period extends Dates implements IsCreateConstraint, IsUpdateConstraint {
 
     public static final String DAYS_TOKEN = "PERIOD_DAYS";
 

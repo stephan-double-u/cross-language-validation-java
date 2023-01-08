@@ -10,9 +10,19 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-public interface ReferenceProperties {
+public interface ReferenceProperties<T> {
 
     Logger log = LoggerFactory.getLogger(ReferenceProperties.class);
+
+    boolean validateReferencedValue(Object valueToValidate, Object referencedValue);
+
+    T ofUpdate();
+
+    boolean isOfUpdate();
+
+    T ofCurrent();
+
+    boolean isOfCurrent();
 
     default void validateReferencedTypesOrFail(final List<Object> refProperty, final Class<?> typeClass,
             final Class<?> propertyType) {
@@ -41,8 +51,6 @@ public interface ReferenceProperties {
         }
         return valueRefType;
     }
-
-    boolean validateReferencedValue(Object valueToValidate, Object referencedValue);
 
     default boolean validateReferencedProperty(String refProperty, Object valueToValidate, Object constraintObject) {
         AggregateFunction aggregateFunction = Validator.instance().validateAndGetTerminalAggregateFunctionIfExist(
