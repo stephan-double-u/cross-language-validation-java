@@ -20,9 +20,9 @@ public class PeriodTest {
     }
 
     @Test
-    public void validateNullObjectToTrue() {
+    public void validateNullObjectToFalse() {
         Dates dates = Period.minDays(0);
-        assertTrue(dates.validate(null, null));
+        assertFalse(dates.validate(null, null));
     }
 
     @Test

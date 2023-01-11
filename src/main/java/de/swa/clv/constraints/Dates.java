@@ -63,11 +63,11 @@ abstract class Dates extends Constraint {
     @Override
     public boolean validate(final Object dateObject, final Object ignored) {
         if (dateObject == null) {
-            return true;
+            return false;
         }
         Integer minDays = (Integer) getValues().get(0);
         Integer maxDays = (Integer) getValues().get(1);
-        // WTF? -> swap positive 'past days' values into matching negative values for easier validation
+        // swap positive 'past days' values into matching negative values for easier validation
         // e.g. Past.minMaxDays(1,3) is the same as Period.minMaxDays(-3,-1)
         if (getToken().equals(Past.DAYS_TOKEN)) {
             Integer minDaysCopy = minDays;

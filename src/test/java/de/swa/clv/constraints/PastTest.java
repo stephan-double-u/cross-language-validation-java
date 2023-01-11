@@ -42,9 +42,9 @@ public class PastTest {
     }
 
     @Test
-    public void validateNullObjectToTrue() {
+    public void validateNullObjectToFalse() {
         Dates dates = Past.minDays(0);
-        assertTrue(dates.validate(null, null));
+        assertFalse(dates.validate(null, null));
     }
 
     @Test
