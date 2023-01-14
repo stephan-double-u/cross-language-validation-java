@@ -39,7 +39,7 @@ class YearAny extends Year implements IsCreateConstraint, IsUpdateConstraint {
         LocalDateTime dateAsLocalDateTime = getAsLocalDateTime(dateToValidate);
 
         final boolean match = getValues().stream()
-                .anyMatch(value -> Equals.equalsUntyped(dateAsLocalDateTime.getYear(), value));
+                .anyMatch(value -> EqualsConstraint.equalsUntyped(dateAsLocalDateTime.getYear(), value));
         log.debug("'{}' is{}" + " within one year of {}", dateToValidate, (match ? "" : " NOT"), getValues());
         return match;
     }

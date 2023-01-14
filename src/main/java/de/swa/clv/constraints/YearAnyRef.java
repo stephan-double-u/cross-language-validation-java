@@ -41,7 +41,7 @@ public class YearAnyRef extends DatesRef implements IsCreateConstraint, IsUpdate
     @Override
     public boolean validateReferencedValue(Object dateToValidate, Object value) {
         LocalDateTime dateAsLocalDateTime = getAsLocalDateTime(dateToValidate);
-        return Equals.equalsUntyped(dateAsLocalDateTime.getYear(), value);
+        return EqualsConstraint.equalsUntyped(dateAsLocalDateTime.getYear(), value);
     }
 
     @Override

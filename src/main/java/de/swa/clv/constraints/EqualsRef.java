@@ -1,6 +1,6 @@
 package de.swa.clv.constraints;
 
-abstract class EqualsRef extends Equals {
+abstract class EqualsRef extends EqualsConstraint {
 
     private boolean ofUpdate = false;
     private boolean ofCurrent = false;
@@ -11,7 +11,7 @@ abstract class EqualsRef extends Equals {
     }
 
     public boolean validateReferencedValue(Object objectToValidate, Object value) {
-        return Equals.equalsUntyped(objectToValidate, value);
+        return equalsUntyped(objectToValidate, value);
     }
 
     public boolean isOfUpdate() {

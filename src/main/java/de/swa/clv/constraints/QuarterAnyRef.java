@@ -43,7 +43,7 @@ public class QuarterAnyRef extends DatesRef implements IsCreateConstraint, IsUpd
     public boolean validateReferencedValue(Object dateToValidate, Object value) {
         LocalDateTime dateAsLocalDateTime = getAsLocalDateTime(dateToValidate);
         Integer dateQuarter = dateAsLocalDateTime.get(IsoFields.QUARTER_OF_YEAR);
-        return Equals.equalsUntyped(dateQuarter, value);
+        return EqualsConstraint.equalsUntyped(dateQuarter, value);
     }
 
     @Override

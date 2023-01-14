@@ -5,7 +5,7 @@ import java.io.Serializable;
 import static de.swa.clv.json.JsonUtil.asKey;
 import static de.swa.clv.json.JsonUtil.quoted;
 
-class EqualsNotNull extends Equals implements IsCreateConstraint, IsUpdateConstraint {
+class EqualsNotNull extends EqualsConstraint implements IsCreateConstraint, IsUpdateConstraint {
 
     EqualsNotNull() {
     }

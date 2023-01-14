@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 
-class EqualsNone extends Equals implements IsCreateConstraint, IsUpdateConstraint {
+class EqualsNone extends EqualsConstraint implements IsCreateConstraint, IsUpdateConstraint {
 
     private static final Logger log = LoggerFactory.getLogger(EqualsNone.class);
 
@@ -48,7 +48,7 @@ class EqualsNone extends Equals implements IsCreateConstraint, IsUpdateConstrain
             return doesNullEqualsTrue();
         }
         final boolean match = getValues().stream()
-                .anyMatch(value -> Equals.equalsUntyped(objectToValidate, value));
+                .anyMatch(value -> equalsUntyped(objectToValidate, value));
         log.debug("'{}' does{}" + " equals one of {}{}", objectToValidate, (match ? "" : " not"), getValues(),
                 (match ? " (but should not)" : ""));
         return !match;

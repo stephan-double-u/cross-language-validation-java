@@ -41,7 +41,7 @@ class QuarterAny extends Quarter implements IsCreateConstraint, IsUpdateConstrai
         Integer dateQuarter = dateAsLocalDateTime.get(IsoFields.QUARTER_OF_YEAR);
 
         final boolean match = getValues().stream()
-                .anyMatch(value -> Equals.equalsUntyped(dateQuarter, value));
+                .anyMatch(value -> EqualsConstraint.equalsUntyped(dateQuarter, value));
         log.debug("'{}' is{}" + " within one quarter of {}", dateToValidate, (match ? "" : " NOT"), getValues());
         return match;
     }
