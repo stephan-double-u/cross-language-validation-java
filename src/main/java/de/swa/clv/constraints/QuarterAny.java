@@ -9,7 +9,7 @@ import java.time.temporal.IsoFields;
 /**
  * Constraint to express expectations for date quarters.
  */
-class QuarterAny extends Quarter implements IsCreateConstraint, IsUpdateConstraint {
+class QuarterAny extends QuarterConstraint implements IsCreateConstraint, IsUpdateConstraint {
 
     private static final Logger log = LoggerFactory.getLogger(QuarterAny.class);
 

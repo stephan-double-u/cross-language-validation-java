@@ -1,14 +1,5 @@
 package de.swa.clv.constraints;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-
-import static de.swa.clv.json.JsonUtil.*;
-
 public abstract class Year extends Dates {
 
     public static YearAny any(Integer... years) {
@@ -29,11 +20,6 @@ public abstract class Year extends Dates {
     public static YearAnyRef anyRefOrNull(String ... properties) {
         assertValuesAndSizeOk(properties);
         return new YearAnyRef(true, properties);
-    }
-
-    @Override
-    public String serializeToJson() {
-        return serializeToJsonAsValuesArray();
     }
 
 }

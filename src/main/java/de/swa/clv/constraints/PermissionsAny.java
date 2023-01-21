@@ -20,7 +20,7 @@ public class PermissionsAny extends Permissions {
     }
 
     @Override
-    public boolean validate(final List<Object> userPermissions) {
+    public boolean validate(List<Object> userPermissions) {
         final boolean match = getValues().stream()
                 .anyMatch(userPermissions::contains);
         log.debug("'" + userPermissions + "' does" + (match ? "" : " NOT") + " equals any of " + getValues());

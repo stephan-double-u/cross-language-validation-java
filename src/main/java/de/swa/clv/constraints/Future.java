@@ -10,7 +10,8 @@ public class Future extends Dates implements IsCreateConstraint, IsUpdateConstra
 
     private static final String DAYS_TOKEN = "FUTURE_DAYS";
 
-    private Future(final List<Object> values) {
+    private Future(boolean nullEqualsTrue, List<Object> values) {
+        setNullEqualsTrue(nullEqualsTrue);
         setValues(values);
     }
 
@@ -32,15 +33,23 @@ public class Future extends Dates implements IsCreateConstraint, IsUpdateConstra
      * <p/>
      */
     public static Future minDays(int minDays) {
-        return newFuture(minDays, null);
+        return newFuture(false, minDays, null);
+    }
+
+    public static Future minDaysOrNull(int minDays) {
+        return newFuture(true, minDays, null);
     }
 
     public static Future minMaxDays(int minDays, int maxDays) {
-        return newFuture(minDays, maxDays);
+        return newFuture(false, minDays, maxDays);
     }
 
-    private static Future newFuture(int minDays, Integer maxDays) {
-        final Future constraint = new Future(Arrays.asList(minDays, maxDays));
+    public static Future minMaxDaysOrNull(int minDays, int maxDays) {
+        return newFuture(true, minDays, maxDays);
+    }
+
+    private static Future newFuture(boolean nullEqualsTrue, int minDays, Integer maxDays) {
+        Future constraint = new Future(nullEqualsTrue, Arrays.asList(minDays, maxDays));
         constraint.validateValuesOrFail(null, null);
         return constraint;
     }

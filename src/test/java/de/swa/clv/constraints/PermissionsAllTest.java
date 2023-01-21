@@ -6,45 +6,45 @@ import org.junit.jupiter.api.Test;
 import static de.swa.clv.constraints.Constraint.NULL_VALUE_ERR_MESSAGE;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class PermissionsAllTest {
+class PermissionsAllTest {
 
     @Test
-    public void exceptionIfStringIsNull() {
+    void exceptionIfStringIsNull() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Permissions.all("ONE", null));
         assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void exceptionIfEnumIsNull() {
+    void exceptionIfEnumIsNull() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Permissions.all(SomeEnum.ONE, null));
         assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void validateEnumsVsStrings_true() {
+    void validateEnumsVsStrings_true() {
         PermissionsAll all = Permissions.all(SomeEnum.ONE, OtherEnum.FOO);
         UserPermissions userPermissions = UserPermissions.of("FOO", "ONE", "TWO");
         assertTrue(all.validate(userPermissions.getValues()));
     }
 
     @Test
-    public void validateEnumsVsStrings_false() {
+    void validateEnumsVsStrings_false() {
         PermissionsAll all = Permissions.all(SomeEnum.ONE, OtherEnum.FOO);
         UserPermissions userPermissions = UserPermissions.of("FOO");
         assertFalse(all.validate(userPermissions.getValues()));
     }
 
     @Test
-    public void validateStringsVsEnums_true() {
+    void validateStringsVsEnums_true() {
         PermissionsAll all = Permissions.all("FOO", "ONE");
         UserPermissions userPermissions = UserPermissions.of(SomeEnum.ONE, OtherEnum.FOO, OtherEnum.BAR);
         assertTrue(all.validate(userPermissions.getValues()));
     }
 
     @Test
-    public void validateStringsVsEnums_false() {
+    void validateStringsVsEnums_false() {
         PermissionsAll all = Permissions.all( "FOO", "BAR");
         UserPermissions userPermissions = UserPermissions.of(OtherEnum.BAR);
         assertFalse(all.validate(userPermissions.getValues()));

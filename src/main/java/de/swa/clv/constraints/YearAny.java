@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 /**
  * Constraint to express expectations about the year of a date property.
  */
-class YearAny extends Year implements IsCreateConstraint, IsUpdateConstraint {
+class YearAny extends YearConstraint implements IsCreateConstraint, IsUpdateConstraint {
 
     private static final Logger log = LoggerFactory.getLogger(YearAny.class);
 

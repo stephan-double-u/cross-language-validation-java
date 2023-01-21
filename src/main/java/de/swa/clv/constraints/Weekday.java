@@ -82,12 +82,8 @@ public class Weekday extends Dates implements IsCreateConstraint, IsUpdateConstr
 
     @Override
     public String serializeToJson() {
-        String nullEqualsToJson = "";
-        // Serialize "nullEqualsTo" key only for non-default value 'true',
-        if (doesNullEqualsTrue()) {
-            nullEqualsToJson = "," + asKey("nullEqualsTo") + true;
-        }
         String valuesJson = "," + asKey("values") + asArray(getValues());
+        String nullEqualsToJson = getJsonForNullEqualsTrue(false);
         return asKey("type") + quoted(getToken()) + valuesJson + nullEqualsToJson;
     }
 

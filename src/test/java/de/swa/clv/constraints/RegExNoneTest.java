@@ -7,52 +7,70 @@ import static de.swa.clv.test.Util.doubleQuote;
 import static java.lang.Boolean.TRUE;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class RegExNoneTest {
+class RegExNoneTest {
 
     private static RegExNone regEx = RegEx.none("bar", "(?i)[o]{2}", "^[0-7]+$", "\\p{N}");
+    private static RegExNone regExNorNull = RegEx.noneNorNull("bar");
 
     @Test
-    public void exceptionIfRegExIsNull() {
+    void exceptionIfRegExIsNull() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> RegEx.none("[a-c]+.", null));
         assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void unsupportedType() {
+    void unsupportedType() {
         assertThrows(IllegalArgumentException.class,
                 () -> regEx.validate(TRUE, null));
     }
 
     @Test
-    public void stringMatchFirstRegEx() {
+    void stringMatchFirstRegEx() {
         assertFalse(regEx.validate("foobarzoo", null));
     }
 
     @Test
-    public void stringMatchSecondRegEx() {
+    void stringMatchSecondRegEx() {
         assertFalse(regEx.validate("fOOzOO", null));
     }
 
     @Test
-    public void enumMatchSecondRegEx() {
+    void enumMatchSecondRegEx() {
         assertFalse(regEx.validate(FooBarZoo.ZOO, null));
     }
 
     @Test()
-    public void numberMatchThirdRegEx() {
+    void numberMatchThirdRegEx() {
         assertFalse(regEx.validate(1234567, null));
     }
 
     @Test
-    public void noRegExMatch() {
+    void noRegExMatch() {
         assertTrue(regEx.validate("something", null));
     }
 
     @Test
-    public void serializeToJson() {
-        assertEquals(doubleQuote("'type':'REGEX_NONE','values':['bar','(?i)[o]{2}','^[0-7]+$','\\\\p{N}']"),
+    void nullValueFalse() {
+        assertFalse(regExNorNull.validate(null, null));
+    }
+
+    @Test
+    void nullValueTrue() {
+        assertFalse(regEx.validate(null, null));
+    }
+
+    @Test
+    void serializeToJson() {
+        assertEquals("""
+                "type":"REGEX_NONE","values":["bar","(?i)[o]{2}","^[0-7]+$","\\\\p{N}"],"nullEqualsTo":true""",
                 regEx.serializeToJson());
+    }
+
+    @Test
+    void serializeToJsonNorNull() {
+        assertEquals("""
+                "type":"REGEX_NONE","values":["bar"]""", regExNorNull.serializeToJson());
     }
 
     enum FooBarZoo {

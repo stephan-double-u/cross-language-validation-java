@@ -12,47 +12,47 @@ import static de.swa.clv.constraints.Constraint.EMPTY_VALUES_ERR_MESSAGE;
 import static de.swa.clv.constraints.Constraint.NULL_VALUE_ERR_MESSAGE;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class EqualsAnyRefTest {
+class EqualsAnyRefTest {
 
     private static Foo foo = new Foo(new Bar("baz", Enum.ABC, (short) 1, true,
             LocalDate.of(2000, Month.JANUARY, 1),
             new Date(LocalDate.of(2000, Month.JANUARY, 1).toEpochDay())));
 
     @Test
-    public void nullNotAllowed() {
+    void nullNotAllowed() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 Equals::anyRef);
         assertEquals(EMPTY_VALUES_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void noValuesNotAllowed() {
+    void noValuesNotAllowed() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Equals.anyRef((String) null));
         assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void nullValuesNotAllowed() {
+    void nullValuesNotAllowed() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Equals.anyRef(null, "someProp"));
         assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void validateAnyRefVsNull() {
+    void validateAnyRefVsNull() {
         EqualsAnyRef constraint = Equals.anyRef("bar.stringProp");
         assertFalse(constraint.validate(null, foo));
     }
 
     @Test
-    public void validateAnyRefOrNullVsNull() {
+    void validateAnyRefOrNullVsNull() {
         EqualsAnyRef constraint = Equals.anyRefOrNull("bar.stringProp");
         assertTrue(constraint.validate(null, foo));
     }
 
     @Test
-    public void validateString() {
+    void validateString() {
         EqualsAnyRef constraint = Equals.anyRef("bar.stringProp").ofUpdate();
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("bar.stringProp", Foo.class);
@@ -60,7 +60,7 @@ public class EqualsAnyRefTest {
     }
 
     @Test
-    public void validateStringVsEnum() {
+    void validateStringVsEnum() {
         EqualsAnyRef constraint = Equals.anyRef("bar.enumProp");
         // Validating caches the getEnumProp() method!
         Validator.instance().validateProperty("bar.enumProp", Foo.class);
@@ -68,7 +68,7 @@ public class EqualsAnyRefTest {
     }
 
     @Test
-    public void validateEnumVsEnum() {
+    void validateEnumVsEnum() {
         EqualsAnyRef constraint = Equals.anyRef("bar.enumProp");
         // Validating caches the getEnumProp() method!
         Validator.instance().validateProperty("bar.enumProp", Foo.class);
@@ -76,7 +76,7 @@ public class EqualsAnyRefTest {
     }
 
     @Test
-    public void validateNumber() {
+    void validateNumber() {
         EqualsAnyRef constraint = Equals.anyRef("bar.intProp");
         // Validating caches the getIntProp() method!
         Validator.instance().validateProperty("bar.intProp", Foo.class);
@@ -84,7 +84,7 @@ public class EqualsAnyRefTest {
     }
 
     @Test
-    public void validateBoolean() {
+    void validateBoolean() {
         EqualsAnyRef constraint = Equals.anyRef("bar.booleanProp");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("bar.booleanProp", Foo.class);
@@ -92,7 +92,7 @@ public class EqualsAnyRefTest {
     }
 
     @Test
-    public void validateLocalDate() {
+    void validateLocalDate() {
         EqualsAnyRef constraint = Equals.anyRef("bar.localDateProp");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("bar.localDateProp", Foo.class);
@@ -100,7 +100,7 @@ public class EqualsAnyRefTest {
     }
 
     @Test
-    public void validateLocalDateFail() {
+    void validateLocalDateFail() {
         EqualsAnyRef constraint = Equals.anyRef("bar.localDateProp");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("bar.localDateProp", Foo.class);
@@ -108,7 +108,7 @@ public class EqualsAnyRefTest {
     }
 
     @Test
-    public void validatelDate() {
+    void validatelDate() {
         EqualsAnyRef constraint = Equals.anyRef("bar.dateProp");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("bar.dateProp", Foo.class);
@@ -116,7 +116,7 @@ public class EqualsAnyRefTest {
     }
 
     @Test
-    public void validateDateFail() {
+    void validateDateFail() {
         EqualsAnyRef constraint = Equals.anyRef("bar.dateProp");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("bar.dateProp", Foo.class);
@@ -124,7 +124,7 @@ public class EqualsAnyRefTest {
     }
 
     @Test
-    public void validateIndexedProperty() {
+    void validateIndexedProperty() {
         EqualsAnyRef constraint = Equals.anyRef("enum2Prop.nestedEnums[*]");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("enum2Prop.nestedEnums[*]", Foo.class);
@@ -132,7 +132,7 @@ public class EqualsAnyRefTest {
     }
 
     @Test
-    public void validateIndexedPropertyFail() {
+    void validateIndexedPropertyFail() {
         EqualsAnyRef constraint = Equals.anyRef("enum2Prop.nestedEnums[*]");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("enum2Prop.nestedEnums[*]", Foo.class);
@@ -140,7 +140,7 @@ public class EqualsAnyRefTest {
     }
 
     @Test
-    public void validateNoIndexedPropertyFail() {
+    void validateNoIndexedPropertyFail() {
         EqualsAnyRef constraint = Equals.anyRef("enum2Prop.nestedEnums[*]");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("enum2Prop.nestedEnums[*]", Foo.class);
@@ -148,14 +148,22 @@ public class EqualsAnyRefTest {
     }
 
     @Test
-    public void serializeToJson() {
-        EqualsAnyRef constraint = Equals.anyRef("bar.stringProp");
-        assertEquals(Util.doubleQuote("'type':'EQUALS_ANY_REF','values':['bar.stringProp']"),
+    void serializeToJsonOrNull() {
+        EqualsAnyRef constraint = Equals.anyRefOrNull("bar.stringProp");
+        assertEquals("""
+                "type":"EQUALS_ANY_REF","values":["bar.stringProp"],"nullEqualsTo":true""",
                 constraint.serializeToJson());
     }
 
     @Test
-    public void serializeToJson_ofUpdate() {
+    void serializeToJson() {
+        EqualsAnyRef constraint = Equals.anyRef("bar.stringProp");
+        assertEquals("""
+                "type":"EQUALS_ANY_REF","values":["bar.stringProp"]""", constraint.serializeToJson());
+    }
+
+    @Test
+    void serializeToJson_ofUpdate() {
         EqualsAnyRef constraint = Equals.anyRef("bar.stringProp").ofUpdate();
         assertEquals("""
                 "type":"EQUALS_ANY_REF","values":["bar.stringProp"],"refTarget":"UPDATE_ENTITY\"""",
@@ -163,7 +171,7 @@ public class EqualsAnyRefTest {
     }
 
     @Test
-    public void serializeToJson_ofCurrent() {
+    void serializeToJson_ofCurrent() {
         EqualsAnyRef constraint = Equals.anyRef("bar.stringProp").ofCurrent();
         assertEquals("""
                 "type":"EQUALS_ANY_REF","values":["bar.stringProp"],"refTarget":"CURRENT_ENTITY\"""",

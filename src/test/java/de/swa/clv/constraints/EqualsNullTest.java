@@ -8,23 +8,23 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class EqualsNullTest {
+class EqualsNullTest {
 
     EqualsNull null_ = Equals.null_();
 
     @Test
-    public void isSupportedType_Serializable() {
+    void isSupportedType_Serializable() {
         assertTrue(null_.isSupportedType(UUID.class));
     }
 
     @Test
-    public void validateUuidIsNull() {
+    void validateUuidIsNull() {
         UUID uiid = null;
         assertTrue(null_.validate(uiid, null));
     }
 
     @Test
-    public void serializeToJson() {
+    void serializeToJson() {
         assertEquals(Util.doubleQuote("'type':'EQUALS_NULL'"), null_.serializeToJson());
     }
 

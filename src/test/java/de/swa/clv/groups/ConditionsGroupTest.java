@@ -5,16 +5,16 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ConditionsGroupTest {
+class ConditionsGroupTest {
 
     @Test
-    public void serializeAndGroup() {
+    void serializeAndGroup() {
         String json = new ConditionsAndGroup().serializeToJson();
         assertEquals(Util.doubleQuote("{'operator':'AND','conditions':[]}"), json);
     }
 
     @Test
-    public void serializeOrGroup() {
+    void serializeOrGroup() {
         String json = new ConditionsOrGroup().serializeToJson();
         assertEquals(Util.doubleQuote("{'operator':'OR','conditions':[]}"), json);
     }

@@ -33,7 +33,7 @@ import ch.qos.logback.core.read.ListAppender;
 import static de.swa.clv.ValidationRules.SCHEMA_VERSION;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ValidationRulesTest {
+class ValidationRulesTest {
 
     private static final String SCHEMA_VERSION_JSON = Util.doubleQuote("{'schemaVersion':'" + SCHEMA_VERSION + "',");
 

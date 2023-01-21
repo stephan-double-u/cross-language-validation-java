@@ -25,7 +25,7 @@ public class ValidationTesting {
         ValidationTesting validationTesting = new ValidationTesting();
         validationTesting.test();
     }
-    public void test() {
+    void test() {
         final ValidationRules<Reservation> rules = new ValidationRules<>(Reservation.class);
 
         rules.mandatory("customer",

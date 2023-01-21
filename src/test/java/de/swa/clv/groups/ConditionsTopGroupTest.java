@@ -7,16 +7,16 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ConditionsTopGroupTest {
+class ConditionsTopGroupTest {
 
     @Test
-    public void serializeEmpty() {
+    void serializeEmpty() {
         ConditionsTopGroup topGroup = ConditionsTopGroup.AND();
         assertEquals("",topGroup.serializeToJson());
     }
 
     @Test
-    public void serializeToJson_singleCondition() {
+    void serializeToJson_singleCondition() {
         ConditionsTopGroup topGroup = ConditionsTopGroup.AND(
                 ConditionsGroup.OR(
                         Condition.of("prop2", Equals.any("BAR")))
@@ -28,7 +28,7 @@ public class ConditionsTopGroupTest {
     }
 
     @Test
-    public void serializeToJson_singleSubGroup() {
+    void serializeToJson_singleSubGroup() {
         ConditionsTopGroup topGroup = ConditionsTopGroup.AND(
                 ConditionsGroup.OR(
                         Condition.of("prop1", Equals.any("FOO")),
@@ -43,7 +43,7 @@ public class ConditionsTopGroupTest {
     }
 
     @Test
-    public void serializeToJson_topGroup() {
+    void serializeToJson_topGroup() {
         ConditionsTopGroup topGroup = ConditionsTopGroup.AND(
                 ConditionsGroup.OR(
                         Condition.of("prop1", Equals.any("FOO")),

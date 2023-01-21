@@ -8,22 +8,22 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class EqualsNotNullTest {
+class EqualsNotNullTest {
 
     EqualsNotNull notNull = Equals.notNull();
 
     @Test
-    public void isSupportedType_Serializable() {
+    void isSupportedType_Serializable() {
         assertTrue(notNull.isSupportedType(UUID.class));
     }
 
     @Test
-    public void validateUuidIsNotNull() {
+    void validateUuidIsNotNull() {
         UUID uiid = UUID.randomUUID();
         assertTrue(notNull.validate(uiid, null));
     }
     @Test
-    public void serializeToJson() {
+    void serializeToJson() {
         assertEquals(Util.doubleQuote("'type':'EQUALS_NOT_NULL'"), notNull.serializeToJson());
     }
 

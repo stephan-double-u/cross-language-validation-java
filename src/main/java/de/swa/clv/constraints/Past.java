@@ -10,7 +10,8 @@ public class Past extends Dates implements IsCreateConstraint, IsUpdateConstrain
 
     public static final String DAYS_TOKEN = "PAST_DAYS";
 
-    private Past(final List<Object> values) {
+    public Past(boolean nullEqualsTrue, List<Object> values) {
+        setNullEqualsTrue(nullEqualsTrue);
         setValues(values);
     }
 
@@ -32,15 +33,23 @@ public class Past extends Dates implements IsCreateConstraint, IsUpdateConstrain
      * <p/>
      */
     public static Past minDays(int minDays) {
-        return newPast(minDays, null);
+        return newPast(false, minDays, null);
+    }
+
+    public static Past minDaysOrNull(int minDays) {
+        return newPast(true, minDays, null);
     }
 
     public static Past minMaxDays(int minDays, int maxDays) {
-        return newPast(minDays, maxDays);
+        return newPast(false, minDays, maxDays);
     }
 
-    private static Past newPast(int minDays, Integer maxDays) {
-        final Past constraint = new Past(Arrays.asList(minDays, maxDays));
+    public static Past minMaxDaysOrNull(int minDays, int maxDays) {
+        return newPast(true, minDays, maxDays);
+    }
+
+    private static Past newPast(boolean nullEqualsTrue, int minDays, Integer maxDays) {
+        Past constraint = new Past(nullEqualsTrue, Arrays.asList(minDays, maxDays));
         constraint.validateValuesOrFail(null, null);
         return constraint;
     }

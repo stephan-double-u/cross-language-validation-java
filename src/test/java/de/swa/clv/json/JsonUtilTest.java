@@ -8,45 +8,45 @@ import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class JsonUtilTest {
+class JsonUtilTest {
 
     @Test
-    public void asObject() {
+    void asObject() {
         assertEquals("{x}", JsonUtil.asObject("x"));
     }
 
     @Test
-    public void asKey() {
+    void asKey() {
         assertEquals("\"x\":", JsonUtil.asKey("x"));
     }
 
     @Test
-    public void quoted() {
+    void quoted() {
         assertEquals("\"x\"", JsonUtil.quoted("x"));
     }
 
     @Test
-    public void asArray() {
+    void asArray() {
         assertEquals("[x]", JsonUtil.asArray("x"));
     }
 
     @Test
-    public void asArrayFromStrings() {
+    void asArrayFromStrings() {
         assertEquals("[\"x\",\"y\"]", JsonUtil.asArray(Arrays.asList("x", "y")));
     }
 
     @Test
-    public void asArrayFromEnums() {
+    void asArrayFromEnums() {
         assertEquals("[\"BLOB\"]", JsonUtil.asArray(Arrays.asList(JDBCType.BLOB)));
     }
 
     @Test
-    public void asArrayFromNumbers() {
+    void asArrayFromNumbers() {
         assertEquals("[1,2.0,3]", JsonUtil.asArray(Arrays.asList(1, 2d, 3L)));
     }
 
     @Test
-    public void asArrayFromDates() {
+    void asArrayFromDates() {
         assertEquals("[\"2019-12-31\"]", JsonUtil.asArray(Arrays.asList(LocalDate.of(2019, 12, 31))));
     }
 

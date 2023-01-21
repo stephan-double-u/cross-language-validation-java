@@ -10,7 +10,8 @@ public class Period extends Dates implements IsCreateConstraint, IsUpdateConstra
 
     public static final String DAYS_TOKEN = "PERIOD_DAYS";
 
-    private Period(final List<Object> values) {
+    private Period(boolean nullEqualsTrue, List<Object> values) {
+        setNullEqualsTrue(nullEqualsTrue);
         setValues(values);
     }
 
@@ -32,19 +33,31 @@ public class Period extends Dates implements IsCreateConstraint, IsUpdateConstra
      * <p/>
      */
     public static Period minDays(int minDays) {
-        return newPeriod(minDays, null);
+        return newPeriod(false, minDays, null);
+    }
+
+    public static Period minDaysOrNull(int minDays) {
+        return newPeriod(true, minDays, null);
     }
 
     public static Period maxDays(int maxDays) {
-        return newPeriod(null, maxDays);
+        return newPeriod(false, null, maxDays);
+    }
+
+    public static Period maxDaysOrNull(int maxDays) {
+        return newPeriod(true, null, maxDays);
     }
 
     public static Period minMaxDays(int minDays, int maxDays) {
-        return newPeriod(minDays, maxDays);
+        return newPeriod(false, minDays, maxDays);
     }
 
-    private static Period newPeriod(Integer minDays, Integer maxDays) {
-        final Period constraint = new Period(Arrays.asList(minDays, maxDays));
+    public static Period minMaxDaysOrNull(int minDays, int maxDays) {
+        return newPeriod(true, minDays, maxDays);
+    }
+
+    private static Period newPeriod(boolean nullEqualsTrue, Integer minDays, Integer maxDays) {
+        Period constraint = new Period(nullEqualsTrue, Arrays.asList(minDays, maxDays));
         constraint.validateValuesOrFail(null, null);
         return constraint;
     }

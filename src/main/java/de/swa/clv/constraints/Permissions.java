@@ -21,7 +21,7 @@ public abstract class Permissions extends ConstraintRoot {
      * @param values the permissions, {@code null} values are not allowed
      * @return a {@code PermissionsAny} object that holds the permissions
      */
-    public static PermissionsAny any(final String... values) {
+    public static PermissionsAny any(String... values) {
         if (Arrays.asList(values).contains(null)) {
             throw new IllegalArgumentException(NULL_VALUE_ERR_MESSAGE);
         }
@@ -35,7 +35,7 @@ public abstract class Permissions extends ConstraintRoot {
      * @param values the permissions, {@code null} values are not allowed
      * @return a {@code PermissionsAny} object that holds the permissions
      */
-    public static PermissionsAny any(final Enum<?>... values) {
+    public static PermissionsAny any(Enum<?>... values) {
         if (Arrays.asList(values).contains(null)) {
             throw new IllegalArgumentException(NULL_VALUE_ERR_MESSAGE);
         }
@@ -49,7 +49,7 @@ public abstract class Permissions extends ConstraintRoot {
      * @param values the permissions, {@code null} values are not allowed
      * @return a {@code PermissionsAny} object that holds the permissions
      */
-    public static PermissionsAll all(final String... values) {
+    public static PermissionsAll all(String... values) {
         if (Arrays.asList(values).contains(null)) {
             throw new IllegalArgumentException(NULL_VALUE_ERR_MESSAGE);
         }
@@ -63,7 +63,7 @@ public abstract class Permissions extends ConstraintRoot {
      * @param values the permissions, {@code null} values are not allowed
      * @return a {@code PermissionsAny} object that holds the permissions
      */
-    public static PermissionsAll all(final Enum<?>... values) {
+    public static PermissionsAll all(Enum<?>... values) {
         if (Arrays.asList(values).contains(null)) {
             throw new IllegalArgumentException(NULL_VALUE_ERR_MESSAGE);
         }
@@ -77,7 +77,7 @@ public abstract class Permissions extends ConstraintRoot {
      * @param values the permissions, {@code null} values are not allowed
      * @return a {@code PermissionsAny} object that holds the permissions
      */
-    public static PermissionsNone none(final String... values) {
+    public static PermissionsNone none(String... values) {
         if (Arrays.asList(values).contains(null)) {
             throw new IllegalArgumentException(NULL_VALUE_ERR_MESSAGE);
         }
@@ -91,7 +91,7 @@ public abstract class Permissions extends ConstraintRoot {
      * @param values the permissions, {@code null} values are not allowed
      * @return a {@code PermissionsAny} object that holds the permissions
      */
-    public static PermissionsNone none(final Enum<?>... values) {
+    public static PermissionsNone none(Enum<?>... values) {
         if (Arrays.asList(values).contains(null)) {
             throw new IllegalArgumentException(NULL_VALUE_ERR_MESSAGE);
         }
@@ -100,7 +100,7 @@ public abstract class Permissions extends ConstraintRoot {
     }
 
     @Override
-    public boolean isSupportedType(final Class<?> clazz) {
+    public boolean isSupportedType(Class<?> clazz) {
         return String.class == clazz
                 || Enum.class.isAssignableFrom(clazz);
     }

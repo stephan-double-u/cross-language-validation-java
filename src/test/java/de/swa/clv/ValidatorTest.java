@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -354,28 +355,14 @@ class ValidatorTest {
         assertEquals(1, rules.getContentRulesKeys().size());
     }
 
-    @Test
-    void validateContentRules_integer_distinct_EqualsAny_true() {
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "subClassArrayProp[0].integerListProp[*]#distinct",
+            "emptyStringArray[*]#distinct",
+            "nullStringArray[*]#distinct"})
+    void validateContentRules_distinct_EqualsAny_true(String propertyWithTerminalFunctionDistinct) {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
-        rules.content("subClassArrayProp[0].integerListProp[*]#distinct", Equals.any(true));
-        List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
-        assertTrue(errors.isEmpty(), errors.toString());
-        assertEquals(1, rules.getContentRulesKeys().size());
-    }
-
-    @Test
-    void validateContentRules_emptyArray_distinct_EqualsAny_true() {
-        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
-        rules.content("emptyStringArray[*]#distinct", Equals.any(true));
-        List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
-        assertTrue(errors.isEmpty(), errors.toString());
-        assertEquals(1, rules.getContentRulesKeys().size());
-    }
-
-    @Test
-    void validateContentRules_nullArray_distinct_EqualsAny_true() {
-        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
-        rules.content("nullStringArray[*]#distinct", Equals.any(true));
+        rules.content(propertyWithTerminalFunctionDistinct, Equals.any(true));
         List<String> errors = Validator.instance().validateContentRules(new ClassUnderTest(), rules);
         assertTrue(errors.isEmpty(), errors.toString());
         assertEquals(1, rules.getContentRulesKeys().size());
@@ -702,7 +689,7 @@ class ValidatorTest {
     @Test
     void updateRuleConditionConstraint_ofUpdate() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
-        rules.update("stringProp", 
+        rules.update("stringProp",
                 Equals.any("BAR"),
                 Condition.of("stringProp", Equals.noneRef("stringProp").ofUpdate()));
 
@@ -936,7 +923,7 @@ class ValidatorTest {
             return floatArray;
         }
 
-        public void setFloatArray(float[] floatArray) {
+        void setFloatArray(float[] floatArray) {
             this.floatArray = floatArray;
         }
 

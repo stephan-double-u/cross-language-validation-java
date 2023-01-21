@@ -1,16 +1,19 @@
 package de.swa.clv.constraints;
 
 import de.swa.clv.util.TypeHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
-import static de.swa.clv.json.JsonUtil.asKey;
-import static de.swa.clv.json.JsonUtil.quoted;
+import static de.swa.clv.json.JsonUtil.*;
 
 public class Range extends Constraint implements IsCreateConstraint, IsUpdateConstraint {
+
+    private static final Logger log = LoggerFactory.getLogger(Range.class);
 
     private static final String TYPE = "RANGE";
 
@@ -23,7 +26,10 @@ public class Range extends Constraint implements IsCreateConstraint, IsUpdateCon
      */
     public static final long MIN_SAVE_INTEGER_JAVASCRIPT = -((1L << 53) - 1);
 
-    private Range() {
+    private Range(boolean nullEqualsTrue, Object minValue, Object maxValue) {
+        setNullEqualsTrue(nullEqualsTrue);
+        setValues(Arrays.asList(minValue, maxValue));
+        validateValuesOrFail(null, null);
     }
 
     /**
@@ -40,7 +46,12 @@ public class Range extends Constraint implements IsCreateConstraint, IsUpdateCon
      */
     public static <T extends Number & Comparable<T>> Range min(final T minValue) {
         validateNotNull(minValue, minValue);
-        return newRange(minValue, null);
+        return new Range(false, minValue, null);
+    }
+
+    public static <T extends Number & Comparable<T>> Range minOrNull(final T minValue) {
+        validateNotNull(minValue, minValue);
+        return new Range(true, minValue, null);
     }
 
     /**
@@ -57,7 +68,12 @@ public class Range extends Constraint implements IsCreateConstraint, IsUpdateCon
      */
     public static <T extends Number & Comparable<T>> Range max(final T maxValue) {
         validateNotNull(maxValue, maxValue);
-        return newRange(null, maxValue);
+        return new Range(false, null, maxValue);
+    }
+
+    public static <T extends Number & Comparable<T>> Range maxOrNull(final T maxValue) {
+        validateNotNull(maxValue, maxValue);
+        return new Range(true, null, maxValue);
     }
 
     /**
@@ -76,47 +92,75 @@ public class Range extends Constraint implements IsCreateConstraint, IsUpdateCon
      */
     public static <T extends Number & Comparable<T>> Range minMax(final T minValue, final T maxValue) {
         validateNotNull(minValue, maxValue);
-        return newRange(minValue, maxValue);
+        return new Range(false, minValue, maxValue);
+    }
+
+    public static <T extends Number & Comparable<T>> Range minMaxOrNull(final T minValue, final T maxValue) {
+        validateNotNull(minValue, maxValue);
+        return new Range(true, minValue, maxValue);
     }
 
     public static Range min(final LocalDate minValue) {
         validateNotNull(minValue, minValue);
-        return newRange(minValue, null);
+        return new Range(false, minValue, null);
+    }
+
+    public static Range minOrNull(final LocalDate minValue) {
+        validateNotNull(minValue, minValue);
+        return new Range(true, minValue, null);
     }
 
     public static Range max(final LocalDate maxValue) {
         validateNotNull(maxValue, maxValue);
-        return newRange(null, maxValue);
+        return new Range(false, null, maxValue);
+    }
+
+    public static Range maxOrNull(final LocalDate maxValue) {
+        validateNotNull(maxValue, maxValue);
+        return new Range(true, null, maxValue);
     }
 
     public static Range minMax(final LocalDate minValue, final LocalDate maxValue) {
         validateNotNull(minValue, maxValue);
-        return newRange(minValue, maxValue);
+        return new Range(false, minValue, maxValue);
+    }
+
+    public static Range minMaxOrNull(final LocalDate minValue, final LocalDate maxValue) {
+        validateNotNull(minValue, maxValue);
+        return new Range(true, minValue, maxValue);
     }
 
     public static Range min(final LocalDateTime minValue) {
         validateNotNull(minValue, minValue);
-        return newRange(minValue, null);
+        return new Range(false, minValue, null);
+    }
+
+    public static Range minOrNull(final LocalDateTime minValue) {
+        validateNotNull(minValue, minValue);
+        return new Range(true, minValue, null);
     }
 
     public static Range max(final LocalDateTime maxValue) {
         validateNotNull(maxValue, maxValue);
-        return newRange(null, maxValue);
+        return new Range(false, null, maxValue);
+    }
+
+    public static Range maxOrNull(final LocalDateTime maxValue) {
+        validateNotNull(maxValue, maxValue);
+        return new Range(true, null, maxValue);
     }
 
     public static Range minMax(final LocalDateTime minValue, final LocalDateTime maxValue) {
         validateNotNull(minValue, maxValue);
-        return newRange(minValue, maxValue);
+        return new Range(false, minValue, maxValue);
     }
 
-    private static <T extends Number & Comparable<T>> Range newRange(Object minValue, Object maxValue) {
-        final Range constraint = new Range();
-        constraint.setValues(Arrays.asList(minValue, maxValue));
-        constraint.validateValuesOrFail(null, null);
-        return constraint;
+    public static Range minMaxOrNull(final LocalDateTime minValue, final LocalDateTime maxValue) {
+        validateNotNull(minValue, maxValue);
+        return new Range(true, minValue, maxValue);
     }
 
-    private static <T extends Number & Comparable<T>> void validateNotNull(Object minValue, Object maxValue) {
+    private static void validateNotNull(Object minValue, Object maxValue) {
         if (minValue == null || maxValue == null) {
             throw new IllegalArgumentException(NULL_VALUE_ERR_MESSAGE);
         }
@@ -153,14 +197,15 @@ public class Range extends Constraint implements IsCreateConstraint, IsUpdateCon
     }
 
     @Override
-    public boolean validate(final Object object, final Object notRelevant) {
-        if (object == null) {
-            return false;
+    public boolean validate(final Object objectToValidate, final Object notRelevant) {
+        if (objectToValidate == null) {
+            log.debug("'Null object equals to {}", doesNullEqualsTrue());
+            return doesNullEqualsTrue();
         }
-        if (Number.class.isAssignableFrom(object.getClass())) {
-            return compareAsBigDecimal(object);
+        if (Number.class.isAssignableFrom(objectToValidate.getClass())) {
+            return compareAsBigDecimal(objectToValidate);
         } else {
-            return compareAsComparable(object);
+            return compareAsComparable(objectToValidate);
         }
     }
 
@@ -195,13 +240,13 @@ public class Range extends Constraint implements IsCreateConstraint, IsUpdateCon
 
     @Override
     public String serializeToJson() {
-        final Object min = getValues().get(0);
-        final Object max = getValues().get(1);
-        final String quote = (min instanceof LocalDate || max instanceof LocalDate) ? "\"" : "";
-        final String minJson = min != null ? asKey("min") + quote + min + quote : "";
-        final String maxJson = max != null ? asKey("max") + quote + max + quote : "";
-        final String delimiter = ("".equals(minJson) || "".equals(maxJson)) ? "" : ",";
-        return asKey("type") + quoted(TYPE) + "," + minJson + delimiter + maxJson;
+        Object min = getValues().get(0);
+        Object max = getValues().get(1);
+        String minJson = min != null ? asKey("min") + quoteIfNeeded(min) : "";
+        String maxJson = max != null ? asKey("max") + quoteIfNeeded(max) : "";
+        String delimiter = ("".equals(minJson) || "".equals(maxJson)) ? "" : ",";
+        String nullEqualsToJson = getJsonForNullEqualsTrue(false);
+        return asKey("type") + quoted(TYPE) + "," + minJson + delimiter + maxJson + nullEqualsToJson;
     }
 
     @Override

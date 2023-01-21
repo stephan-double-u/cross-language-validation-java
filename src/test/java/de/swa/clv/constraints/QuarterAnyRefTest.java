@@ -15,34 +15,34 @@ import static de.swa.clv.constraints.Constraint.NULL_VALUE_ERR_MESSAGE;
 import static de.swa.clv.constraints.Quarter.QUARTERS_ERR_MESSAGE;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class QuarterAnyRefTest {
+class QuarterAnyRefTest {
 
     public record Foo(long quarter, List<Long> integerList, String aString) {}
     static Foo foo = new Foo(1, List.of(-1L, 42L, 666L, 1L), "bar");
 
     @Test
-    public void anyValuesMustNotBeNull() {
+    void anyValuesMustNotBeNull() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 Quarter::anyRef);
         assertEquals(EMPTY_VALUES_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void anyValuesMustNotContainNulls() {
+    void anyValuesMustNotContainNulls() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Quarter.anyRef("", null));
         assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void anyOrNullValuesMustNotContainNulls() {
+    void anyOrNullValuesMustNotContainNulls() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Quarter.anyRefOrNull("", null));
         assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void unsupportedType() {
+    void unsupportedType() {
         QuarterAnyRef anyRef = Quarter.anyRef("quarter");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("quarter", Foo.class);
@@ -52,7 +52,7 @@ public class QuarterAnyRefTest {
     }
 
     @Test
-    public void unsupportedReferencedType() {
+    void unsupportedReferencedType() {
         QuarterAnyRef anyRef = Quarter.anyRef("aString");
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> anyRef.validateValuesOrFail(foo.getClass(), null));
@@ -61,19 +61,19 @@ public class QuarterAnyRefTest {
     }
 
     @Test
-    public void validateNullObjectToFalse() {
+    void validateNullObjectToFalse() {
         QuarterAnyRef any = Quarter.anyRef("whatever");
         assertFalse(any.validate(null, null));
     }
 
     @Test
-    public void validateNullObjectToTrue() {
+    void validateNullObjectToTrue() {
         QuarterAnyRef anyRef = Quarter.anyRefOrNull("whatever");
         assertTrue(anyRef.validate(null, null));
     }
 
     @Test
-    public void validateLocalDateToTrue() {
+    void validateLocalDateToTrue() {
         QuarterAnyRef anyRef = Quarter.anyRef("integerList[*]", "quarter");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("quarter", Foo.class);
@@ -81,7 +81,7 @@ public class QuarterAnyRefTest {
     }
 
     @Test
-    public void validateLocalDateToFalse() {
+    void validateLocalDateToFalse() {
         QuarterAnyRef anyRef = Quarter.anyRef("integerList[0-2]");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("quarter", Foo.class);
@@ -89,7 +89,7 @@ public class QuarterAnyRefTest {
     }
 
     @Test
-    public void validateLocalDateTimeToTrue() {
+    void validateLocalDateTimeToTrue() {
         QuarterAnyRef anyRef = Quarter.anyRef("integerList[*]", "quarter");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("quarter", Foo.class);
@@ -97,7 +97,7 @@ public class QuarterAnyRefTest {
     }
 
     @Test
-    public void validateLocalDateTimeToFalse() {
+    void validateLocalDateTimeToFalse() {
         QuarterAnyRef anyRef = Quarter.anyRef("integerList[0-2]");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("quarter", Foo.class);
@@ -105,7 +105,7 @@ public class QuarterAnyRefTest {
     }
 
     @Test
-    public void validateCalenderToTrue() {
+    void validateCalenderToTrue() {
         QuarterAnyRef anyRef = Quarter.anyRef("integerList[*]", "quarter");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("quarter", Foo.class);
@@ -115,7 +115,7 @@ public class QuarterAnyRefTest {
     }
 
     @Test
-    public void validateCalenderToFalse() {
+    void validateCalenderToFalse() {
         QuarterAnyRef anyRef = Quarter.anyRef("integerList[0-2]");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("quarter", Foo.class);
@@ -125,7 +125,7 @@ public class QuarterAnyRefTest {
     }
 
     @Test
-    public void validateUtilDateToTrue() {
+    void validateUtilDateToTrue() {
         QuarterAnyRef anyRef = Quarter.anyRef("integerList[*]", "quarter");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("quarter", Foo.class);
@@ -134,7 +134,7 @@ public class QuarterAnyRefTest {
     }
 
     @Test
-    public void validateUtilDateToFalse() {
+    void validateUtilDateToFalse() {
         QuarterAnyRef anyRef = Quarter.anyRef("integerList[0-2]");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("quarter", Foo.class);
@@ -143,7 +143,7 @@ public class QuarterAnyRefTest {
     }
 
     @Test
-    public void serializeQuartersAnyRef() {
+    void serializeQuartersAnyRef() {
         QuarterAnyRef anyRef = Quarter.anyRef("foo", "bar");
         assertEquals("""
                 "type":"QUARTER_ANY_REF","values":["foo","bar"]""",
@@ -151,7 +151,7 @@ public class QuarterAnyRefTest {
     }
 
     @Test
-    public void serializeQuartersAnyRefOrNull() {
+    void serializeQuartersAnyRefOrNull() {
         QuarterAnyRef anyRef = Quarter.anyRefOrNull("foo", "bar");
         assertEquals("""
                 "type":"QUARTER_ANY_REF","values":["foo","bar"],"nullEqualsTo":true""",
@@ -159,7 +159,7 @@ public class QuarterAnyRefTest {
     }
 
     @Test
-    public void serializeQuartersAnyRef_ofUpdate() {
+    void serializeQuartersAnyRef_ofUpdate() {
         QuarterAnyRef anyRef = Quarter.anyRef("foo", "bar").ofUpdate();
         assertEquals("""
                 "type":"QUARTER_ANY_REF","values":["foo","bar"],"refTarget":"UPDATE_ENTITY\"""",
@@ -167,7 +167,7 @@ public class QuarterAnyRefTest {
     }
 
     @Test
-    public void serializeQuartersAnyRef_ofCurrent() {
+    void serializeQuartersAnyRef_ofCurrent() {
         QuarterAnyRef anyRef = Quarter.anyRef("foo", "bar").ofCurrent();
         assertEquals("""
                 "type":"QUARTER_ANY_REF","values":["foo","bar"],"refTarget":"CURRENT_ENTITY\"""",

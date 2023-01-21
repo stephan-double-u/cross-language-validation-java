@@ -15,31 +15,31 @@ import static java.time.DayOfWeek.*;
 import static java.time.DayOfWeek.MONDAY;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class WeekdayTest {
+class WeekdayTest {
 
     @Test
-    public void anyValuesMustNotBeNull() {
+    void anyValuesMustNotBeNull() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 Weekday::any);
         assertEquals(EMPTY_VALUES_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void anyValuesMustNotContainNulls() {
+    void anyValuesMustNotContainNulls() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Weekday.any(SUNDAY, null));
         assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void anyOrNullValuesMustNotContainNulls() {
+    void anyOrNullValuesMustNotContainNulls() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Weekday.anyOrNull(SUNDAY, null));
         assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void unsupportedType() {
+    void unsupportedType() {
         Dates weekday = Weekday.any(SUNDAY);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> weekday.validate("string is unsupported", null));
@@ -47,49 +47,49 @@ public class WeekdayTest {
     }
 
     @Test
-    public void validateNullObjectToFalse() {
+    void validateNullObjectToFalse() {
         Weekday weekday = Weekday.any(SUNDAY);
         assertFalse(weekday.validate(null, null));
     }
 
     @Test
-    public void validateNullObjectToTrue() {
+    void validateNullObjectToTrue() {
         Weekday weekday = Weekday.anyOrNull(SUNDAY);
         assertTrue(weekday.validate(null, null));
     }
 
     @Test
-    public void validateLocalDateToTrue() {
+    void validateLocalDateToTrue() {
         Weekday weekday = Weekday.any(SATURDAY);
         assertTrue(weekday.validate(LocalDate.of(2022, 1, 1), null));
     }
 
     @Test
-    public void validateLocalDateToFalse() {
+    void validateLocalDateToFalse() {
         Weekday weekday = Weekday.any(MONDAY, THURSDAY, WEDNESDAY, THURSDAY, FRIDAY, SUNDAY);
         assertFalse(weekday.validate(LocalDate.of(2022, 1, 1), null));
     }
 
     @Test
-    public void validateLocalDateTimeToTrue() {
+    void validateLocalDateTimeToTrue() {
         Weekday weekday = Weekday.any(SATURDAY);
         assertTrue(weekday.validate(LocalDateTime.of(2022, 1, 1, 20, 15), null));
     }
 
     @Test
-    public void validateLocalDateTimeToFalse() {
+    void validateLocalDateTimeToFalse() {
         Weekday weekday = Weekday.any(MONDAY, THURSDAY, WEDNESDAY, THURSDAY, FRIDAY, SUNDAY);
         assertFalse(weekday.validate(LocalDateTime.of(2022, 1, 1, 20, 15), null));
     }
 
     @Test
-    public void validateCalendarToTrue() {
+    void validateCalendarToTrue() {
         Weekday weekday = Weekday.any(DayOfWeek.values());
         assertTrue(weekday.validate(Calendar.getInstance(), null));
     }
 
     @Test
-    public void validateCalendarToFalse() {
+    void validateCalendarToFalse() {
         Weekday weekday = Weekday.any(MONDAY, THURSDAY, WEDNESDAY, THURSDAY, FRIDAY, SUNDAY);
         Calendar cal = Calendar.getInstance();
         cal.set(2022, Calendar.JANUARY, 1);
@@ -97,20 +97,20 @@ public class WeekdayTest {
     }
 
     @Test
-    public void validateDateToTrue() {
+    void validateDateToTrue() {
         Weekday weekday = Weekday.any(DayOfWeek.values());
         assertTrue(weekday.validate(new Date(), null));
     }
 
     @Test
-    public void validateDateToFalse() {
+    void validateDateToFalse() {
         Weekday weekday = Weekday.any(MONDAY, THURSDAY, WEDNESDAY, THURSDAY, FRIDAY, SUNDAY);
         Date date = Date.from(LocalDate.of(2022, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());
         assertFalse(weekday.validate(date, null));
     }
 
     @Test
-    public void serializeWeekdaysAny() {
+    void serializeWeekdaysAny() {
         Weekday any = Weekday.any(DayOfWeek.values());
         assertEquals("""
                 "type":"WEEKDAY_ANY","values":["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]""",
@@ -118,7 +118,7 @@ public class WeekdayTest {
     }
 
     @Test
-    public void serializeWeekdaysAnyOrNull() {
+    void serializeWeekdaysAnyOrNull() {
         Weekday anyOrNull = Weekday.anyOrNull(MONDAY, SUNDAY);
         assertEquals("""
                 "type":"WEEKDAY_ANY","values":["MONDAY","SUNDAY"],"nullEqualsTo":true""", anyOrNull.serializeToJson());

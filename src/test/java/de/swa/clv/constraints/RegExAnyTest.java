@@ -7,52 +7,69 @@ import static de.swa.clv.test.Util.doubleQuote;
 import static java.lang.Boolean.TRUE;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class RegExAnyTest {
+class RegExAnyTest {
 
-    private static RegExAny regEx = RegEx.any("bar", "(?i)[o]{2}", "^[0-7]+$", "\\p{N}");
+    private static final RegExAny regEx = RegEx.any("bar", "(?i)[o]{2}", "^[0-7]+$", "\\p{N}");
+    private static final RegExAny regExOrNull = RegEx.anyOrNull("[0-9]+");
 
     @Test
-    public void exceptionIfRegExIsNull() {
+    void exceptionIfRegExIsNull() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> RegEx.any("[a-c]+.", null));
         assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void unsupportedType() {
+    void unsupportedType() {
         assertThrows(IllegalArgumentException.class,
                 () -> regEx.validate(TRUE, null));
     }
 
     @Test
-    public void stringMatchFirstRegEx() {
+    void stringMatchFirstRegEx() {
         assertTrue(regEx.validate("foobarzoo", null));
     }
 
     @Test
-    public void stringMatchSecondRegEx() {
+    void stringMatchSecondRegEx() {
         assertTrue(regEx.validate("fOOzOO", null));
     }
 
     @Test
-    public void enumMatchSecondRegEx() {
+    void enumMatchSecondRegEx() {
         assertTrue(regEx.validate(FooBarZoo.ZOO, null));
     }
 
     @Test()
-    public void numberMatchThirdRegEx() {
+    void numberMatchThirdRegEx() {
         assertTrue(regEx.validate(1234567, null));
     }
 
     @Test
-    public void noRegExMatch() {
+    void noRegExMatch() {
         assertFalse(regEx.validate("something", null));
     }
 
     @Test
-    public void serializeToJson() {
-        assertEquals(doubleQuote("'type':'REGEX_ANY','values':['bar','(?i)[o]{2}','^[0-7]+$','\\\\p{N}']"),
-                regEx.serializeToJson());
+    void nullValueFalse() {
+        assertFalse(regEx.validate(null, null));
+    }
+
+    @Test
+    void nullValueTrue() {
+        assertFalse(regExOrNull.validate(null, null));
+    }
+
+    @Test
+    void serializeToJson() {
+        assertEquals("""
+                "type":"REGEX_ANY","values":["bar","(?i)[o]{2}","^[0-7]+$","\\\\p{N}"]""", regEx.serializeToJson());
+    }
+
+    @Test
+    void serializeToJsonOrNull() {
+        assertEquals("""
+                "type":"REGEX_ANY","values":["[0-9]+"],"nullEqualsTo":true""", regExOrNull.serializeToJson());
     }
 
     enum FooBarZoo {

@@ -12,7 +12,7 @@ import static de.swa.clv.constraints.Constraint.EMPTY_VALUES_ERR_MESSAGE;
 import static de.swa.clv.constraints.Constraint.NULL_VALUE_ERR_MESSAGE;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class EqualsNoneRefTest {
+class EqualsNoneRefTest {
 
     private static final EqualsNoneRefTest.Foo foo = new EqualsNoneRefTest.Foo(
             new EqualsNoneRefTest.Bar("baz", EqualsNoneRefTest.Enum.ABC, (short) 1, true,
@@ -21,40 +21,40 @@ public class EqualsNoneRefTest {
 
 
     @Test
-    public void nullNotAllowed() {
+    void nullNotAllowed() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 Equals::noneRef);
         assertEquals(EMPTY_VALUES_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void noValuesNotAllowed() {
+    void noValuesNotAllowed() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Equals.noneRef(null));
         assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void nullValuesNotAllowed() {
+    void nullValuesNotAllowed() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Equals.noneRef(null, "someProp"));
         assertEquals(NULL_VALUE_ERR_MESSAGE, ex.getMessage());
     }
 
     @Test
-    public void validateNoneRefVsNull() {
+    void validateNoneRefVsNull() {
         EqualsNoneRef constraint = Equals.noneRef("bar.stringProp");
         assertTrue(constraint.validate(null, foo));
     }
 
     @Test
-    public void validateNoneRefNorNullVsNull() {
+    void validateNoneRefNorNullVsNull() {
         EqualsNoneRef constraint = Equals.noneRefNorNull("bar.stringProp");
         assertFalse(constraint.validate(null, foo));
     }
 
     @Test
-    public void validateString() {
+    void validateString() {
         EqualsNoneRef constraint = Equals.noneRef( "bar.stringProp");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("bar.stringProp", Foo.class);
@@ -62,7 +62,7 @@ public class EqualsNoneRefTest {
     }
 
     @Test
-    public void validateStringVsEnum() {
+    void validateStringVsEnum() {
         EqualsNoneRef constraint = Equals.noneRef("bar.enumProp");
         // Validating caches the getEnumProp() method!
         Validator.instance().validateProperty("bar.enumProp", Foo.class);
@@ -70,7 +70,7 @@ public class EqualsNoneRefTest {
     }
 
     @Test
-    public void validateEnumVsEnum() {
+    void validateEnumVsEnum() {
         EqualsNoneRef constraint = Equals.noneRef("bar.enumProp");
         // Validating caches the getEnumProp() method!
         Validator.instance().validateProperty("bar.enumProp", Foo.class);
@@ -78,7 +78,7 @@ public class EqualsNoneRefTest {
     }
 
     @Test
-    public void validateNumber() {
+    void validateNumber() {
         EqualsNoneRef constraint = Equals.noneRef("bar.intProp");
         // Validating caches the getIntProp() method!
         Validator.instance().validateProperty("bar.intProp", EqualsNoneRefTest.Foo.class);
@@ -86,7 +86,7 @@ public class EqualsNoneRefTest {
     }
 
     @Test
-    public void validateBoolean() {
+    void validateBoolean() {
         EqualsNoneRef constraint = Equals.noneRef("bar.booleanProp");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("bar.booleanProp", EqualsNoneRefTest.Foo.class);
@@ -94,7 +94,7 @@ public class EqualsNoneRefTest {
     }
 
     @Test
-    public void validateLocalDate() {
+    void validateLocalDate() {
         EqualsNoneRef constraint = Equals.noneRef("bar.localDateProp");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("bar.localDateProp", EqualsNoneRefTest.Foo.class);
@@ -102,7 +102,7 @@ public class EqualsNoneRefTest {
     }
 
     @Test
-    public void validateLocalDateFail() {
+    void validateLocalDateFail() {
         EqualsNoneRef constraint = Equals.noneRef("bar.localDateProp");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("bar.localDateProp", EqualsNoneRefTest.Foo.class);
@@ -110,7 +110,7 @@ public class EqualsNoneRefTest {
     }
 
     @Test
-    public void validatelDate() {
+    void validatelDate() {
         EqualsNoneRef constraint = Equals.noneRef("bar.dateProp");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("bar.dateProp", EqualsNoneRefTest.Foo.class);
@@ -118,7 +118,7 @@ public class EqualsNoneRefTest {
     }
 
     @Test
-    public void validateDateFail() {
+    void validateDateFail() {
         EqualsNoneRef constraint = Equals.noneRef("bar.dateProp");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("bar.dateProp", EqualsNoneRefTest.Foo.class);
@@ -126,7 +126,7 @@ public class EqualsNoneRefTest {
     }
 
     @Test
-    public void validateIndexedProperty() {
+    void validateIndexedProperty() {
         EqualsNoneRef constraint = Equals.noneRef("enum2Prop.nestedEnums[*]");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("enum2Prop.nestedEnums[*]", Foo.class);
@@ -134,7 +134,7 @@ public class EqualsNoneRefTest {
     }
 
     @Test
-    public void validateIndexedPropertyFail() {
+    void validateIndexedPropertyFail() {
         EqualsNoneRef constraint = Equals.noneRef("enum2Prop.nestedEnums[*]");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("enum2Prop.nestedEnums[*]", Foo.class);
@@ -142,7 +142,7 @@ public class EqualsNoneRefTest {
     }
 
     @Test
-    public void validateNoIndexedProperty() {
+    void validateNoIndexedProperty() {
         EqualsNoneRef constraint = Equals.noneRef("enum2Prop.nestedEnums[*]");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("enum2Prop.nestedEnums[*]", Foo.class);
@@ -150,14 +150,22 @@ public class EqualsNoneRefTest {
     }
 
     @Test
-    public void serializeToJson() {
-        EqualsNoneRef constraint = Equals.noneRef("bar.stringProp");
-        assertEquals(Util.doubleQuote("'type':'EQUALS_NONE_REF','values':['bar.stringProp']"),
+    void serializeToJsonNorNull() {
+        EqualsNoneRef constraint = Equals.noneRefNorNull("bar.stringProp");
+        assertEquals("""
+                "type":"EQUALS_NONE_REF","values":["bar.stringProp"],"nullEqualsTo":false""",
                 constraint.serializeToJson());
     }
 
     @Test
-    public void serializeToJson_ofUpdate() {
+    void serializeToJson() {
+        EqualsNoneRef constraint = Equals.noneRef("bar.stringProp");
+        assertEquals("""
+                "type":"EQUALS_NONE_REF","values":["bar.stringProp"]""", constraint.serializeToJson());
+    }
+
+    @Test
+    void serializeToJson_ofUpdate() {
         EqualsNoneRef constraint = Equals.noneRef("bar.stringProp").ofUpdate();
         assertEquals("""
                 "type":"EQUALS_NONE_REF","values":["bar.stringProp"],"refTarget":"UPDATE_ENTITY\"""",
@@ -165,7 +173,7 @@ public class EqualsNoneRefTest {
     }
 
     @Test
-    public void serializeToJson_ofCurrent() {
+    void serializeToJson_ofCurrent() {
         EqualsNoneRef constraint = Equals.noneRef("bar.stringProp").ofCurrent();
         assertEquals("""
                 "type":"EQUALS_NONE_REF","values":["bar.stringProp"],"refTarget":"CURRENT_ENTITY\"""",

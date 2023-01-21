@@ -25,7 +25,7 @@ public class ValidationRules<T> {
 
     private final Logger log = LoggerFactory.getLogger(ValidationRules.class);
 
-    public static final String SCHEMA_VERSION = "0.10";
+    public static final String SCHEMA_VERSION = "0.11";
     public static final Constraint NO_CONSTRAINT = Equals.none("");
     @SuppressWarnings("squid:S3878")
     public static final Permissions NO_PERMISSIONS = Permissions.any(new String[0]);

@@ -1,5 +1,8 @@
 package de.swa.clv.constraints;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,9 +13,14 @@ import static de.swa.clv.json.JsonUtil.quoted;
 
 public class Size extends Constraint implements IsCreateConstraint, IsUpdateConstraint {
 
+    private static final Logger log = LoggerFactory.getLogger(Size.class);
+
     private static final String TYPE = "SIZE";
 
-    private Size() {
+    private Size(boolean nullEqualsTrue, Integer minSize, Integer maxSize) {
+        setNullEqualsTrue(nullEqualsTrue);
+        setValues(Arrays.asList(minSize, maxSize));
+        validateValuesOrFail(null, null);
     }
 
     /**
@@ -34,10 +42,11 @@ public class Size extends Constraint implements IsCreateConstraint, IsUpdateCons
      * @author Stephan Wack
      */
     public static Size min(final int minSize) {
-        final Size constraint = new Size();
-        constraint.setValues(Arrays.asList(minSize, null));
-        constraint.validateValuesOrFail(null, null);
-        return constraint;
+        return new Size(false, minSize, null);
+    }
+
+    public static Size minOrNull(final int minSize) {
+        return new Size(true, minSize, null);
     }
 
     /**
@@ -59,10 +68,11 @@ public class Size extends Constraint implements IsCreateConstraint, IsUpdateCons
      * @author Stephan Wack
      */
     public static Size max(final int maxSize) {
-        final Size constraint = new Size();
-        constraint.setValues(Arrays.asList(null, maxSize));
-        constraint.validateValuesOrFail(null, null);
-        return constraint;
+        return new Size(false, null, maxSize);
+    }
+
+    public static Size maxOrNull(final int maxSize) {
+        return new Size(true, null, maxSize);
     }
 
     /**
@@ -86,10 +96,11 @@ public class Size extends Constraint implements IsCreateConstraint, IsUpdateCons
      * @author Stephan Wack
      */
     public static Size minMax(final int minSize, final int maxSize) {
-        final Size constraint = new Size();
-        constraint.setValues(Arrays.asList(minSize, maxSize));
-        constraint.validateValuesOrFail(null, null);
-        return constraint;
+        return new Size(false, minSize, maxSize);
+    }
+
+    public static Size minMaxOrNull(final int minSize, final int maxSize) {
+        return new Size(true, minSize, maxSize);
     }
 
     @Override
@@ -113,10 +124,10 @@ public class Size extends Constraint implements IsCreateConstraint, IsUpdateCons
     }
     
     @Override
-    public boolean
-    validate(final Object objectToValidate, final Object ignored) {
+    public boolean validate(final Object objectToValidate, final Object ignored) {
         if (objectToValidate == null) {
-            return true;
+            log.debug("'Null object equals to {}", doesNullEqualsTrue());
+            return doesNullEqualsTrue();
         }
         final Integer minValue = (Integer) getValues().get(0);
         final Integer maxValue = (Integer) getValues().get(1);
@@ -137,12 +148,13 @@ public class Size extends Constraint implements IsCreateConstraint, IsUpdateCons
 
     @Override
     public String serializeToJson() {
-        final Integer minValue = (Integer) getValues().get(0);
-        final Integer maxValue = (Integer) getValues().get(1);
-        final String minJson = minValue != null ? asKey("min") + minValue : "";
-        final String maxJson = maxValue != null ? asKey("max") + maxValue : "";
-        final String delimiter = ("".equals(minJson) || "".equals(maxJson)) ? "" : ",";
-        return asKey("type") + quoted(TYPE) + "," + minJson + delimiter + maxJson;
+        Integer minValue = (Integer) getValues().get(0);
+        Integer maxValue = (Integer) getValues().get(1);
+        String minJson = minValue != null ? asKey("min") + minValue : "";
+        String maxJson = maxValue != null ? asKey("max") + maxValue : "";
+        String delimiter = ("".equals(minJson) || "".equals(maxJson)) ? "" : ",";
+        String nullEqualsToJson = getJsonForNullEqualsTrue(false);
+        return asKey("type") + quoted(TYPE) + "," + minJson + delimiter + maxJson + nullEqualsToJson;
     }
 
     @Override

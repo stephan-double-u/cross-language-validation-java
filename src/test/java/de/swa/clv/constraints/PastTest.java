@@ -10,31 +10,31 @@ import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class PastTest {
+class PastTest {
 
     @Test
-    public void pastDaysMinGreaterZero() {
+    void pastDaysMinGreaterZero() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Past.minDays(-1));
         assertEquals("'minDays' and 'maxDays' values must not be < 0", ex.getMessage());
     }
 
     @Test
-    public void pastDaysMaxGreaterZero() {
+    void pastDaysMaxGreaterZero() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Past.minMaxDays(0, -1));
         assertEquals("'minDays' and 'maxDays' values must not be < 0", ex.getMessage());
     }
 
     @Test
-    public void pastDaysMinNotGreaterMax() {
+    void pastDaysMinNotGreaterMax() {
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Past.minMaxDays(1, 0));
         assertEquals("'minDays' value must not be greater than 'maxDays' value", ex.getMessage());
     }
 
     @Test
-    public void unsupportedType() {
+    void unsupportedType() {
         Dates dates = Past.minDays(0);
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> dates.validate("string is unsupported", null));
@@ -42,55 +42,60 @@ public class PastTest {
     }
 
     @Test
-    public void validateNullObjectToFalse() {
+    void validateNullObjectToFalse() {
         Dates dates = Past.minDays(0);
         assertFalse(dates.validate(null, null));
     }
 
+    void validateNullObjectToTrue() {
+        Dates dates = Past.minDaysOrNull(0);
+        assertTrue(dates.validate(null, null));
+    }
+
     @Test
-    public void validateLocalDateToNowIsTrue() {
+    void validateLocalDateToNowIsTrue() {
         Dates dates = Past.minMaxDays(0, 0);
         assertTrue(dates.validate(LocalDate.now(), null));
     }
 
     @Test
-    public void validateLocalDateIsTrue() {
+    void validateLocalDateIsTrue() {
         Dates dates = Past.minMaxDays(1, 1);
         assertTrue(dates.validate(LocalDate.now().minusDays(1), null));
     }
 
     @Test
-    public void validateLocalDateMinDaysToFalse() {
+    void validateLocalDateMinDaysToFalse() {
         Dates dates = Past.minDays(3);
         assertFalse(dates.validate(LocalDate.now().minusDays(2), null));
     }
 
     @Test
-    public void validateLocalDateMaxDaysToFalse() {
+    void validateLocalDateMaxDaysToFalse() {
         Dates dates = Past.minMaxDays(1, 3);
         assertFalse(dates.validate(LocalDate.now().minusDays(4), null));
     }
 
     @Test
-    public void validateLocalDateTimeToTrue() {
+    void validateLocalDateTimeToTrue() {
         Dates dates = Past.minDays(1);
         assertTrue(dates.validate(LocalDateTime.now().minusDays(1).minusMinutes(1), null));
     }
 
     @Test
-    public void validateLocalDateTimeMinToFalse() {
+    void validateLocalDateTimeMinToFalse() {
         Dates dates = Past.minDays(1);
         assertFalse(dates.validate(LocalDateTime.now().minusDays(1).plusMinutes(1), null));
     }
 
     @Test
-    public void validateLocalDateTimeMaxToFalse() {
+    void validateLocalDateTimeMaxToFalse() {
         Dates dates = Past.minMaxDays(1, 3);
         assertFalse(dates.validate(LocalDateTime.now().minusDays(3).minusMinutes(1), null));
     }
 
     @Test
-    public void validateCalendarToTrue() {
+    void validateCalendarToTrue() {
         Dates dates = Past.minDays(1000);
         Calendar pastCalDate = Calendar.getInstance();
         pastCalDate.set(2000, Calendar.DECEMBER, 31);
@@ -98,7 +103,7 @@ public class PastTest {
     }
 
     @Test
-    public void validateCalendarMinToFalse() {
+    void validateCalendarMinToFalse() {
         Dates dates = Past.minMaxDays(2, 3);
         Calendar pastCalDate = Calendar.getInstance();
         pastCalDate.add(Calendar.DATE, -1);
@@ -106,7 +111,7 @@ public class PastTest {
     }
 
     @Test
-    public void validateCalendarMaxToFalse() {
+    void validateCalendarMaxToFalse() {
         Dates dates = Past.minMaxDays(2, 3);
         Calendar pastCalDate = Calendar.getInstance();
         pastCalDate.add(Calendar.DATE, -4);
@@ -114,36 +119,52 @@ public class PastTest {
     }
 
     @Test
-    public void validateDateToTrue() {
+    void validateDateToTrue() {
         Dates dates = Past.minDays(1);
         final Date yesterdayMinus1Sec = new Date(new Date().getTime() - Dates.MILLIS_PER_DAY - 1000);
         assertTrue(dates.validate(yesterdayMinus1Sec, null));
     }
 
     @Test
-    public void validateDateMinToFalse() {
+    void validateDateMinToFalse() {
         Dates dates = Past.minDays(0);
         final Date nowPlus1Sec = new Date(new Date().getTime() + 1000);
         assertFalse(dates.validate(nowPlus1Sec, null));
     }
 
     @Test
-    public void validateDateMaxToFalse() {
+    void validateDateMaxToFalse() {
         Dates dates = Past.minMaxDays(1, 3);
         final Date nowMinus4Days = new Date(new Date().getTime() - 4 * Dates.MILLIS_PER_DAY);
         assertFalse(dates.validate(nowMinus4Days, null));
     }
 
     @Test
-    public void serializePastDaysMin() {
-        Dates dates = Past.minDays(1);
-        assertEquals(Util.doubleQuote("'type':'PAST_DAYS','min':1"), dates.serializeToJson());
+    void serializePastDaysMin() {
+        Dates past = Past.minDays(1);
+        assertEquals("""
+                "type":"PAST_DAYS","min":1""", past.serializeToJson());
     }
 
     @Test
-    public void serializePastDaysMinMax() {
-        Dates dates = Past.minMaxDays(1, 2);
-        assertEquals(Util.doubleQuote("'type':'PAST_DAYS','min':1,'max':2"), dates.serializeToJson());
+    void serializePastDaysMinOrNull() {
+        Dates past = Past.minDaysOrNull(1);
+        assertEquals("""
+                "type":"PAST_DAYS","min":1,"nullEqualsTo":true""", past.serializeToJson());
+    }
+
+    @Test
+    void serializePastDaysMinMax() {
+        Dates past = Past.minMaxDays(1, 2);
+        assertEquals("""
+                "type":"PAST_DAYS","min":1,"max":2""", past.serializeToJson());
+    }
+
+    @Test
+    void serializePastDaysMinMaxOrNull() {
+        Dates past = Past.minMaxDaysOrNull(1, 2);
+        assertEquals("""
+                "type":"PAST_DAYS","min":1,"max":2,"nullEqualsTo":true""", past.serializeToJson());
     }
 
 }

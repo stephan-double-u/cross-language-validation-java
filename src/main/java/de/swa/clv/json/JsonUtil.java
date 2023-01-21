@@ -1,6 +1,7 @@
 package de.swa.clv.json;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,8 +40,8 @@ public abstract class JsonUtil {
         return asArray(objects.stream().map(JsonUtil::quoteIfNeeded).collect(Collectors.joining(",")));
     }
 
-    private static String quoteIfNeeded(Object o) {
-        return (o instanceof String || o instanceof Enum<?> || o instanceof LocalDate)
+    public static String quoteIfNeeded(Object o) {
+        return (o instanceof String || o instanceof Enum<?> || o instanceof LocalDate || o instanceof LocalDateTime)
                 ? quoted(o.toString()) : "" + o;
     }
 

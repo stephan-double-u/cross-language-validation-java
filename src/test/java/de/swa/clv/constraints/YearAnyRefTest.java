@@ -96,7 +96,7 @@ class YearAnyRefTest {
     }
 
     @Test
-    public void validateLocalDateTimeToFalse() {
+    void validateLocalDateTimeToFalse() {
         YearAnyRef anyRef = Year.anyRef("integerList[0-2]");
         // Validating caches the getStringProp() method!
         Validator.instance().validateProperty("year", Foo.class);

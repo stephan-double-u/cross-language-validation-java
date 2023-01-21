@@ -11,27 +11,27 @@ class EqualsNone extends EqualsConstraint implements IsCreateConstraint, IsUpdat
 
     public static final String TOKEN = "EQUALS_NONE";
 
-    EqualsNone(final boolean nullEqualsTrue, final String... values) {
+    EqualsNone(boolean nullEqualsTrue, String... values) {
         setNullEqualsTrue(nullEqualsTrue);
         setValues(getValuesAsObjectList(values));
     }
 
-    EqualsNone(final boolean nullEqualsTrue, final Enum<?>... values) {
+    EqualsNone(boolean nullEqualsTrue, Enum<?>... values) {
         setNullEqualsTrue(nullEqualsTrue);
         setValues(getValuesAsObjectList(values));
     }
     
-    EqualsNone(final boolean nullEqualsTrue, final Number... values) {
+    EqualsNone(boolean nullEqualsTrue, Number... values) {
         setNullEqualsTrue(nullEqualsTrue);
         setValues(getValuesAsObjectList(values));
     }
 
-    EqualsNone(final boolean nullEqualsTrue, final Boolean... values) {
+    EqualsNone(boolean nullEqualsTrue, Boolean... values) {
         setNullEqualsTrue(nullEqualsTrue);
         setValues(getValuesAsObjectList(values));
     }
 
-    EqualsNone(final boolean nullEqualsTrue, final LocalDate... values) {
+    EqualsNone(boolean nullEqualsTrue, LocalDate... values) {
         setNullEqualsTrue(nullEqualsTrue);
         setValues(getValuesAsObjectList(values));
     }
@@ -42,12 +42,12 @@ class EqualsNone extends EqualsConstraint implements IsCreateConstraint, IsUpdat
     }
 
     @Override
-    public boolean validate(final Object objectToValidate, final Object constraintObjectIgnored) {
+    public boolean validate(Object objectToValidate, Object constraintObjectIgnored) {
         if (objectToValidate == null) {
             log.debug("'Null object equals to {}", doesNullEqualsTrue());
             return doesNullEqualsTrue();
         }
-        final boolean match = getValues().stream()
+        boolean match = getValues().stream()
                 .anyMatch(value -> equalsUntyped(objectToValidate, value));
         log.debug("'{}' does{}" + " equals one of {}{}", objectToValidate, (match ? "" : " not"), getValues(),
                 (match ? " (but should not)" : ""));

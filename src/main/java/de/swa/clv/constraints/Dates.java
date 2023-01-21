@@ -63,7 +63,8 @@ abstract class Dates extends Constraint {
     @Override
     public boolean validate(final Object dateObject, final Object ignored) {
         if (dateObject == null) {
-            return false;
+            log.debug("'Null object equals to {}", doesNullEqualsTrue());
+            return doesNullEqualsTrue();
         }
         Integer minDays = (Integer) getValues().get(0);
         Integer maxDays = (Integer) getValues().get(1);
@@ -143,17 +144,14 @@ abstract class Dates extends Constraint {
         String minJson = min != null ? asKey("min") + min : "";
         String maxJson = max != null ? asKey("max") + max : "";
         String seperator = min != null && max != null ? "," : "";
-        return asKey("type") + quoted(getToken()) + "," + minJson + seperator + maxJson;
+        String nullEqualsToJson = getJsonForNullEqualsTrue(false);
+        return asKey("type") + quoted(getToken()) + "," + minJson + seperator + maxJson + nullEqualsToJson;
     }
 
     String serializeToJsonAsValuesArray() {
-        String nullEqualsToJson = "";
-        // Serialize "nullEqualsTo" key only for non-default values,
-        if (doesNullEqualsTrue()) {
-            nullEqualsToJson = "," + asKey("nullEqualsTo") + true;
-        }
-        String refTargetJson = serializeRefTargetKeyValuePairForReferenceProperties();
         String valuesJson = "," + asKey("values") + asArray(getValues());
+        String nullEqualsToJson = getJsonForNullEqualsTrue(false);
+        String refTargetJson = serializeRefTargetKeyValuePairForReferenceProperties();
         return asKey("type") + quoted(getToken()) + valuesJson + nullEqualsToJson + refTargetJson;
     }
 

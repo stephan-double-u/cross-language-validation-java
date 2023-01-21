@@ -67,4 +67,7 @@ public abstract class Constraint extends ConstraintRoot {
         return "";
     }
 
+    String getJsonForNullEqualsTrue(boolean defaultIsTrue) {
+        return nullEqualsTrue != defaultIsTrue ? "," + asKey("nullEqualsTo") + nullEqualsTrue : "";
+    }
 }

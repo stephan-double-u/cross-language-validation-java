@@ -20,7 +20,7 @@ public class PermissionsAll extends Permissions {
     }
 
     @Override
-    public boolean validate(final List<Object> userPermissions) {
+    public boolean validate(List<Object> userPermissions) {
         final boolean match = userPermissions.containsAll(getValues());
         log.debug("'" + userPermissions + "' does" + (match ? "" : " NOT") + " equals all of " + getValues());
         return match;

@@ -11,27 +11,27 @@ class EqualsAny extends EqualsConstraint implements IsCreateConstraint, IsUpdate
 
     public static final String TOKEN = "EQUALS_ANY";
 
-    EqualsAny(final boolean nullEqualsTrue, String... values) {
+    EqualsAny(boolean nullEqualsTrue, String... values) {
         setNullEqualsTrue(nullEqualsTrue);
         setValues(getValuesAsObjectList(values));
     }
 
-    EqualsAny(final boolean nullEqualsTrue, final Enum<?>... values) {
+    EqualsAny(boolean nullEqualsTrue, Enum<?>... values) {
         setNullEqualsTrue(nullEqualsTrue);
         setValues(getValuesAsObjectList(values));
     }
 
-    EqualsAny(final boolean nullEqualsTrue, final Number... values) {
+    EqualsAny(boolean nullEqualsTrue, Number... values) {
         setNullEqualsTrue(nullEqualsTrue);
         setValues(getValuesAsObjectList(values));
     }
 
-    EqualsAny(final boolean nullEqualsTrue, final Boolean... values) {
+    EqualsAny(boolean nullEqualsTrue, Boolean... values) {
         setNullEqualsTrue(nullEqualsTrue);
         setValues(getValuesAsObjectList(values));
     }
 
-    EqualsAny(final boolean nullEqualsTrue, final LocalDate... values) {
+    EqualsAny(boolean nullEqualsTrue, LocalDate... values) {
         setNullEqualsTrue(nullEqualsTrue);
         setValues(getValuesAsObjectList(values));
     }
@@ -42,12 +42,12 @@ class EqualsAny extends EqualsConstraint implements IsCreateConstraint, IsUpdate
     }
 
     @Override
-    public boolean validate(final Object objectToValidate, final Object notRelevant) {
+    public boolean validate(Object objectToValidate, Object notRelevant) {
         if (objectToValidate == null) {
             log.debug("'Null object equals to {}", doesNullEqualsTrue());
             return doesNullEqualsTrue();
         }
-        final boolean match = getValues().stream()
+        boolean match = getValues().stream()
                 .anyMatch(value -> equalsUntyped(objectToValidate, value));
         log.debug("'{}' does{}" + " equals one of {}", objectToValidate, (match ? "" : " NOT"), getValues());
         return match;

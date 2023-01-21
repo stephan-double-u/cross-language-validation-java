@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ValidationRuleTest {
+class ValidationRuleTest {
 
     Constraint someConstraint = Equals.any("FOO");
     Permissions somePermissions = Permissions.all("BAR");
@@ -29,7 +29,7 @@ public class ValidationRuleTest {
     String errorCodeControlJson = "'errorCodeControl':{'useType':'AS_SUFFIX','code':'#suffix'}";
 
     @Test
-    public void serializeToJson_constraintAndPermissionsAndConditionsAndErrorCodeControl() {
+    void serializeToJson_constraintAndPermissionsAndConditionsAndErrorCodeControl() {
         ValidationRule validationRule = new ValidationRule("anyProp", someConstraint, somePermissions, someTopGroup)
                 .errorCodeControl(UseType.AS_SUFFIX, "#suffix");
 
@@ -41,7 +41,7 @@ public class ValidationRuleTest {
     }
 
     @Test
-    public void serializeToJson_NoConstraint() {
+    void serializeToJson_NoConstraint() {
         ValidationRule validationRule = new ValidationRule("anyProp", ValidationRules.NO_CONSTRAINT, somePermissions,
                 someTopGroup);
 
@@ -52,7 +52,7 @@ public class ValidationRuleTest {
     }
 
     @Test
-    public void serializeToJson_NoPermissions() {
+    void serializeToJson_NoPermissions() {
         ValidationRule validationRule = new ValidationRule("anyProp", someConstraint, ValidationRules.NO_PERMISSIONS,
                 someTopGroup);
 
@@ -63,7 +63,7 @@ public class ValidationRuleTest {
     }
 
     @Test
-    public void serializeToJson_NoConditions() {
+    void serializeToJson_NoConditions() {
         ValidationRule validationRule = new ValidationRule("anyProp", someConstraint, somePermissions,
                 ValidationRules.NO_CONDITIONS_TOP_GROUP);
 
@@ -74,7 +74,7 @@ public class ValidationRuleTest {
     }
 
     @Test
-    public void serializeToJson_constraintOnly() {
+    void serializeToJson_constraintOnly() {
         ValidationRule validationRule = new ValidationRule("anyProp", someConstraint, ValidationRules.NO_PERMISSIONS,
                 ValidationRules.NO_CONDITIONS_TOP_GROUP);
 
@@ -85,7 +85,7 @@ public class ValidationRuleTest {
     }
 
     @Test
-    public void serializeToJson_permissionsOnly() {
+    void serializeToJson_permissionsOnly() {
         ValidationRule validationRule = new ValidationRule("anyProp", ValidationRules.NO_CONSTRAINT, somePermissions,
                 ValidationRules.NO_CONDITIONS_TOP_GROUP);
 
@@ -96,7 +96,7 @@ public class ValidationRuleTest {
     }
 
     @Test
-    public void serializeToJson_conditionsOnly() {
+    void serializeToJson_conditionsOnly() {
         ValidationRule validationRule = new ValidationRule("anyProp", ValidationRules.NO_CONSTRAINT,
                 ValidationRules.NO_PERMISSIONS, someTopGroup);
 
@@ -107,7 +107,7 @@ public class ValidationRuleTest {
     }
 
     @Test
-    public void serializeToJson_doNotSerialize() {
+    void serializeToJson_doNotSerialize() {
         ValidationRule validationRule = new ValidationRule("anyProp", someConstraint, somePermissions, someTopGroup)
                 .errorCodeControl(UseType.AS_SUFFIX, "#suffix")
                 .doNotSerialize();
