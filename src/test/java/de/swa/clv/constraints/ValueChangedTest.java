@@ -23,7 +23,7 @@ class ValueChangedTest {
     }
 
     @Test
-    void validateValueChangedFasle() {
+    void validateValueChangedFalse() {
         UUID thisUuid = UUID.randomUUID();
         UUID thatUuid = UUID.fromString(thisUuid.toString());
         assertFalse(constraint.validate(thisUuid, thatUuid));

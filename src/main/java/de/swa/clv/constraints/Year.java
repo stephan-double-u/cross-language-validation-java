@@ -7,12 +7,12 @@ public abstract class Year extends Dates {
         return new YearAny(false, years);
     }
 
-    public static YearAny anyOrNull(Integer ... years) {
+    public static YearAny anyOrNull(Integer... years) {
         assertValuesAndSizeOk(years);
         return new YearAny(true, years);
     }
 
-    public static YearAnyRef anyRef(String ... properties) {
+    public static YearAnyRef anyRef(String... properties) {
         assertValuesAndSizeOk(properties);
         return new YearAnyRef(false, properties);
     }
