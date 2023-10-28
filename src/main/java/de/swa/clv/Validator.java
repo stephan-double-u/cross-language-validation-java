@@ -308,13 +308,7 @@ public class Validator {
         if (List.class.isAssignableFrom(getterMethod.getReturnType())) {
             // Process list
             // 1. get list field (e.g. articles)
-            final Field listField;
-            try {
-                listField = propertyPartClass.getDeclaredField(propertyName);
-            } catch (final NoSuchFieldException | SecurityException e) {
-                throw new IllegalArgumentException("Property " + propertyName + " is not a declared field of "
-                        + propertyPartClass);
-            }
+            final Field listField = getFieldOrFail(propertyName, propertyPartClass);
             // 2. get generic type (e.g. Article.class)
             final ParameterizedType listType = (ParameterizedType) listField.getGenericType();
             Type actualTypeArgument = listType.getActualTypeArguments()[0];
@@ -347,6 +341,22 @@ public class Validator {
         return getterInfo;
     }
 
+    private Field getFieldOrFail(String property, Class<?> clazz) {
+        return getFieldOrFail(property, clazz, clazz);
+    }
+
+    private Field getFieldOrFail(String property, Class<?> startClass, Class<?> superClass) {
+        return Arrays.stream(superClass.getDeclaredFields())
+                .filter(f -> f.getName().equals(property))
+                .findAny()
+                .orElseGet(() -> {
+                    if (superClass.isInterface() || superClass.getSuperclass() == null) {
+                        throw new IllegalArgumentException("Property '" + property + "' is not a declared field of " +
+                                "class " + startClass + " (resp. its super classes)");
+                    }
+                    return getFieldOrFail(property, superClass.getSuperclass());
+                });
+    }
     private GetterInfo createGetterInfo(final Method getterMethod) {
         return new GetterInfo(getterMethod, getterMethod.getReturnType());
     }

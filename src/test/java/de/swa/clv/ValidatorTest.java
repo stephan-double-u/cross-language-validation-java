@@ -24,6 +24,11 @@ class ValidatorTest {
      */
 
     @Test
+    void validateProperty_listPropertyInherited() {
+        assertDoesNotThrow(() -> Validator.instance().validateProperty("baseList[*]", ClassUnderTest.class));
+    }
+
+    @Test
     void validateProperty_simplePropertyInherited() {
         assertDoesNotThrow(() -> Validator.instance().validateProperty("id", ClassUnderTest.class));
     }
@@ -970,12 +975,17 @@ class ValidatorTest {
 
     static class BaseClass {
         private final Integer id;
+        private final List<String> baseList = List.of("string1", "string2");
         public BaseClass(final Integer id) {
             super();
             this.id = id;
         }
         public Integer getId() {
             return id;
+        }
+
+        public List<String> getBaseList() {
+            return baseList;
         }
     }
 
