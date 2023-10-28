@@ -1,5 +1,6 @@
 package de.swa.clv.groups;
 
+import de.swa.clv.constraints.Constraint;
 import de.swa.clv.json.JsonSerializable;
 
 import java.util.Arrays;
@@ -13,16 +14,18 @@ public class ConditionsTopGroup implements JsonSerializable {
     private final LogicalOperator logicalOperator;
     private final ConditionsGroup[] conditionsGroups;
 
-    private ConditionsTopGroup(LogicalOperator logicalOperator, ConditionsGroup... conditionsGroups) {
+    protected ConditionsTopGroup(LogicalOperator logicalOperator, ConditionsGroup... conditionsGroups) {
         this.logicalOperator = logicalOperator;
         this.conditionsGroups = conditionsGroups;
     }
 
     public static ConditionsTopGroup AND(ConditionsGroup... conditionsGroups) {
+        Constraint.assertNotNull(conditionsGroups);
         return new ConditionsTopGroup(LogicalOperator.AND, conditionsGroups);
     }
 
     public static ConditionsTopGroup OR(ConditionsGroup... conditionsGroups) {
+        Constraint.assertNotNull(conditionsGroups);
         return new ConditionsTopGroup(LogicalOperator.OR, conditionsGroups);
     }
 
@@ -41,8 +44,8 @@ public class ConditionsTopGroup implements JsonSerializable {
         }
         if (conditionsGroups.length == 1) {
             ConditionsGroup singleSubGroup = conditionsGroups[0];
-            if (singleSubGroup.constraints.length == 1) {
-                return asKey("condition") + singleSubGroup.constraints[0].serializeToJson();
+            if (singleSubGroup.conditions.length == 1) {
+                return asKey("condition") + singleSubGroup.conditions[0].serializeToJson();
             } else {
                 return asKey("conditionsGroup") + singleSubGroup.serializeToJson();
             }

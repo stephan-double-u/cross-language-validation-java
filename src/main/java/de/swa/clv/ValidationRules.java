@@ -14,10 +14,12 @@ import java.util.stream.Collectors;
 import static de.swa.clv.RulesType.CONTENT;
 import static de.swa.clv.RulesType.MANDATORY;
 import static de.swa.clv.json.JsonUtil.*;
-
 /**
- * A class to define property validation rules for (possibly nested) properties of type {@code T}.
- * For each property a no-arg getter method must exist.
+ * The core public access point to define all types of validation rules as specified by the
+ * <a href="https://github.com/stephan-double-u/cross-language-validation-schema">Cross Language Validation Schema</a>.
+ * The type parameter {@code T} determines the type for which the rules apply.
+ * For each property for which a rule is defined, a no-arg getter method must exist.
+ * <br/>Note: <i>the property</i> is to be understood in the broader sense defined by the CLV Schema.
  *
  * @param <T> the type for which the rules are defined
  */
@@ -45,128 +47,162 @@ public class ValidationRules<T> {
     private final Class<T> typeClass;
     private String typeJsonKey;
 
+    /**
+     * Create a {@code ValidationRules} object for validation rules of type {@code T}.
+     *
+     * @param typeClass the class of type {@code T}
+     */
     public ValidationRules(Class<T> typeClass) {
         super();
         this.typeClass = typeClass;
         typeJsonKey = typeClass.getSimpleName().toLowerCase();
     }
 
-    public Set<String> getMandatoryRulesKeys() {
+    Set<String> getMandatoryRulesKeys() {
         return mandatoryRulesMap.keySet();
     }
 
-    public List<ValidationRule> getMandatoryValidationRules(String property) {
+    List<ValidationRule> getMandatoryValidationRules(String property) {
         return mandatoryRulesMap.get(property);
     }
 
-    public Set<String> getImmutableRulesKeys() {
+    Set<String> getImmutableRulesKeys() {
         return immutableRulesMap.keySet();
     }
 
-    public List<ValidationRule> getImmutableValidationRules(String property) {
+    List<ValidationRule> getImmutableValidationRules(String property) {
         return immutableRulesMap.get(property);
     }
 
-    public Set<String> getContentRulesKeys() {
+    Set<String> getContentRulesKeys() {
         return contentRulesMap.keySet();
     }
 
-    public List<ValidationRule> getContentValidationRules(String property) {
+    List<ValidationRule> getContentValidationRules(String property) {
         return contentRulesMap.get(property);
     }
 
-    public Set<String> getUpdateRulesKeys() {
+    Set<String> getUpdateRulesKeys() {
         return updateRulesMap.keySet();
     }
 
-    public List<ValidationRule> getUpdateValidationRules(String property) {
+    List<ValidationRule> getUpdateValidationRules(String property) {
         return updateRulesMap.get(property);
     }
 
-    public Class<T> getTypeClass() {
+    Class<T> getTypeClass() {
         return typeClass;
     }
 
-    public String getSimpleTypeName() {
+    String getSimpleTypeName() {
         return typeClass.getSimpleName();
     }
 
 
     /**
-     * Defines the property as mandatory.
+     * Defines the property as a mandatory value.
+     * <br/>See the note about property names in {@link ValidationRules}.
      *
-     * @param property the property name
+     * @param property The name of the property this rule is defined for
+     * @return the {@link ValidationRule}
      */
     public ValidationRule mandatory(String property) {
         return mandatory(property, NO_PERMISSIONS, NO_CONDITIONS_TOP_GROUP);
     }
 
     /**
-     * Defines the property as mandatory if the {@code PropConstraint} is true.
+     * Defines the property as a mandatory value, provided the specified condition can be evaluated to {@code true}.
+     * <br/>See the note about property names in {@link ValidationRules}.
      *
-     * @param property the property name
-     * @param conditionConstraint the property constraint
+     * @param property The name of the property this rule is defined for
+     * @param condition The {@link Condition} that must be evaluated to {@code true}
+     * @return the {@link ValidationRule}
      */
-    public ValidationRule mandatory(String property, ConditionConstraint conditionConstraint) {
-        return mandatory(property, NO_PERMISSIONS, ConditionsGroup.AND(conditionConstraint));
+    public ValidationRule mandatory(String property, Condition condition) {
+        return mandatory(property, NO_PERMISSIONS, ConditionsGroup.AND(condition));
     }
 
     /**
-     * Defines the property as mandatory if the {@code ConditionsAndGroup} is true.<p/>
-     * I.e. the PropConstraints within each ConditionsAndGroup are ANDed.<p/>
-     * E.g. ConditionsGroup.AND(a, b) is evaluated as: a && b
+     * Defines the property as a mandatory value, provided all conditions of the {@link ConditionsAndGroup} can be
+     * evaluated to {@code true}.
+     * <br/>See the note about property names in {@link ValidationRules}.
      *
-     * @param property           the property name
-     * @param conditionsAndGroup the ConditionsAndGroup
+     * @param property The name of the property this rule is defined for
+     * @param conditionsAndGroup The {@link ConditionsAndGroup} whose conditions must all be evaluated to {@code true}
+     * @return the {@link ValidationRule}
      */
     public ValidationRule mandatory(String property, ConditionsAndGroup conditionsAndGroup) {
         return mandatory(property, NO_PERMISSIONS, ConditionsTopGroup.OR(conditionsAndGroup));
     }
 
     /**
-     * Defines the property as mandatory if the {@code ConditionsOrGroup} is true.<p/>
-     * I.e. the PropConstraints within each ConditionsAndGroup are ORed.<p/>
-     * E.g. ConditionsGroup.OR(a, b) is evaluated as: a || b
+     * Defines the property as a mandatory value, provided one condition of the {@link ConditionsOrGroup} can be
+     * evaluated to {@code true}.
+     * <br/>See the note about property names in {@link ValidationRules}.
      *
-     * @param property       the property name
-     * @param conditionsOrGroup the ConditionsOrGroup
+     * @param property The name of the property this rule is defined for
+     * @param conditionsOrGroup The {@link ConditionsOrGroup} of which at least one condition must be {@code true}
+     * @return the {@link ValidationRule}
      */
     public ValidationRule mandatory(String property, ConditionsOrGroup conditionsOrGroup) {
         return mandatory(property, NO_PERMISSIONS, ConditionsTopGroup.AND(conditionsOrGroup));
     }
 
     /**
-     * If the logical relation between the conditions are really complex, this method may be your last resort.<p/>
-     * This version defines the property as mandatory if the {@code ConditionsTopGroup} object evaluates to true.<p/>
-     * According to the logical operation the ConditionsAndGroups resp. ConditionsOrGroups are either ANDed or ORed.
-     * <p/> E.g. ConditionsTopGroup.AND(ConditionsGroup.OR(a, b), ConditionsGroup.OR(c, d), ConditionsGroup.OR(e, f)]
-     * is evaluated as: TODO
+     * If the conditions under which a property is defined as a mandatory value are so complex that they must be
+     * logically linked with both AND and OR, this method may be your last resort.<p/>
+     * This method defines the property as a mandatory value, provided the {@link ConditionsTopGroup} can be evaluated
+     * to {@code true}.<p/>
+     * A {@link ConditionsTopGroup} contains one or more {@link ConditionsAndGroup}s resp.
+     * {@link ConditionsOrGroup}s. These groups can be either logically linked with {@code AND} or {@code OR}. I.e. if
+     * the logical operator is {@code AND}, the {@link ConditionsTopGroup} is evaluated to {@code true} if all groups
+     * can be evaluated to {@code true}. If the logical operator is {@code OR}, the {@link ConditionsTopGroup} is
+     * evaluated to {@code true} if at least one group can be evaluated to {@code true}.<br/>
+     * Example of a {@link ConditionsTopGroup} where the {@link ConditionsGroup}s are logically linked with AND:
+     *  <blockquote><pre>
+     *  ConditionsTopGroup.AND(
+     *          ConditionsGroup.OR(
+     *                  Condition.of("foo", Equals.any(1, 2)),
+     *                  Condition.of("bar", Equals.none(3, 4))),
+     *          ConditionsGroup.AND(
+     *                  Condition.of("zoo", Equals.any(5, 6)),
+     *                  Condition.of("baz", Equals.any(7, 8))));
+     *  </pre></blockquote>
+     * <br/>See the note about property names in {@link ValidationRules}.
      *
-     * @param property       the property name
-     * @param topGroup the ConditionsTopGroup
+     * @param property The name of the property this rule is defined for
+     * @param conditionsTopGroup the {@link ConditionsTopGroup} that must be evaluated to {@code true}
+     * @return the {@link ValidationRule}
      */
-    public ValidationRule mandatory(String property, ConditionsTopGroup topGroup) {
-        return mandatory(property, NO_PERMISSIONS, topGroup);
+    public ValidationRule mandatory(String property, ConditionsTopGroup conditionsTopGroup) {
+        return mandatory(property, NO_PERMISSIONS, conditionsTopGroup);
     }
 
     /**
-     * Defines the property as mandatory if permissions match.
+     * Defines the property as a mandatory value, provided the specified permissions constraint can be evaluated to
+     * {@code true}.
+     * <br/>See the note about property names in {@link ValidationRules}.
      *
-     * @param property    the property name
-     * @param permissions the permissions
+     * @param property The name of the property this rule is defined for
+     * @param permissions the {@link Permissions} constraint that must be evaluated to {@code true}
+     * @return the {@link ValidationRule}
      */
     public ValidationRule mandatory(String property, Permissions permissions) {
         return mandatory(property, permissions, NO_CONDITIONS_TOP_GROUP);
     }
 
     /**
-     * Defines the property as mandatory if permissions match and the {@code PropConstraint} is true.
+     * Defines the property as a mandatory value, provided the specified permissions constraint can be evaluated to
+     * {@code true} and the specified condition can be evaluated to {@code true}.
+     * <br/>See the note about property names in {@link ValidationRules}.
      *
-     * @param property       the property name
-     * @param conditionConstraint the property constraint
+     * @param property The name of the property this rule is defined for
+     * @param permissions The permissions that must be evaluated to {@code true}
+     * @param condition The {@link Condition} that must be evaluated to {@code true}
+     * @return the {@link ValidationRule}
      */
-    public ValidationRule mandatory(String property, Permissions permissions, ConditionConstraint conditionConstraint) {
-        return mandatory(property, permissions, ConditionsGroup.AND(conditionConstraint));
+    public ValidationRule mandatory(String property, Permissions permissions, Condition condition) {
+        return mandatory(property, permissions, ConditionsGroup.AND(condition));
     }
 
     /**
@@ -216,8 +252,8 @@ public class ValidationRules<T> {
         return immutable(property, NO_PERMISSIONS, NO_CONDITIONS_TOP_GROUP);
     }
 
-    public ValidationRule immutable(String property, ConditionConstraint conditionConstraint) {
-        return immutable(property, NO_PERMISSIONS, ConditionsGroup.AND(conditionConstraint));
+    public ValidationRule immutable(String property, Condition condition) {
+        return immutable(property, NO_PERMISSIONS, ConditionsGroup.AND(condition));
     }
 
     public ValidationRule immutable(String property, ConditionsAndGroup conditionsAndGroup) {
@@ -236,8 +272,8 @@ public class ValidationRules<T> {
         return immutable(property, permissions, NO_CONDITIONS_TOP_GROUP);
     }
 
-    public ValidationRule immutable(String property, Permissions permissions, ConditionConstraint conditionConstraint) {
-        return immutable(property, permissions, ConditionsGroup.AND(conditionConstraint));
+    public ValidationRule immutable(String property, Permissions permissions, Condition condition) {
+        return immutable(property, permissions, ConditionsGroup.AND(condition));
     }
 
     public ValidationRule immutable(String property, Permissions permissions, ConditionsAndGroup conditionsAndGroup) {
@@ -268,11 +304,11 @@ public class ValidationRules<T> {
      *
      * @param property       the property name
      * @param constraint the constraint
-     * @param conditionConstraint the property constraint
+     * @param condition the property constraint
      */
     public <C extends Constraint & IsCreateConstraint> ValidationRule content(String property, C constraint,
-            ConditionConstraint conditionConstraint) {
-        return content(property, constraint, NO_PERMISSIONS, ConditionsGroup.AND(conditionConstraint));
+            Condition condition) {
+        return content(property, constraint, NO_PERMISSIONS, ConditionsGroup.AND(condition));
     }
 
     public <C extends Constraint & IsCreateConstraint> ValidationRule content(String property, C constraint,
@@ -309,11 +345,11 @@ public class ValidationRules<T> {
      *                 simple, nested or indexed name.
      * @param constraint the constraint that applies to the value of this property.
      * @param permissions permissions that restrict the validity of the rule.
-     * @param conditionConstraint one or more property related conditions that restrict the validity of the rule.
+     * @param condition one or more property related conditions that restrict the validity of the rule.
      */
     public <C extends Constraint & IsCreateConstraint> ValidationRule content(String property, C constraint,
-            Permissions permissions, ConditionConstraint conditionConstraint) {
-        return content(property, constraint, permissions, ConditionsGroup.AND(conditionConstraint));
+            Permissions permissions, Condition condition) {
+        return content(property, constraint, permissions, ConditionsGroup.AND(condition));
     }
 
     public <C extends Constraint & IsCreateConstraint> ValidationRule content(String property, C constraint,
@@ -337,8 +373,8 @@ public class ValidationRules<T> {
     }
 
     public <C extends Constraint & IsUpdateConstraint> ValidationRule update(String property, C constraint,
-            ConditionConstraint conditionConstraint) {
-        return update(property, constraint, NO_PERMISSIONS, ConditionsGroup.AND(conditionConstraint));
+            Condition condition) {
+        return update(property, constraint, NO_PERMISSIONS, ConditionsGroup.AND(condition));
     }
 
     public <C extends Constraint & IsUpdateConstraint> ValidationRule update(String property, C constraint,
@@ -362,8 +398,8 @@ public class ValidationRules<T> {
     }
 
     public <C extends Constraint & IsUpdateConstraint> ValidationRule update(String property, C constraint,
-            Permissions permissions, ConditionConstraint conditionConstraint) {
-        return update(property, constraint, permissions, ConditionsGroup.AND(conditionConstraint));
+            Permissions permissions, Condition condition) {
+        return update(property, constraint, permissions, ConditionsGroup.AND(condition));
     }
 
     public <C extends Constraint & IsUpdateConstraint> ValidationRule update(String property, C constraint,
@@ -388,14 +424,13 @@ public class ValidationRules<T> {
         return addPropertyConditions(property, constraint, permissions, topGroup, RulesType.UPDATE, true);
     }
 
-    public ValidationRule addPropertyConditions(String property, Constraint constraint,
-            Permissions permissions, ConditionsTopGroup topGroup, RulesType ruleType,
+    private ValidationRule addPropertyConditions(String property, Constraint constraint,
+            Permissions permissions, ConditionsTopGroup conditionsTopGroup, RulesType ruleType,
             boolean isAggregateFunctionAllowed) {
-        Objects.requireNonNull(property, "property must not be null");
-        Objects.requireNonNull(constraint, "constraint must not be null");
-        Objects.requireNonNull(permissions, "permissions must not be null");
-        Objects.requireNonNull(topGroup, "topGroup must not be null");
-        Objects.requireNonNull(ruleType, "topGroup must not be null");
+        illegalArgumentExceptionIfNull(property, "property");
+        illegalArgumentExceptionIfNull(constraint, "constraint");
+        illegalArgumentExceptionIfNull(permissions, "permissions");
+        illegalArgumentExceptionIfNull(conditionsTopGroup, "conditionsTopGroup");
         if (property.isEmpty()) {
             throw new IllegalArgumentException("property must not be empty");
         }
@@ -408,27 +443,33 @@ public class ValidationRules<T> {
         if (constraint != NO_CONSTRAINT) {
             validateConstraint(property, constraint, ruleType, true);
         }
-        validatePropertyAndConditions(property, topGroup, ruleType);
+        validatePropertyAndConditions(property, conditionsTopGroup, ruleType);
 
-        ValidationRule newValidationRule = new ValidationRule(property, constraint, permissions, topGroup);
+        ValidationRule newValidationRule = new ValidationRule(property, constraint, permissions, conditionsTopGroup);
         rulesTypeMap.get(ruleType).getOrInit(property).add(newValidationRule);
         return newValidationRule;
+    }
+
+    private void illegalArgumentExceptionIfNull(Object object, String argumentName) {
+        if (object == null) {
+            throw new IllegalArgumentException(argumentName + "  must not be null");
+        }
     }
 
     private void validatePropertyAndConditions(String property, ConditionsTopGroup topGroup, RulesType ruleType) {
         Validator.instance().validateProperty(property, typeClass);
         for (ConditionsGroup group : topGroup.getConditionsGroups()) {
-            for (ConditionConstraint conditionConstraint : group.getConstraints()) {
-                validateConditionConstraint(conditionConstraint, ruleType);
+            for (Condition condition : group.getConditions()) {
+                validateConditionConstraint(condition, ruleType);
             }
         }
     }
 
-    private void validateConditionConstraint(ConditionConstraint conditionConstraint, RulesType ruleType) {
-        if (conditionConstraint == null) {
+    private void validateConditionConstraint(Condition condition, RulesType ruleType) {
+        if (condition == null) {
             throw new IllegalArgumentException("PropConstraint must not be null");
         }
-        validateConstraint(conditionConstraint.property(), conditionConstraint.constraint(), ruleType, false);
+        validateConstraint(condition.property(), condition.constraint(), ruleType, false);
     }
 
     private void validateConstraint(String property, Constraint constraint, RulesType ruleType,

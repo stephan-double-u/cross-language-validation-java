@@ -42,7 +42,8 @@ public class ValidationTesting {
                         ConditionsGroup.OR(
                                 Condition.of("id", Equals.none(1, 2, 3)),
                                 Condition.of("id", Equals.none(4))),
-                        ConditionsGroup.AND(Condition.of("id", Equals.any(1)))));
+                        ConditionsGroup.AND(
+                                Condition.of("id", Equals.any(1)))));
 
         rules.mandatory("articleList[0].name",
                 Condition.of("articleArray[0].name", Equals.null_()));
@@ -79,7 +80,7 @@ public class ValidationTesting {
                         Condition.of("status", Equals.notNull())
                 ));
 
-        final ConditionConstraint a = Condition.of("someString", Size.minMax(1, 100));
+        final Condition a = Condition.of("someString", Size.minMax(1, 100));
 
         rules.immutable("id");
         rules.immutable("status", Permissions.any(Perms.aaa), a);

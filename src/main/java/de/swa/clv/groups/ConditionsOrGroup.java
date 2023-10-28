@@ -1,11 +1,11 @@
 package de.swa.clv.groups;
 
-import de.swa.clv.constraints.ConditionConstraint;
+import de.swa.clv.constraints.Condition;
 
 public class ConditionsOrGroup extends ConditionsGroup {
 
-    protected ConditionsOrGroup(final ConditionConstraint... oredConditionConstraints) {
-        constraints = oredConditionConstraints;
+    protected ConditionsOrGroup(final Condition... oredConditions) {
+        conditions = oredConditions;
     }
 
 }

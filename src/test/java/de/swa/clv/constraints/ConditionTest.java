@@ -4,13 +4,13 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class ConditionConstraintTest {
+class ConditionTest {
 
     @Test
     void serializeToJson() {
-        final ConditionConstraint conditionConstraint = new ConditionConstraint("prop1", Size.minMax(1, 100));
+        final Condition condition = Condition.of("prop1", Size.minMax(1, 100));
         assertEquals("""
                 {"property":"prop1","constraint":{"type":"SIZE","min":1,"max":100}}""",
-                conditionConstraint.serializeToJson());
+                condition.serializeToJson());
     }
 }

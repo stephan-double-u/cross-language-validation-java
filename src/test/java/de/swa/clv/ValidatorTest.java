@@ -25,47 +25,30 @@ class ValidatorTest {
 
     @Test
     void validateProperty_simplePropertyInherited() {
-        try {
-            Validator.instance().validateProperty("id", ClassUnderTest.class);
-        } catch (IllegalArgumentException e) {
-            fail();
-        }
+        assertDoesNotThrow(() -> Validator.instance().validateProperty("id", ClassUnderTest.class));
     }
 
     @Test
     void validateProperty_simpleProperty() {
-        try {
-            Validator.instance().validateProperty("stringProp", ClassUnderTest.class);
-        } catch (IllegalArgumentException e) {
-            fail();
-        }
+        assertDoesNotThrow(() -> Validator.instance().validateProperty("stringProp", ClassUnderTest.class));
     }
 
     @Test
     void validateProperty_nestedProperty() {
-        try {
-            Validator.instance().validateProperty("subClassProp.stringProp", ClassUnderTest.class);
-        } catch (IllegalArgumentException e) {
-            fail();
-        }
+        assertDoesNotThrow(() -> Validator.instance().validateProperty("subClassProp.stringProp",
+                ClassUnderTest.class));
     }
 
     @Test
     void validateProperty_nestedIndexedArrayProperty() {
-        try {
-            Validator.instance().validateProperty("subClassProp.stringArrayProp[0]", ClassUnderTest.class);
-        } catch (IllegalArgumentException e) {
-            fail();
-        }
+        assertDoesNotThrow(() -> Validator.instance().validateProperty("subClassProp.stringArrayProp[0]",
+                ClassUnderTest.class));
     }
 
     @Test
     void validateProperty_indexedArrayIndexedListProperty() {
-        try {
-            Validator.instance().validateProperty("subClassArrayProp[0].stringListProp[999]", ClassUnderTest.class);
-        } catch (IllegalArgumentException e) {
-            fail();
-        }
+        assertDoesNotThrow(() -> Validator.instance().validateProperty("subClassArrayProp[0].stringListProp[999]",
+                ClassUnderTest.class));
     }
 
     @Test
@@ -370,7 +353,7 @@ class ValidatorTest {
 
     @Test
     void validateContentRules_sumEverywhere() {
-        ConditionConstraint condition = Condition.of("subClassArrayProp[*].integerListProp[*]#sum",
+        Condition condition = Condition.of("subClassArrayProp[*].integerListProp[*]#sum",
                 Equals.any(12));
         // this assures, that Equals.anyRef below is validated at all!
         ClassUnderTest entity = new ClassUnderTest();
@@ -387,7 +370,7 @@ class ValidatorTest {
 
     @Test
     void validateContentRules_distinctEverywhere() {
-        ConditionConstraint condition = Condition.of("subClassArrayProp[0].integerListProp[*]#distinct",
+        Condition condition = Condition.of("subClassArrayProp[0].integerListProp[*]#distinct",
                 Equals.any(true));
         // this assures, that Equals.anyRef below is validated at all!
         ClassUnderTest entity = new ClassUnderTest();
@@ -676,8 +659,7 @@ class ValidatorTest {
     void updateRulePropertyConstraint_ofCurrent() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.update("stringProp", 
-                Equals.anyRef("stringProp").ofCurrent(),
-                Condition.of("enumProp", Equals.null_())); //TODO ConditionContraints doch optional!
+                Equals.anyRef("stringProp").ofCurrent());
 
         ClassUnderTest modifiedObject = new ClassUnderTest("FOO", null);
         ClassUnderTest originalObject = new ClassUnderTest("ZOO", null);
@@ -714,7 +696,7 @@ class ValidatorTest {
         ClassUnderTest thisEntity = new ClassUnderTest();
         thisEntity.setFloatArray(new float[] {1.11f, 2.22f, 3.33f});
         ClassUnderTest thatEntity = new ClassUnderTest();
-        thatEntity.setFloatArray(new float[] {4.44f, 2.22f});
+        thatEntity.setFloatArray(new float[] {4.44f, 2.22f}); // same sum
         boolean valid = Validator.instance().validateValueComparerConstraint("floatArray[*]",
                 AggregateFunction.sum, Value.unchanged(), thisEntity, thatEntity);
         assertTrue(valid);
@@ -725,7 +707,7 @@ class ValidatorTest {
         ClassUnderTest thisEntity = new ClassUnderTest();
         thisEntity.setFloatArray(new float[] {1.11f, 2.22f, 3.33f});
         ClassUnderTest thatEntity = new ClassUnderTest();
-        thatEntity.setFloatArray(new float[] {1.11f, 2.22f, 3.34f});
+        thatEntity.setFloatArray(new float[] {1.11f, 2.22f, 3.34f}); // last element changed
         boolean valid = Validator.instance().validateValueComparerConstraint("floatArray[*]",
                 AggregateFunction.sum, Value.unchanged(), thisEntity, thatEntity);
         assertFalse(valid);

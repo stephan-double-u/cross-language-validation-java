@@ -30,10 +30,18 @@ public abstract class Constraint extends ConstraintRoot {
         this.nullEqualsTrue = nullEqualsTrue;
     }
 
-    static void assertValuesAndSizeOk(Object[] values) {
+    public static void assertValuesAndSizeOk(Object[] values) {
+        assertNotNull(values);
+        assertNotEmpty(values);
+    }
+
+    public static void assertNotNull(Object[] values) {
         if (values == null || Arrays.asList(values).contains(null)) {
             throw new IllegalArgumentException(NULL_VALUE_ERR_MESSAGE);
         }
+    }
+
+    public static void assertNotEmpty(Object[] values) {
         if (values.length == 0) {
             throw new IllegalArgumentException(EMPTY_VALUES_ERR_MESSAGE);
         }

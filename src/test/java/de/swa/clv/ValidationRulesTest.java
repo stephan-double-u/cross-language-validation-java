@@ -8,14 +8,14 @@ import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import de.swa.clv.constraints.*;
+import de.swa.clv.groups.ConditionsAndGroup;
+import de.swa.clv.groups.ConditionsOrGroup;
+import de.swa.clv.groups.ConditionsTopGroup;
 import de.swa.clv.test.Util;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +47,51 @@ class ValidationRulesTest {
 
     private static InputStream inputStreamFromClasspath(String path) {
         return Thread.currentThread().getContextClassLoader().getResourceAsStream(path);
+    }
+
+    @Test
+    void propertyMustNotBeNull() {
+        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
+        assertThrows(IllegalArgumentException.class, () -> rules.mandatory(null));
+    }
+
+    @Test
+    void constraintMustNotBeNull() {
+        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
+        assertThrows(IllegalArgumentException.class, () -> rules.content("stringProp", null));
+    }
+
+    @Test
+    void permissionsMustNotBeNull() {
+        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
+        assertThrows(IllegalArgumentException.class, () -> rules.mandatory("stringProp", (Permissions) null));
+    }
+
+    @Test
+    void conditionsTopGroupMustNotBeNull() {
+        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
+        assertThrows(IllegalArgumentException.class, () -> rules.mandatory("stringProp",
+                (ConditionsTopGroup) null));
+    }
+
+    @Test
+    void conditionMustNotBeNull() {
+        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
+        assertThrows(IllegalArgumentException.class, () -> rules.immutable("stringProp", (Condition) null));
+    }
+
+    @Test
+    void conditionAndGroupMustNotBeNull() {
+        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
+        assertThrows(IllegalArgumentException.class, () -> rules.immutable("stringProp",
+                (ConditionsAndGroup) null));
+    }
+
+    @Test
+    void conditionOrGroupMustNotBeNull() {
+        ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
+        assertThrows(IllegalArgumentException.class, () -> rules.immutable("stringProp",
+                (ConditionsOrGroup) null));
     }
 
     @Test
@@ -133,24 +178,15 @@ class ValidationRulesTest {
     @Test
     void mandatoryIndexedPropertiesEverywhere() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
-        try {
-            rules.mandatory("stringArrayProp[1-3]", Condition.of("stringArrayProp[4]",
-                    Equals.anyRef("stringArrayProp[5,6]")));
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail(e.getMessage());
-        }
+        assertDoesNotThrow(() ->
+                rules.mandatory("stringArrayProp[1-3]",
+                        Condition.of("stringArrayProp[4]", Equals.anyRef("stringArrayProp[5,6]"))));
     }
 
     @Test
     void content_sum_integer_range_max() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
-        try {
-            rules.content("integerList[*]#sum", Range.max(10));
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("" + e.getMessage());
-        }
+        assertDoesNotThrow(() -> rules.content("integerList[*]#sum", Range.max(10)));
     }
 
     @Test
@@ -167,42 +203,25 @@ class ValidationRulesTest {
     @Test
     void content_distinct_integer_equals_true() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
-        try {
-            rules.content("integerList[*]#distinct", Equals.any(true));
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("" + e.getMessage());
-        }
+        assertDoesNotThrow(() -> rules.content("integerList[*]#distinct", Equals.any(true)));
     }
 
     @Test
     void mandatoryIndexedPropertyWildcardUpperBounds() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
-        try {
-            rules.mandatory("extNumber[*]");
-        } catch (Exception e) {
-            fail();
-        }
+        assertDoesNotThrow(() -> rules.mandatory("extNumber[*]"));
     }
 
     @Test
     void mandatoryObjectListProperty() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
-        try {
-            rules.mandatory("uuidList[*]");
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
+        assertDoesNotThrow(() -> rules.mandatory("uuidList[*]"));
     }
 
     @Test
     void content_localDate_quarterAny() {
         ValidationRules<ClassOne> rules = new ValidationRules<>(ClassOne.class);
-        try {
-            rules.content("localDateProp", Quarter.any(2, 4));
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
+        assertDoesNotThrow(() -> rules.content("localDateProp", Quarter.any(2, 4)));
     }
 
     @Test

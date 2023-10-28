@@ -20,6 +20,10 @@ import java.util.stream.IntStream;
 import static de.swa.clv.ValidationRules.NO_PERMISSIONS;
 
 @SuppressWarnings("squid:S6204")
+/**
+ *  This class implements the validator part as defined by the
+ *  <a href="https://github.com/stephan-double-u/cross-language-validation-schema">Cross Language Validation Schema</a>.
+ */
 public class Validator {
 
     private final Logger log = LoggerFactory.getLogger(Validator.class);
@@ -429,6 +433,10 @@ public class Validator {
 
     // If groups are ANDed each group must be met, if they are ORed only one must be met.
     private boolean allConditionsAreMet(ConditionsTopGroup topGroup, Object thisEntity, Object thatEntity) {
+        if (topGroup.equals(ValidationRules.NO_CONDITIONS_TOP_GROUP)) {
+            log.debug("No constraints defined -> allConstraintsAreMet = true");
+            return true;
+        }
         if (topGroup.getConditionsGroups().length == 0) {
             log.debug("No constraints defined -> allConstraintsAreMet = true");
             return true;
@@ -451,14 +459,14 @@ public class Validator {
     // All constraints of an AndGroup must be true, but only one of an OrGroup!
     private boolean groupConditionsAreMet(ConditionsGroup group, Object thisEntity, Object thatEntity) {
         if (group instanceof ConditionsAndGroup) {
-            for (final ConditionConstraint constraint : group.getConstraints()) {
+            for (final Condition constraint : group.getConditions()) {
                 if (!conditionIsMet(constraint, thisEntity, thatEntity)) {
                     return false;
                 }
             }
             return true;
         } else if (group instanceof ConditionsOrGroup) {
-            for (final ConditionConstraint constraint : group.getConstraints()) {
+            for (final Condition constraint : group.getConditions()) {
                 if (conditionIsMet(constraint, thisEntity, thatEntity)) {
                     return true;
                 }
@@ -469,12 +477,12 @@ public class Validator {
         }
     }
 
-    public boolean conditionIsMet(ConditionConstraint conditionConstraint, Object thisEntity, Object thatEntity) {
-        String constraintProperty = conditionConstraint.property();
+    public boolean conditionIsMet(Condition condition, Object thisEntity, Object thatEntity) {
+        String constraintProperty = condition.property();
         AggregateFunction aggregateFunction = validateAndGetTerminalAggregateFunctionIfExist(constraintProperty)
                 .orElseGet(() -> null);
         String pureProperty = constraintProperty.split("#")[0];
-        Constraint propertyConstraint = conditionConstraint.constraint();
+        Constraint propertyConstraint = condition.constraint();
 
         if (propertyConstraint instanceof ValueComparer valueComparer) {
             return validateValueComparerConstraint(pureProperty, aggregateFunction, valueComparer, thisEntity,
