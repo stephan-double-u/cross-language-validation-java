@@ -613,8 +613,7 @@ class ValidatorTest {
         ValidationRules<Record> rules = new ValidationRules<>(Record.class);
         assertThrows(IllegalArgumentException.class,
             () -> rules.content("aString", 
-                    Equals.anyRef("aString").ofCurrent(),
-                    Condition.of("aString", Equals.anyRef("aString"))));
+                    Equals.anyRef("aString").ofCurrent()));
     }
 
     @Test

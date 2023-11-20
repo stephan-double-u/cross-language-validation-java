@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 /**
  * Constraint to express expectations about the year of a date property.
  */
-class YearAny extends YearConstraint implements IsCreateConstraint, IsUpdateConstraint {
+class YearAny extends Dates implements IsCreateConstraint, IsUpdateConstraint {
 
     private static final Logger log = LoggerFactory.getLogger(YearAny.class);
 
@@ -42,6 +42,11 @@ class YearAny extends YearConstraint implements IsCreateConstraint, IsUpdateCons
                 .anyMatch(value -> EqualsConstraint.equalsUntyped(dateAsLocalDateTime.getYear(), value));
         log.debug("'{}' is{}" + " within one year of {}", dateToValidate, (match ? "" : " NOT"), getValues());
         return match;
+    }
+
+    @Override
+    public String serializeToJson() {
+        return serializeToJsonAsValuesArray();
     }
 
 }

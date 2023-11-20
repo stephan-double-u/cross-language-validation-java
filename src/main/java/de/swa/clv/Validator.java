@@ -354,7 +354,7 @@ public class Validator {
                         throw new IllegalArgumentException("Property '" + property + "' is not a declared field of " +
                                 "class " + startClass + " (resp. its super classes)");
                     }
-                    return getFieldOrFail(property, superClass.getSuperclass());
+                    return getFieldOrFail(property, startClass, superClass.getSuperclass());
                 });
     }
     private GetterInfo createGetterInfo(final Method getterMethod) {

@@ -14,8 +14,7 @@ The requirements for an implementation of that schema are described in the schem
 The implementation supports defining validation rules for `Records` and therefore requires at least _Java 17_. 
 
 ## Maven
-Until this artifact is available on Maven Central, it can be used with by building it with 
-[JitPack](https://jitpack.io/).
+Until this artifact is available on Maven Central, it can be used by building it with [JitPack](https://jitpack.io/).
 
 Add the `repository jitpack.io` and the `dependency cross-language-validation-java` to the `pom.xml` file.
 
@@ -34,7 +33,7 @@ Add the `repository jitpack.io` and the `dependency cross-language-validation-ja
       <dependency>
         <groupId>com.github.stephan-double-u</groupId>
         <artifactId>cross-language-validation-java</artifactId>
-        <version>v0.11.1</version>
+        <version>v0.12.0</version>
       </dependency>
     </dependencies>
 
