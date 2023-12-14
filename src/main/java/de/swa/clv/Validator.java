@@ -14,6 +14,7 @@ import java.beans.MethodDescriptor;
 import java.lang.reflect.*;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -32,6 +33,7 @@ public class Validator {
     public static final String ERR_MSG_PROPERTY_NULL = "property must not be null";
     public static final String ERR_MSG_OBJECT_NULL = "object must not be null";
     public static final String ERR_MSG_USER_PERMISSIONS_NULL = "userPermissions must not be null";
+
 
     @SuppressWarnings("squid:S3878")
     private static final UserPermissions NO_USER_PERMISSIONS = UserPermissions.of(new String[0]);
@@ -786,10 +788,12 @@ public class Validator {
     }
 
     private record PropertyDescriptor(String propertyName, Class<?> clazz) {
+        private static final Pattern PATTERN = Pattern.compile("\\[.+?\\]");
+
         private PropertyDescriptor(String propertyName, Class<?> clazz) {
             // foo[*], foo[1-3] and similar variants should result in the same PropertyDescriptor
             // therefore the index itself is removed
-            this.propertyName = propertyName.replaceAll("\\[.+?\\]", "[]");
+            this.propertyName = PATTERN.matcher(propertyName).replaceAll("[]");
             this.clazz = clazz;
         }
 
