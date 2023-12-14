@@ -33,7 +33,7 @@ Add the `repository jitpack.io` and the `dependency cross-language-validation-ja
       <dependency>
         <groupId>com.github.stephan-double-u</groupId>
         <artifactId>cross-language-validation-java</artifactId>
-        <version>v0.12.1</version>
+        <version>v0.12.2</version>
       </dependency>
     </dependencies>
 
