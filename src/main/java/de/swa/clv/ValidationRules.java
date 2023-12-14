@@ -493,7 +493,7 @@ public class ValidationRules<T> {
         constraint.validateValuesOrFail(typeClass, propertyType);
 
         if (constraint instanceof ReferenceProperties<?> refConstraint) {
-            validateReferencePropertiesContraint(refConstraint, ruleType, isPropertyConstraint);
+            validateReferencePropertiesConstraint(refConstraint, ruleType, isPropertyConstraint);
         }
 
         if (constraint instanceof ValueComparer valueComparer) {
@@ -508,7 +508,7 @@ public class ValidationRules<T> {
         }
     }
 
-    private static void validateReferencePropertiesContraint(ReferenceProperties<?> refConstraint, RulesType ruleType,
+    private static void validateReferencePropertiesConstraint(ReferenceProperties<?> refConstraint, RulesType ruleType,
             boolean isPropertyConstraint) {
         // check correct usage of ofCurrent() resp. ofUpdate() methods for constraints with property references
         switch (ruleType) {
