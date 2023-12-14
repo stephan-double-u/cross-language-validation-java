@@ -3,7 +3,7 @@
 # Cross Language Validation Java 
 
 This library implements the producer and the validator part of the &#10169;
-[Cross Language Validation Schema](https://github.com/stephan-double-u/cross-language-validation-schema), 
+[Cross Language Validation Schema](https://github.com/stephan-double-u/cross-language-validation-schema) (version 0.12), 
 i.e. it provides:
 - a rich API to define all kinds of validation rules that are specified by that schema.
 - a validator that checks the validation rules against the relevant objects.
@@ -33,7 +33,7 @@ Add the `repository jitpack.io` and the `dependency cross-language-validation-ja
       <dependency>
         <groupId>com.github.stephan-double-u</groupId>
         <artifactId>cross-language-validation-java</artifactId>
-        <version>v0.12.0</version>
+        <version>v0.12.1</version>
       </dependency>
     </dependencies>
 
