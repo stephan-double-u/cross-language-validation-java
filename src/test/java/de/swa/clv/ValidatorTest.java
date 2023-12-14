@@ -586,77 +586,92 @@ class ValidatorTest {
     @Test
     void mandatoryRuleConditionConstraint_ofUpdate() {
         ValidationRules<Record> rules = new ValidationRules<>(Record.class);
-        assertThrows(IllegalArgumentException.class,
-            () -> rules.mandatory("aString",
-                    Condition.of("aString", Equals.anyRef("aString").ofUpdate())));
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> rules.mandatory("aString",
+                        Condition.of("aString", Equals.anyRef("aString").ofUpdate())));
+        assertEquals("The method calls ofUpdate() resp. ofCurrent() are not allowed for rules of type MANDATORY",
+                ex.getMessage());
     }
 
     @Test
     void mandatoryRuleConditionConstraint_ofCurrent() {
         ValidationRules<Record> rules = new ValidationRules<>(Record.class);
-        assertThrows(IllegalArgumentException.class,
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
             () -> rules.mandatory("aString",
                     Condition.of("aString", Equals.anyRef("aString").ofCurrent())));
+        assertEquals("The method calls ofUpdate() resp. ofCurrent() are not allowed for rules of type MANDATORY",
+                ex.getMessage());
     }
 
     @Test
     void contentRulePropertyConstraint_ofUpdate() {
         ValidationRules<Record> rules = new ValidationRules<>(Record.class);
-        assertThrows(IllegalArgumentException.class,
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
             () -> rules.content("aString", 
-                    Equals.anyRef("aString").ofUpdate(),
-                    Condition.of("aString", Equals.anyRef("aString"))));
+                    Equals.anyRef("aString").ofUpdate()));
+        assertEquals("The method calls ofUpdate() resp. ofCurrent() are not allowed for rules of type CONTENT",
+                ex.getMessage());
     }
 
     @Test
     void contentRulePropertyConstraint_ofCurrent() {
         ValidationRules<Record> rules = new ValidationRules<>(Record.class);
-        assertThrows(IllegalArgumentException.class,
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
             () -> rules.content("aString", 
                     Equals.anyRef("aString").ofCurrent()));
+        assertEquals("The method calls ofUpdate() resp. ofCurrent() are not allowed for rules of type CONTENT",
+                ex.getMessage());
     }
 
     @Test
     void contentRuleConditionConstraint_ofUpdate() {
         ValidationRules<Record> rules = new ValidationRules<>(Record.class);
-        assertThrows(IllegalArgumentException.class,
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
             () -> rules.content("aString", 
                     Equals.anyRef("aString"),
                     Condition.of("aString", Equals.anyRef("aString").ofUpdate())));
+        assertEquals("The method calls ofUpdate() resp. ofCurrent() are not allowed for rules of type CONTENT",
+                ex.getMessage());
     }
 
     @Test
     void contentRuleConditionConstraint_ofCurrent() {
         ValidationRules<Record> rules = new ValidationRules<>(Record.class);
-        assertThrows(IllegalArgumentException.class,
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
             () -> rules.content("aString", 
                     Equals.anyRef("aString"),
                     Condition.of("aString", Equals.anyRef("aString").ofCurrent())));
+        assertEquals("The method calls ofUpdate() resp. ofCurrent() are not allowed for rules of type CONTENT",
+                ex.getMessage());
     }
 
     @Test
     void immutableRuleConditionConstraint_ofUpdate() {
         ValidationRules<Record> rules = new ValidationRules<>(Record.class);
-        rules.immutable("aString", 
-                Condition.of("aString", Equals.anyRef("aString").ofUpdate()));
-        assertTrue(true);
+        assertDoesNotThrow(() -> rules.immutable("aString",
+                Condition.of("aString", Equals.anyRef("aString").ofUpdate())));
     }
 
     @Test
     void immutableRuleConditionConstraint_ofCurrent() {
         ValidationRules<Record> rules = new ValidationRules<>(Record.class);
-        assertThrows(IllegalArgumentException.class,
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
             () -> rules.immutable("aString", 
                     Condition.of("aString", Equals.anyRef("aString").ofCurrent())));
+        assertEquals("A condition constraint that references properties is always evaluated against the " +
+                        "'current' instance anyway. Using ofCurrent() is therefore considered as invalid here.",
+                ex.getMessage());
     }
 
     @Test
     void updateRulePropertyConstraint_ofUpdate() {
         ValidationRules<Record> rules = new ValidationRules<>(Record.class);
-        assertThrows(IllegalArgumentException.class,
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> rules.update("aString",
-                        Equals.anyRef("aString").ofUpdate(),
-                        Condition.of("aString", Equals.anyRef("aString"))));
+                        Equals.anyRef("aString").ofUpdate()));
+        assertEquals("A property constraint that references properties is always evaluated against the " +
+                        "'update' instance anyway. Using ofUpdate() is therefore considered as invalid here.",
+                ex.getMessage());
     }
 
     @Test
@@ -689,9 +704,12 @@ class ValidatorTest {
     @Test
     void updateRuleConditionConstraint_ofCurrent() {
         ValidationRules<Record> rules = new ValidationRules<>(Record.class);
-        assertThrows(IllegalArgumentException.class,
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> rules.update("aString", Equals.anyRef("aString"),
                         Condition.of("aString", Equals.anyRef("aString").ofCurrent())));
+        assertEquals("A condition constraint that references properties is always evaluated against the " +
+                        "'current' instance anyway. Using ofCurrent() is therefore considered as invalid here.",
+                ex.getMessage());
     }
 
 
