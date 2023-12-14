@@ -26,7 +26,7 @@ import static de.swa.clv.ValidationRules.NO_PERMISSIONS;
  */
 public class Validator {
 
-    private final Logger log = LoggerFactory.getLogger(Validator.class);
+    private final static Logger log = LoggerFactory.getLogger(Validator.class);
 
     public static final String ERR_MSG_RULES_NULL = "rules must not be null";
     public static final String ERR_MSG_PROPERTY_NULL = "property must not be null";
@@ -267,8 +267,11 @@ public class Validator {
             }
             propertyPartClass = getterInfo.getReturnType();
             propertyKey += ("".equals(propertyKey) ? "" : ".") + propertyPart;
-            propertyToGetterReturnTypeCache.put(new PropertyDescriptor(propertyKey, propertyClass),
-                    getterInfo);
+            PropertyDescriptor propertyDescriptor = new PropertyDescriptor(propertyKey, propertyClass);
+            if (!propertyToGetterReturnTypeCache.containsKey(propertyDescriptor)) {
+                log.debug("Cache: {} -> {}", propertyDescriptor, getterInfo);
+                propertyToGetterReturnTypeCache.put(propertyDescriptor, getterInfo);
+            }
         }
         return propertyPartClass;
     }
@@ -490,7 +493,7 @@ public class Validator {
     public boolean conditionIsMet(Condition condition, Object thisEntity, Object thatEntity) {
         String constraintProperty = condition.property();
         AggregateFunction aggregateFunction = validateAndGetTerminalAggregateFunctionIfExist(constraintProperty)
-                .orElseGet(() -> null);
+                .orElse(null);
         String pureProperty = constraintProperty.split("#")[0];
         Constraint propertyConstraint = condition.constraint();
 
@@ -783,6 +786,26 @@ public class Validator {
     }
 
     private record PropertyDescriptor(String propertyName, Class<?> clazz) {
+        private PropertyDescriptor(String propertyName, Class<?> clazz) {
+            // foo[*], foo[1-3] and similar variants should result in the same PropertyDescriptor
+            // therefore the index itself is removed
+            this.propertyName = propertyName.replaceAll("\\[.+?\\]", "[]");
+            this.clazz = clazz;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (!(o instanceof PropertyDescriptor that))
+                return false;
+            return Objects.equals(propertyName, that.propertyName) && Objects.equals(clazz, that.clazz);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(propertyName, clazz);
+        }
     }
 
     static class GetterInfo {
