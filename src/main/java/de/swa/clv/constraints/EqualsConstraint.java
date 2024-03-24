@@ -52,14 +52,14 @@ public abstract class EqualsConstraint extends Constraint {
         final Class<?> wrappedClass = (clazz.isPrimitive()) ? TypeHelper.PRIMITIVE_TO_WRAPPER_TYPES.get(clazz) : clazz;
         // EqualsNull and EqualsNotNull have no values
         Class<?> valueClass = getValues() != null ? getValues().get(0).getClass() : null;
-        //TODO allow LocalDateTime
         return (String.class == clazz || Enum.class.isAssignableFrom(clazz))
-                && (valueClass == null || String.class == valueClass || Enum.class.isAssignableFrom(valueClass))
-                || (Boolean.class == wrappedClass // Boolean is final
+                        && (valueClass == null || String.class == valueClass || Enum.class.isAssignableFrom(valueClass))
                 || Number.class.isAssignableFrom(wrappedClass)
-                || LocalDate.class == wrappedClass  // LocalDate is final
-                || Date.class.isAssignableFrom(wrappedClass))
-                && (valueClass == null || wrappedClass == valueClass);
+                        && (valueClass == null || Number.class.isAssignableFrom(valueClass))
+                || (Boolean.class == wrappedClass // Boolean is final
+                        || LocalDate.class == wrappedClass  // LocalDate is final
+                        || Date.class.isAssignableFrom(wrappedClass))
+                        && (valueClass == null || wrappedClass == valueClass);
     }
 
     @Override

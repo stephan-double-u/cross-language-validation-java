@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class EqualsAnyRefTest {
 
-    private static Foo foo = new Foo(new Bar("baz", Enum.ABC, (short) 1, true,
+    private static Foo foo = new Foo(new Bar("baz", Enum.ABC, 1, 2L, true,
             LocalDate.of(2000, Month.JANUARY, 1),
             new Date(LocalDate.of(2000, Month.JANUARY, 1).toEpochDay())));
 
@@ -77,10 +77,11 @@ class EqualsAnyRefTest {
 
     @Test
     void validateNumber() {
-        EqualsAnyRef constraint = Equals.anyRef("bar.intProp");
+        EqualsAnyRef constraint = Equals.anyRef("bar.intProp", "bar.longProp");
         // Validating caches the getIntProp() method!
         Validator.instance().validateProperty("bar.intProp", Foo.class);
-        assertTrue(constraint.validate(1, foo));
+        Validator.instance().validateProperty("bar.longProp", Foo.class);
+        assertTrue(constraint.validate(2, foo));
     }
 
     @Test
@@ -204,14 +205,16 @@ class EqualsAnyRefTest {
         private String stringProp;
         private Enum enumProp;
         private int intProp;
+        private Long longProp;
         private Boolean booleanProp;
         private LocalDate localDateProp;
         private Date dateProp;
 
-        public Bar(String stringProp, Enum enumProp, int intProp, Boolean booleanProp, LocalDate localDateProp, Date dateProp) {
+        public Bar(String stringProp, Enum enumProp, int intProp, Long longProp, Boolean booleanProp, LocalDate localDateProp, Date dateProp) {
             this.stringProp = stringProp;
             this.enumProp = enumProp;
             this.intProp = intProp;
+            this.longProp = longProp;
             this.booleanProp = booleanProp;
             this.localDateProp = localDateProp;
             this.dateProp = dateProp;
@@ -225,6 +228,7 @@ class EqualsAnyRefTest {
         public int getIntProp() {
             return intProp;
         }
+        public Long getLongProp() {return longProp;}
         public Boolean getBooleanProp() {
             return booleanProp;
         }

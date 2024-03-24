@@ -97,11 +97,6 @@ public abstract class Equals extends Constraint {
         return new EqualsNone(false, values);
     }
 
-    public static EqualsNone none(final Long... values) {
-        assertValuesAndSizeOk(values);
-        return new EqualsNone(true, values);
-    }
-
     public static EqualsNone none(final Boolean... values) {
         assertValuesAndSizeOk(values);
         return new EqualsNone(true, values);
@@ -142,9 +137,6 @@ public abstract class Equals extends Constraint {
         return new EqualsNoneRef(false, values);
     }
 
-    /*
-     * Null related methods
-     */
     @SuppressWarnings("squid:S100")
     public static EqualsNull null_() {
         return new EqualsNull();
