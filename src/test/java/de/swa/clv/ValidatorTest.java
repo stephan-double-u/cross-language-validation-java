@@ -92,6 +92,7 @@ class ValidatorTest {
 
 
     private ValidationRules<ClassUnderTest> classUnderTestRules;
+
     @BeforeEach
     void before() {
         classUnderTestRules = new ValidationRules<>(ClassUnderTest.class);
@@ -103,6 +104,16 @@ class ValidatorTest {
                 .errorCodeControl(UseType.AS_SUFFIX, "#1st");
         classUnderTestRules.immutable("enumProp", Condition.of("stringProp", Equals.null_()))
                 .errorCodeControl(UseType.AS_SUFFIX, "#2nd");
+    }
+
+    @Test
+    void validate_methodGetter() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.content("methodValue", Equals.any("fooONE"));
+        rules.content("methodList[0]", Equals.any("foo"));
+        ClassUnderTest object = new ClassUnderTest("foo", SomeEnum.ONE);
+        List<String> errors = Validator.instance().validateContentRules(object, rules);
+        assertTrue(errors.isEmpty(), errors.toString());
     }
 
     @Test
@@ -256,6 +267,17 @@ class ValidatorTest {
         ClassUnderTest modified1 = new ClassUnderTest("otherString", SomeEnum.TWO);
         List<String> errors = Validator.instance().validateImmutableRules(original, modified1, classUnderTestRules);
         assertEquals(List.of("error.validation.immutable.classundertest.enumProp#1st"), errors);
+    }
+
+    @Test
+    void validateImmutableRules_immutableEntity() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.immutable("*",
+                Condition.of("stringProp", Equals.any("archived")));
+        List<String> errors = Validator.instance().validateImmutableRules(
+                new ClassUnderTest("archived", SomeEnum.ONE), new ClassUnderTest(), rules);
+        assertEquals(List.of(
+                "error.validation.immutable.classundertest.*"), errors);
     }
 
     @Test
@@ -520,12 +542,15 @@ class ValidatorTest {
         rules.mandatory("aString", Condition.of("aString", Equals.anyRef("aString")));
         rules.immutable("aLong", Condition.of("aString", Equals.anyRef("aString")));
         rules.content("aLocalDate", Quarter.anyRef("aLong"));
+        rules.content("aStringList[0]", Equals.any("one"));
+        rules.content("methodValue", Equals.any("foo1"));
+        rules.content("methodList[0]", Equals.any("foo"));
 
-        Record record1 = new Record("foo", 1, A_LOCAL_DATE);
-        Record record2 = new Record("foo", 1, A_LOCAL_DATE);
-        List<String> errors = Validator.instance().validateMandatoryRules(record1, rules);
-        errors.addAll(Validator.instance().validateImmutableRules(record1, record2, rules));
-        errors.addAll(Validator.instance().validateContentRules(record1, rules));
+        Record current = new Record("foo", 1, A_LOCAL_DATE, List.of());
+        Record edited = new Record("foo", 1, A_LOCAL_DATE, List.of("one", "two"));
+        List<String> errors = Validator.instance().validateMandatoryRules(edited, rules);
+        errors.addAll(Validator.instance().validateImmutableRules(current, edited, rules));
+        errors.addAll(Validator.instance().validateContentRules(edited, rules));
 
         assertEquals(0, errors.size());
     }
@@ -536,10 +561,10 @@ class ValidatorTest {
         rules.mandatory("aString");
         rules.immutable("aLong", Condition.of("aString", Equals.null_()));
 
-        Record record1 = new Record(null, 1, A_LOCAL_DATE);
+        Record record1 = new Record(null, 1, A_LOCAL_DATE, List.of());
         List<String> errors = Validator.instance().validateMandatoryRules(record1, rules);
         errors.addAll(Validator.instance().validateContentRules(record1, rules));
-        Record record2 = new Record(null, 2, A_LOCAL_DATE);
+        Record record2 = new Record(null, 2, A_LOCAL_DATE, List.of());
         errors.addAll(Validator.instance().validateImmutableRules(record1, record2, rules));
 
         assertEquals(List.of("error.validation.mandatory.record.aString", "error.validation.immutable.record.aLong"),
@@ -860,7 +885,13 @@ class ValidatorTest {
     }
 
 
-    record Record(String aString, long aLong, LocalDate aLocalDate) {
+    record Record(String aString, long aLong, LocalDate aLocalDate, List<String> aStringList) {
+        public String methodValue() {
+            return aString + aLong;
+        }
+        public List<String> methodList() {
+            return List.of(aString, "" + aLong);
+        }
     }
 
     static class ClassUnderTest extends BaseClass implements Identifiable<Integer> {
@@ -888,6 +919,14 @@ class ValidatorTest {
             super(1);
             this.stringProp = stringProp;
             this.enumProp = enumProp;
+        }
+
+        public String getMethodValue() {
+            return stringProp + enumProp;
+        }
+
+        public List<String> getMethodList() {
+            return List.of(stringProp, "" + enumProp);
         }
 
         @Override

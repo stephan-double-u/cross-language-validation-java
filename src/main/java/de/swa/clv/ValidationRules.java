@@ -27,7 +27,8 @@ public class ValidationRules<T> {
 
     private final Logger log = LoggerFactory.getLogger(ValidationRules.class);
 
-    public static final String SCHEMA_VERSION = "0.12";
+    public static final String SCHEMA_VERSION = "0.13";
+    public static final String ALL_PROPERTIES_PLACEHOLDER = "*";
     public static final Constraint NO_CONSTRAINT = Equals.none("");
     @SuppressWarnings("squid:S3878")
     public static final Permissions NO_PERMISSIONS = Permissions.any(new String[0]);
@@ -457,7 +458,9 @@ public class ValidationRules<T> {
     }
 
     private void validatePropertyAndConditions(String property, ConditionsTopGroup topGroup, RulesType ruleType) {
-        Validator.instance().validateProperty(property, typeClass);
+        if (!RulesType.IMMUTABLE.equals(ruleType) || !ALL_PROPERTIES_PLACEHOLDER.equals(property)) {
+            Validator.instance().validateProperty(property, typeClass);
+        }
         for (ConditionsGroup group : topGroup.getConditionsGroups()) {
             for (Condition condition : group.getConditions()) {
                 validateConditionConstraint(condition, ruleType);

@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static de.swa.clv.ValidationRules.ALL_PROPERTIES_PLACEHOLDER;
 import static de.swa.clv.ValidationRules.NO_PERMISSIONS;
 
 @SuppressWarnings("squid:S6204")
@@ -99,7 +100,8 @@ public class Validator {
                 rules, RulesType.IMMUTABLE);
         log.debug("{}.{} IS{} immutable", rules.getSimpleTypeName(), property, (matchingRules.isEmpty() ? " NOT" : ""));
         return matchingRules.stream()
-                .filter(rule -> !conditionIsMet(Condition.of(property, Value.unchanged()), currentEntity, editedEntity))
+                .filter(rule -> ALL_PROPERTIES_PLACEHOLDER.equals(property)
+                        || !conditionIsMet(Condition.of(property, Value.unchanged()), currentEntity, editedEntity))
                 .map(rule -> buildErrorMessage(defaultImmutableMessagePrefix, null, rules.getTypeJsonKey(),
                         rule.getErrorCodeControl(), property)).toList();
     }
@@ -214,7 +216,6 @@ public class Validator {
             throw new IllegalArgumentException("Types must be equal: " + thisEntityClass + " " + thatEntityClass
                     + ", " + rulesTypeClass);
         }
-        INSTANCE.validateProperty(property, rulesTypeClass); // TODO? optional here
     }
 
     // Finds all rules with either no permissions or with matching permissions and with matching conditions
@@ -312,11 +313,9 @@ public class Validator {
         GetterInfo getterInfo;
         if (List.class.isAssignableFrom(getterMethod.getReturnType())) {
             // Process list
-            // 1. get list field (e.g. articles)
-            final Field listField = getFieldOrFail(propertyName, propertyPartClass);
-            // 2. get generic type (e.g. Article.class)
-            final ParameterizedType listType = (ParameterizedType) listField.getGenericType();
-            Type actualTypeArgument = listType.getActualTypeArguments()[0];
+            // 1. get generic type of list (e.g. Article.class)
+            ParameterizedType genericReturnType = (ParameterizedType) getterMethod.getGenericReturnType();
+            Type actualTypeArgument = genericReturnType.getActualTypeArguments()[0];
             if (actualTypeArgument instanceof WildcardType wildcardType) {
                 if (wildcardType.getLowerBounds().length == 0) {
                     actualTypeArgument = wildcardType.getUpperBounds()[0]; // '? extends Foo'
@@ -329,9 +328,9 @@ public class Validator {
                         "implemented yet: " + propertyPart);
             }
             final Class<?> listClass = (Class<?>) actualTypeArgument;
-            // 3. get getter method (e.g. getArticles())
+            // 2. get getter method (e.g. getArticles())
             getterInfo = createGetterInfo(getterMethod);
-            // 4. ignore return type 'java.util.List' and remember the type of its get(int) call (e.g. Article)
+            // 3. ignore return type 'java.util.List' and remember the type of its get(int) call (e.g. Article)
             getterInfo.setReturnType(listClass); // !
         } else if (getterMethod.getReturnType().isArray()) {
             // process array
@@ -416,7 +415,7 @@ public class Validator {
                 log.warn("{} does not exist! Returning null. Or better throw an exception? ...", propertyToLog);
             }
         } else {
-            log.error("Should not happen: indexed property is neiter a List nor an Array");
+            log.error("Should not happen: indexed property is neither a List nor an Array");
         }
         log.debug("Indexed object {}: {}", propertyToLog, indexedObject);
         return indexedObject;
@@ -715,12 +714,13 @@ public class Validator {
     }
 
     private Method getGetterMethodForRecord(String propertyName, Class<?> clazz, Map<String, Method> noArgGetters) {
-        return Arrays.stream(clazz.getRecordComponents())
-                .map(RecordComponent::getName)
-                .filter(fieldName -> fieldName.equals(propertyName))
-                .map(noArgGetters::get)
-                .findAny()
-                .orElse(null);
+        return noArgGetters.get(propertyName);
+//        return Arrays.stream(clazz.getRecordComponents())
+//                .map(RecordComponent::getName)
+//                .filter(fieldName -> fieldName.equals(propertyName))
+//                .map(noArgGetters::get)
+//                .findAny()
+//                .orElse(null);
     }
 
     private Map<String, Method> getNoArgGetterMethodMap(final Class<?> clazz) {
