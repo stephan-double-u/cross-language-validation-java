@@ -345,22 +345,6 @@ public class Validator {
         return getterInfo;
     }
 
-    private Field getFieldOrFail(String property, Class<?> clazz) {
-        return getFieldOrFail(property, clazz, clazz);
-    }
-
-    private Field getFieldOrFail(String property, Class<?> startClass, Class<?> superClass) {
-        return Arrays.stream(superClass.getDeclaredFields())
-                .filter(f -> f.getName().equals(property))
-                .findAny()
-                .orElseGet(() -> {
-                    if (superClass.isInterface() || superClass.getSuperclass() == null) {
-                        throw new IllegalArgumentException("Property '" + property + "' is not a declared field of " +
-                                "class " + startClass + " (resp. its super classes)");
-                    }
-                    return getFieldOrFail(property, startClass, superClass.getSuperclass());
-                });
-    }
     private GetterInfo createGetterInfo(final Method getterMethod) {
         return new GetterInfo(getterMethod, getterMethod.getReturnType());
     }
@@ -609,6 +593,9 @@ public class Validator {
                 firstElement = propertyResultObject;
             } else {
                 distinct = !Objects.equals(firstElement, propertyResultObject);
+                if (!distinct) {
+                    break;
+                }
             }
         }
         return distinct;

@@ -117,6 +117,15 @@ class ValidatorTest {
     }
 
     @Test
+    void validate_distinct_fail() {
+        ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
+        rules.content("methodList[*]#distinct", Equals.any(true));
+        ClassUnderTest object = new ClassUnderTest("foo", SomeEnum.ONE);
+        List<String> errors = Validator.instance().validateContentRules(object, rules);
+        assertEquals(List.of("error.validation.content.equals_any.classundertest.methodList[*]#distinct"), errors);
+    }
+
+    @Test
     void validate_mandatory_errorCode_suffix() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.mandatory("stringProp")
@@ -369,6 +378,7 @@ class ValidatorTest {
     @ValueSource(strings = {
             "subClassArrayProp[0].integerListProp[*]#distinct",
             "emptyStringArray[*]#distinct",
+            "recordList[*].aString#distinct",
             "nullStringArray[*]#distinct"})
     void validateContentRules_distinct_EqualsAny_true(String propertyWithTerminalFunctionDistinct) {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
@@ -890,7 +900,7 @@ class ValidatorTest {
             return aString + aLong;
         }
         public List<String> methodList() {
-            return List.of(aString, "" + aLong);
+            return List.of(aString, "" + aLong, "3rd");
         }
     }
 
@@ -910,6 +920,9 @@ class ValidatorTest {
         private float[] floatArray = new float[] {1.11f, 2.22f, 3.33f};
         private String[] emptyStringArray = new String[] {};
         private String[] nullStringArray = null;
+        private List<Record> recordList = List.of(
+                new Record(new UUID(1, 1).toString(), 1, A_LOCAL_DATE, List.of()),
+                new Record(new UUID(1, 2).toString(), 1, A_LOCAL_DATE, List.of()));
 
         public ClassUnderTest() {
             super(1);
@@ -926,7 +939,7 @@ class ValidatorTest {
         }
 
         public List<String> getMethodList() {
-            return List.of(stringProp, "" + enumProp);
+            return List.of(stringProp, stringProp, "3rd");
         }
 
         @Override
@@ -976,6 +989,10 @@ class ValidatorTest {
 
         public String[] getNullStringArray() {
             return nullStringArray;
+        }
+
+        public List<Record> getRecordList() {
+            return recordList;
         }
     }
 
