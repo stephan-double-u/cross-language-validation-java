@@ -269,7 +269,7 @@ public class Validator {
                 getterInfo = createGetterInfoForIndexedProperty(propertyPart, propertyPartClass);
             }
             propertyPartClass = getterInfo.getReturnType();
-            propertyKey += ("".equals(propertyKey) ? "" : ".") + propertyPart;
+            propertyKey += (propertyKey.isEmpty() ? "" : ".") + propertyPart;
             PropertyDescriptor propertyDescriptor = new PropertyDescriptor(propertyKey, propertyClass);
             if (!propertyToGetterReturnTypeCache.containsKey(propertyDescriptor)) {
                 log.debug("Cache: {} -> {}", propertyDescriptor, getterInfo);
@@ -673,7 +673,7 @@ public class Validator {
     private Method getGetterMethodOrFail(final String propertyName, final Class<?> clazz) {
         final Map<String, Method> noArgGetters = getNoArgGetterMethodMap(clazz);
         Method getterMethod = clazz.isRecord()
-                ? getGetterMethodForRecord(propertyName, clazz, noArgGetters)
+                ? getGetterMethodForRecord(propertyName, noArgGetters)
                 : getGetterMethodForBean(propertyName, noArgGetters);
         if (getterMethod == null) {
             throw new IllegalArgumentException(
@@ -687,17 +687,14 @@ public class Validator {
         if (getterMethod == null) {
             getterMethod = noArgGetters.get(buildGetterName("get", propertyName));
         }
+        if (getterMethod == null) {
+            getterMethod = noArgGetters.get(propertyName);
+        }
         return getterMethod;
     }
 
-    private Method getGetterMethodForRecord(String propertyName, Class<?> clazz, Map<String, Method> noArgGetters) {
+    private Method getGetterMethodForRecord(String propertyName, Map<String, Method> noArgGetters) {
         return noArgGetters.get(propertyName);
-//        return Arrays.stream(clazz.getRecordComponents())
-//                .map(RecordComponent::getName)
-//                .filter(fieldName -> fieldName.equals(propertyName))
-//                .map(noArgGetters::get)
-//                .findAny()
-//                .orElse(null);
     }
 
     private Map<String, Method> getNoArgGetterMethodMap(final Class<?> clazz) {
@@ -716,11 +713,7 @@ public class Validator {
             if (md.getMethod().getParameterTypes().length != 0) {
                 continue;
             }
-            if (isRecord || md.getName().startsWith("get")
-                    || md.getName().startsWith("is") && (md.getMethod().getReturnType().equals(boolean.class)
-                    || md.getMethod().getReturnType().equals(Boolean.class))) {
-                methodNamesMap.put(md.getName(), md.getMethod());
-            }
+            methodNamesMap.put(md.getName(), md.getMethod());
         }
         return methodNamesMap;
     }

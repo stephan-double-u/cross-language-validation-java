@@ -149,6 +149,23 @@ class EqualsAnyRefTest {
     }
 
     @Test
+    void validateToStringForClass() {
+        EqualsAnyRef constraint = Equals.anyRef("bar.longProp.toString");
+        // Validating caches the getStringProp() method!
+        Validator.instance().validateProperty("bar.longProp.toString", Foo.class);
+        assertTrue(constraint.validate("2", foo));
+    }
+
+    @Test
+    void validateToStringForRecord() {
+        var rec = new Record(2L);
+        EqualsAnyRef constraint = Equals.anyRef("longProp.toString");
+        // Validating caches the getStringProp() method!
+        Validator.instance().validateProperty("longProp.toString", Record.class);
+        assertTrue(constraint.validate("2", rec));
+    }
+
+    @Test
     void serializeToJsonOrNull() {
         EqualsAnyRef constraint = Equals.anyRefOrNull("bar.stringProp");
         assertEquals("""
@@ -258,4 +275,6 @@ class EqualsAnyRefTest {
             return nestedEnums;
         }
     }
+
+    public record Record(Long longProp) {}
 }
