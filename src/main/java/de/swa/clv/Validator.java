@@ -584,21 +584,11 @@ public class Validator {
     }
 
     public Boolean distinctCheckForPropertyValues(Object object, List<String> propertiesToCheck) {
-        Boolean distinct = !propertiesToCheck.isEmpty() ? null : true;
-        Object firstElement = null;
-        for (String p : propertiesToCheck) {
-            Object propertyResultObject = getPropertyResultObject(p, object);
-            if (distinct == null) {
-                distinct = true;
-                firstElement = propertyResultObject;
-            } else {
-                distinct = !Objects.equals(firstElement, propertyResultObject);
-                if (!distinct) {
-                    break;
-                }
-            }
-        }
-        return distinct;
+        long distinctCount = propertiesToCheck.stream()
+                .map(p -> getPropertyResultObject(p, object))
+                .distinct()
+                .count();
+        return propertiesToCheck.size() == distinctCount;
     }
 
     public List<String> inflatePropertyIfIndexed(String property, Object object) {

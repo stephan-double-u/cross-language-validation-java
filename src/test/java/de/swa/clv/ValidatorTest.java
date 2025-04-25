@@ -110,7 +110,7 @@ class ValidatorTest {
     void validate_methodGetter() {
         ValidationRules<ClassUnderTest> rules = new ValidationRules<>(ClassUnderTest.class);
         rules.content("methodValue", Equals.any("fooONE"));
-        rules.content("methodList[0]", Equals.any("foo"));
+        rules.content("methodList[0]", Equals.any("a"));
         ClassUnderTest object = new ClassUnderTest("foo", SomeEnum.ONE);
         List<String> errors = Validator.instance().validateContentRules(object, rules);
         assertTrue(errors.isEmpty(), errors.toString());
@@ -939,7 +939,7 @@ class ValidatorTest {
         }
 
         public List<String> getMethodList() {
-            return List.of(stringProp, stringProp, "3rd");
+            return List.of("a", "b", "c", "b");
         }
 
         @Override
