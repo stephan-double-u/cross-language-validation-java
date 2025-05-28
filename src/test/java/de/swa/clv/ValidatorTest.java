@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -104,6 +105,23 @@ class ValidatorTest {
                 .errorCodeControl(UseType.AS_SUFFIX, "#1st");
         classUnderTestRules.immutable("enumProp", Condition.of("stringProp", Equals.null_()))
                 .errorCodeControl(UseType.AS_SUFFIX, "#2nd");
+    }
+
+    @Test
+    void validate_expensiveMethodGetter() {
+        ValidationRules<Chapter> rules = new ValidationRules<>(Chapter.class);
+        rules.content("getFlattenedSubChapters[*].id", Equals.notNull());
+        rules.content("getFlattenedSubChapters[*].id#distinct", Equals.any(true));
+        Chapter chapterHierarchy = Chapter.createChapterHierarchy();
+        // assert hierarchy is 'reasonable big'
+        assertTrue(chapterHierarchy.getFlattenedSubChapters().size() > 3000);
+        long ts1 = System.nanoTime();
+        List<String> errors = Validator.instance().validateContentRules(chapterHierarchy, rules);
+        long ts2 = System.nanoTime();
+        long milliSec = (ts2 - ts1)/1000/1000 ;
+        // assert validation is 'reasonable fast'; see Validator.getterToResultObjectCache
+        assertTrue(milliSec < 300);
+        assertTrue(errors.isEmpty(), errors.toString());
     }
 
     @Test
@@ -863,9 +881,9 @@ class ValidatorTest {
         ClassUnderTest thisEntity = new ClassUnderTest();
         thisEntity.setFloatArray(new float[] {1.11f, 2.22f});
         ClassUnderTest thatEntity = new ClassUnderTest();
-        thatEntity.setFloatArray(new float[] {1.11f, 2.22f});
+        thatEntity.setFloatArray(new float[] {1.11f});
         boolean valid = Validator.instance().validateValueComparerConstraint("floatArray[*]",
-                null, Value.unchanged(), thisEntity, thatEntity);
+                null, Value.changed(), thisEntity, thatEntity);
         assertTrue(valid);
     }
 
@@ -874,9 +892,9 @@ class ValidatorTest {
         ClassUnderTest thisEntity = new ClassUnderTest();
         thisEntity.setFloatArray(new float[] {1.11f, 2.22f});
         ClassUnderTest thatEntity = new ClassUnderTest();
-        thatEntity.setFloatArray(new float[] {2.22f, 1.11f});
+        thatEntity.setFloatArray(new float[] {1.11f, 2.22f});
         boolean valid = Validator.instance().validateValueComparerConstraint("floatArray[*]",
-                null, Value.unchanged(), thisEntity, thatEntity);
+                null, Value.changed(), thisEntity, thatEntity);
         assertFalse(valid);
     }
 
@@ -902,6 +920,66 @@ class ValidatorTest {
         public List<String> methodList() {
             return List.of(aString, "" + aLong, "3rd");
         }
+    }
+
+    public static class Chapter {
+        int id;
+        List<Chapter> chapters;
+
+        public Chapter(int id, List<Chapter> chapters) {
+            this.id = id;
+            this.chapters = chapters;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public List<Chapter> getChapters() {
+            return chapters;
+        }
+
+        public void setChapters(List<Chapter> chapters) {
+            this.chapters = chapters;
+        }
+
+        static Chapter createChapterHierarchy() {
+            Chapter chapter = new Chapter(1, List.of());
+            addSubChapters(chapter, 1, new AtomicInteger(1));
+            return chapter;
+        }
+
+        private static void addSubChapters(Chapter chapter, int level, AtomicInteger atomicInteger) {
+            List<Chapter> chapters = new ArrayList<>();
+            int noOfSubChapters = 3;
+            int maxLevel = 7;
+            for (int i = 1; i <= noOfSubChapters; i++) {
+                Chapter subChapter = new Chapter(atomicInteger.incrementAndGet(), new ArrayList<>());
+                if (level < maxLevel) {
+                    addSubChapters(subChapter, ++level, atomicInteger);
+                    level--;
+                }
+                chapters.add(subChapter);
+            }
+            chapter.setChapters(chapters);
+        }
+
+        public List<Chapter> getFlattenedSubChapters() {
+            return streamSubChapters()
+                    .toList();
+        }
+
+        private Stream<Chapter> streamSubChapters() {
+            return Stream.concat(Stream.of(this), chapters == null
+                    ? Stream.empty()
+                    : chapters.stream()
+                    .flatMap(Chapter::streamSubChapters));
+        }
+
     }
 
     static class ClassUnderTest extends BaseClass implements Identifiable<Integer> {

@@ -39,6 +39,7 @@ public class Validator {
     @SuppressWarnings("squid:S3878")
     private static final UserPermissions NO_USER_PERMISSIONS = UserPermissions.of(new String[0]);
     private final Map<PropertyDescriptor, GetterInfo> propertyToGetterReturnTypeCache = new HashMap<>();
+    private Map<GetterDescriptor, Object> getterToResultObjectCache = new HashMap<>();
 
     private String defaultMandatoryMessagePrefix = "error.validation.mandatory.";
     private String defaultImmutableMessagePrefix = "error.validation.immutable.";
@@ -61,6 +62,7 @@ public class Validator {
     public List<String> validateMandatoryRules(final Object editedEntity, final UserPermissions userPermissions,
             final ValidationRules<?> rules) {
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
+        clearGetterToResultObjectCache();
         return rules.getMandatoryRulesKeys().stream()
                 .flatMap(property -> validateMandatoryPropertyRules(property, editedEntity, userPermissions, rules).stream())
                 .collect(Collectors.toList());
@@ -88,6 +90,7 @@ public class Validator {
         if (currentEntity.getClass() != editedEntity.getClass()) {
             throw new IllegalArgumentException("currentEntity and editedEntity must have same type");
         }
+        clearGetterToResultObjectCache();
         return rules.getImmutableRulesKeys().stream()
                 .flatMap(property -> validateImmutablePropertyRules(property, currentEntity, editedEntity,
                         userPermissions, rules).stream())
@@ -113,6 +116,7 @@ public class Validator {
     public List<String> validateContentRules(final Object editedEntity, final UserPermissions userPermissions,
             final ValidationRules<?> rules) {
         Objects.requireNonNull(rules, ERR_MSG_RULES_NULL);
+        clearGetterToResultObjectCache();
         return rules.getContentRulesKeys().stream()
                 .flatMap(property -> validateContentPropertyRules(property, editedEntity, userPermissions, rules).stream())
                 .collect(Collectors.toList());
@@ -137,6 +141,7 @@ public class Validator {
         if (currentEntity.getClass() != editedEntity.getClass()) {
             throw new IllegalArgumentException("currentEntity and editedEntity must have same type");
         }
+        clearGetterToResultObjectCache();
         return rules.getUpdateRulesKeys().stream()
                 .flatMap(property -> validateUpdatePropertyRules(property, currentEntity, editedEntity, userPermissions,
                         rules).stream())
@@ -164,6 +169,11 @@ public class Validator {
         String constraintTypePart = constraint != null ? constraint.getToken().toLowerCase() + "." : "";
         String defaultErrorMessage = defaultMessagePrefix + constraintTypePart + typeJsonKey + "." + property;
         return applyErrorCodeControl(errorCodeControl, defaultErrorMessage);
+    }
+
+    private void clearGetterToResultObjectCache() {
+        // cache must be reset between validate*Rules calls because the object to be validated has most likely changed
+        getterToResultObjectCache.clear();
     }
 
     private String applyErrorCodeControl(ErrorCodeControl errorCodeControl, String defaultErrorMessage) {
@@ -272,7 +282,7 @@ public class Validator {
             propertyKey += (propertyKey.isEmpty() ? "" : ".") + propertyPart;
             PropertyDescriptor propertyDescriptor = new PropertyDescriptor(propertyKey, propertyClass);
             if (!propertyToGetterReturnTypeCache.containsKey(propertyDescriptor)) {
-                log.debug("Cache: {} -> {}", propertyDescriptor, getterInfo);
+                log.debug("Cache propertyDescriptor: {} -> {}", propertyDescriptor, getterInfo);
                 propertyToGetterReturnTypeCache.put(propertyDescriptor, getterInfo);
             }
         }
@@ -412,15 +422,28 @@ public class Validator {
         return indexInfo.values().get(0);
     }
 
-    private Object invokePropertyGetter(String propertyKey, Class<?> objectClass, Object propertyObject) {
-        final PropertyDescriptor cacheKey = new PropertyDescriptor(propertyKey, objectClass);
-        final GetterInfo getter = propertyToGetterReturnTypeCache.get(cacheKey);
+    private Object invokePropertyGetter(String property, Class<?> objectClass, Object propertyObject) {
+        final PropertyDescriptor propertyKey = new PropertyDescriptor(property, objectClass);
+        final GetterInfo getterInfo = propertyToGetterReturnTypeCache.get(propertyKey);
+        final GetterDescriptor methodKey = new GetterDescriptor(getterInfo.getMethod(), propertyObject.hashCode());
         try {
-            return getter.getMethod().invoke(propertyObject);
+            if (getterToResultObjectCache.containsKey(methodKey)) {
+                return getterToResultObjectCache.get(methodKey);
+            }
+            Object getterObject = getterInfo.getMethod().invoke(propertyObject);
+            if (returnTypeIsListOrArray(getterInfo.returnType)) {
+                log.debug("Cache method: {} -> {}", getterInfo.getMethod(), getterObject);
+                getterToResultObjectCache.put(methodKey, getterObject);
+            }
+            return getterObject;
         } catch (IllegalAccessException | InvocationTargetException ex) {
             throw new IllegalStateException(
-                    "Exception while invoking method + " + getter.getMethod() + " on " + propertyObject, ex);
+                    "Exception while invoking method + " + getterInfo.getMethod() + " on " + propertyObject, ex);
         }
+    }
+
+    private boolean returnTypeIsListOrArray(Class<?> returnType) {
+        return List.class.isAssignableFrom(returnType) || returnType.isArray();
     }
 
     private void validateArgumentsNotNullOrFail(Object... argument) {
@@ -780,6 +803,9 @@ public class Validator {
         public int hashCode() {
             return Objects.hash(propertyName, clazz);
         }
+    }
+
+    private record GetterDescriptor(Method getterMethod, int objectHash) {
     }
 
     static class GetterInfo {
